@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="config_Msensor_available">false</bool>
+    <bool name="config_LSensor_available">false</bool>
+    <bool name="config_PSensor_available">false</bool>
+    <bool name="config_gyroscopesensor_available">false</bool>
+    <bool name="config_backup_show_allreport">true</bool>
+    <bool name="config_notest_warning">false</bool>
+</resources>
