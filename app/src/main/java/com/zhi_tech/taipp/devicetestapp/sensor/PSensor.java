@@ -13,6 +13,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -32,38 +33,24 @@ import java.util.List;
 public class PSensor extends Activity implements SensorEventListener, View.OnClickListener {
 
     private SensorManager sensorManager;
-
     private Button mBtOk;
-
     private Button mFailed;
-
     private TextView mPsensor;
-
-    public static final String LOG_TAG = "Sensor";
-
+    public final String TAG = "PSensor";
     private int[] mAllPsensor = new int[1000];
-
     private static int mCount = 0;
-
     private int mPrePsensor = 0;
-
     private int mAverage = 0;
-
     private char[] mWrint = new char[1];
-
     private int mSumPsensor = 0;
-
     private Handler myHandler;
-
     CountDownTimer mCountDownTimer;
-
     SharedPreferences mSp;
-
     private Button mBtCalibrate;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         sensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
         setContentView(R.layout.psensor);
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
@@ -83,6 +70,7 @@ public class PSensor extends Activity implements SensorEventListener, View.OnCli
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         //myHandler.removeCallbacks(myRunnable);
     }
 
@@ -95,8 +83,7 @@ public class PSensor extends Activity implements SensorEventListener, View.OnCli
                 mPrePsensor = Integer.parseInt(pSensorValues2.trim());
                 mAllPsensor[mCount] = mPrePsensor;
                 mCount++;
-                mPsensor.setText(getResources().getString(R.string.proximity) + " "
-                        + mPrePsensor);
+                mPsensor.setText(getResources().getString(R.string.proximity) + " " + mPrePsensor);
             }
             for (int i = 0; i < mCount; i++) {
                 mSumPsensor = mSumPsensor + mAllPsensor[i];
@@ -115,6 +102,7 @@ public class PSensor extends Activity implements SensorEventListener, View.OnCli
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
         for (Sensor s : sensors) {
             sensorManager.registerListener(this, s, SensorManager.SENSOR_DELAY_NORMAL);
@@ -124,6 +112,7 @@ public class PSensor extends Activity implements SensorEventListener, View.OnCli
     @Override
     protected void onStop() {
         super.onStop();
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         if (mCountDownTimer != null) {
             mCountDownTimer.cancel();
         }
@@ -178,10 +167,10 @@ public class PSensor extends Activity implements SensorEventListener, View.OnCli
                 //startActivity(intent);
                 Intent i = new Intent(Intent.ACTION_MAIN);
                 i.setComponent(new ComponentName(
-                        "com.mediatek.engineermode",
-                        "com.mediatek.engineermode.sensor.PSensorCalibration"));
+                        "com.zhi_tech.taipp.devicetestapp.sensor",
+                        "com.zhi_tech.taipp.devicetestapp.sensor.PSensorCalibration"));
                 i.addCategory(Intent.CATEGORY_DEFAULT);
-                i.putExtra("fromWhere", "factoryMode");
+                i.putExtra("fromWhere", "DeviceTestApp");
                 startActivity(i);
             }catch(ActivityNotFoundException e){
             }catch(SecurityException e){

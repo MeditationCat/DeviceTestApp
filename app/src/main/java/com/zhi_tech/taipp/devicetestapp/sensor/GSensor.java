@@ -11,6 +11,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -26,14 +27,10 @@ import com.zhi_tech.taipp.devicetestapp.Utils;
 public class GSensor extends Activity implements View.OnClickListener {
 
     private Button mBtCalibrate;
-
     private TextView tvdata;
     private ImageView ivimg;
-
     private Button mBtOk;
-
     private Button mBtFailed;
-
     private Button mSmtTest;
 
     private int mX;
@@ -41,17 +38,15 @@ public class GSensor extends Activity implements View.OnClickListener {
     private int mZ;
 
     SharedPreferences mSp;
-
     SensorManager mSm = null;
-
     Sensor mGravitySensor;
-
     boolean mCheckDataSuccess;
-
     private final static int OFFSET = 2;
+    private final String TAG = "GSensor";
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         setContentView(R.layout.gsensor);
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mBtCalibrate = (Button) findViewById(R.id.gsensor_calibrate);
@@ -70,10 +65,12 @@ public class GSensor extends Activity implements View.OnClickListener {
         mSm.registerListener(lsn, mGravitySensor, SensorManager.SENSOR_DELAY_GAME);
     }
 
+    @Override
     protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         mSm.unregisterListener(lsn);
         mCheckDataSuccess = false;
-        super.onDestroy();
     }
 
     SensorEventListener lsn = new SensorEventListener() {
@@ -115,7 +112,7 @@ public class GSensor extends Activity implements View.OnClickListener {
             try{
                 Intent intent = new Intent("android.intent.action.GSENSOR_CALIBRATE");
                 intent.addCategory(Intent.CATEGORY_DEFAULT);
-                intent.putExtra("fromWhere", "factoryMode");
+                intent.putExtra("fromWhere", "DeviceTestApp");
                 startActivity(intent);
             }catch(ActivityNotFoundException e){
             }catch(SecurityException e){

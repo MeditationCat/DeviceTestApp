@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,10 +37,12 @@ public class KeyCode extends Activity implements OnClickListener {
             R.drawable.search, R.drawable.camera, R.drawable.power,  R.drawable.unknown
     };
     public static final String POWERKEY_INTERCEPT = "android.intent.action.INTERCEPT_POWER_KEY";
+    private final String TAG = "KeyCode";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         this.getWindow().addFlags(0x90000000);
         this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.keycode);
@@ -161,6 +164,7 @@ public class KeyCode extends Activity implements OnClickListener {
     @Override
     protected void onDestroy() {
         // TODO Auto-generated method stub
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         Intent intent = new Intent(POWERKEY_INTERCEPT);
         intent.putExtra("state", false);
         sendBroadcast(intent);

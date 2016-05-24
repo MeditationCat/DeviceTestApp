@@ -8,6 +8,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -36,37 +37,35 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
     SensorManager mSm = null;
     Sensor mGyRoscopeSensor;
 
-
-
-
     private static final float NS2S = 1.0f / 1000000000.0f;
     private float timestamp;
 
     private float[] angle= new float[3];
+    private final String TAG = "GyRoscopeSensor";
 
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         setContentView(R.layout.gyroscopesensor);
 
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
-
         tvdata = (TextView) findViewById(R.id.gyroscopesensor);
-
         mBtOk = (Button) findViewById(R.id.gyroscopesensor_bt_ok);
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.gyroscopesensor_bt_failed);
         mBtFailed.setOnClickListener(this);
 
         mSm = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mGyRoscopeSensor = mSm
-                .getDefaultSensor(android.hardware.Sensor.TYPE_GYROSCOPE);
-        mSm.registerListener(lsn, mGyRoscopeSensor,
-                SensorManager.SENSOR_DELAY_GAME);
+        mGyRoscopeSensor = mSm.getDefaultSensor(android.hardware.Sensor.TYPE_GYROSCOPE);
+        mSm.registerListener(lsn, mGyRoscopeSensor, SensorManager.SENSOR_DELAY_GAME);
     }
 
+    @Override
     protected void onDestroy() {
-        mSm.unregisterListener(lsn);
         super.onDestroy();
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        mSm.unregisterListener(lsn);
     }
 
     SensorEventListener lsn = new SensorEventListener() {

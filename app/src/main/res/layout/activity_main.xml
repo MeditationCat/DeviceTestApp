@@ -15,13 +15,6 @@
             android:layout_weight="0.5"
             android:text="@string/AutoTest"
             android:textSize="30dip" />
-        <Button
-            android:id="@+id/main_bt_alltest"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="@string/AllTest"
-            android:textSize="30dip" />
     </LinearLayout>
     <GridView
         android:id="@+id/main_grid"
@@ -30,8 +23,7 @@
         android:padding="1dip"
         android:verticalSpacing="1dip"
         android:horizontalSpacing="1dip"
-        android:numColumns="auto_fit"
-        android:columnWidth="101dip"
         android:stretchMode="columnWidth"
-        android:gravity="center" />
+        android:gravity="center"
+        android:numColumns="auto_fit" />
 </LinearLayout>

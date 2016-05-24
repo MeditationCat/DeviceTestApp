@@ -10,7 +10,7 @@ import android.widget.Toast;
 
 public class DeviceTestAppService extends Service {
 
-    private static final String TAG = "DeviceTestApp";
+    private static final String TAG = "DeviceTestAppService";
     private static byte result[] = new byte[AppDefine.DVT_NV_ARRAR_LEN];
     private static final long delaytime = 5000;
 
@@ -22,9 +22,9 @@ public class DeviceTestAppService extends Service {
         public void run() {
             // TODO Auto-generated method stub
             Log.d(TAG, "mHandler---mRunnable!---");
-            readDataFromNvram();
+            //readDataFromNvram();
             checkDVTResult();
-            //mHandler.postDelayed(this, delaytime);
+            mHandler.postDelayed(this, delaytime);
         }
     };
 
@@ -69,35 +69,12 @@ public class DeviceTestAppService extends Service {
 
     private void checkDVTResult() {
         if (result[result.length -1] != AppDefine.DVT_OK){
-            Toast.makeText(getApplicationContext(), getString(R.string.complate_fmtest), 2000).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.complate_fmtest), Toast.LENGTH_LONG).show();
             mHandler.postDelayed(mRunnable, delaytime);
         }else{
             mHandler.removeCallbacks(mRunnable);
             stopSelf();
         }
 
-    }
-
-    //Read NvRAM
-    private void readDataFromNvram() {
-        IBinder binder = ServiceManager.getService("NvRAMAgent");
-        NvRAMAgent agent = NvRAMAgent.Stub.asInterface(binder);
-
-        Log.v(TAG, "ReadData");
-        byte buff[] = new byte[AppDefine.DVT_NV_ARRAR_LEN];
-        try {
-            buff = agent.readFile(DeviceTestApp.AP_CFG_CUSTOM_FILE_CUSTOM_LID);// read buffer from nvram
-            Log.v(TAG,"read success");
-        } catch (RemoteException e) {
-            // TODO Auto-generated catch block
-            Log.v(TAG,"read failed");
-            e.printStackTrace();
-        }
-
-        for(int i = 0; i < buff.length; i ++){
-            Log.v(TAG,"read_buff["+i+"]="+buff[i]);
-        }
-
-        System.arraycopy(buff, 0, result, 0, buff.length);
     }
 }

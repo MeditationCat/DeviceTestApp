@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -33,10 +34,12 @@ public class MSensor extends Activity implements SensorListener {
     private SharedPreferences mSp;
     private Button mBtOk;
     private Button mBtFailed;
+    private final String TAG = "MSensor";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         setContentView(R.layout.msensor);
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mOrientText = (TextView) findViewById(R.id.OrientText);
@@ -53,12 +56,14 @@ public class MSensor extends Activity implements SensorListener {
     @Override
     public void onStart() {
         super.onStart();
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         mSm = (SensorManager) getSystemService(SENSOR_SERVICE);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         mSm.registerListener(this, SensorManager.SENSOR_MAGNETIC_FIELD,
                 SensorManager.SENSOR_DELAY_UI);
 
@@ -66,15 +71,16 @@ public class MSensor extends Activity implements SensorListener {
 
     @Override
     protected void onStop() {
-        ;
-        mSm.unregisterListener(this);
         super.onStop();
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        mSm.unregisterListener(this);
     }
 
     @Override
     public void onDestroy() {
-        mSm.unregisterListener(this);
         super.onDestroy();
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        mSm.unregisterListener(this);
     }
 
     private void AniRotateImage(float fDegress) {

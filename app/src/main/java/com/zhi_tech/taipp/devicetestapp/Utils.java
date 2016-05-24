@@ -2,21 +2,20 @@ package com.zhi_tech.taipp.devicetestapp;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.IBinder;
-import android.os.RemoteException;
 import android.util.Log;
 
 /**
  * Created by taipp on 5/20/2016.
  */
 public class Utils {
-    private static final String TAG = "DeviceTestApp";
-    //private static Phone phone = null;
+
+    private static final String TAG = "Utils";
+
     public static void SetPreferences(Context context, SharedPreferences sp, int name, String flag) {
         String nameStr = context.getResources().getString(name);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString(nameStr, flag);
-        editor.commit();
+        editor.apply();
         /*liuyang add begin@20130108*/
         if (context.getResources().getBoolean(R.bool.config_backup_show_allreport)){
             SetResults(name, flag);
@@ -47,53 +46,10 @@ public class Utils {
                     //Log.v(TAG,"SetResult-flag=0");
                     DeviceTestApp.result[i] = AppDefine.DVT_DEFAULT;
                 }
-                //WriteData(i);
                 break;
             }
         }
-
-        WriteData();
     }
-
-
-    //Write NvRAM
-    private static void WriteData(/*int index*/) {
-        int ret = 0;
-        IBinder binder = ServiceManager.getService("NvRAMAgent");
-        NvRAMAgent agent = NvRAMAgent.Stub.asInterface(binder);
-
-        try {
-            //AP_CFG_CUSTOM_FILE_CUSTOM_DVT_LID 30,AP_CFG_REEB_PRODUCT_INFO_LID is 25
-            int flag = agent.writeFile(DeviceTestApp.AP_CFG_CUSTOM_FILE_CUSTOM_LID, DeviceTestApp.result);
-            Log.v(TAG,"write success flag="+flag);
-
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            Log.v(TAG,"write failed"+e);
-        }
-    }
-
-    //backup NvRAM
-    public static void NvRAMBackupData() {
-        int ret = 0;
-        IBinder binder = ServiceManager.getService("NvRAMBackupAgent");
-
-        if(binder != null){
-            NvRAMBackupAgent agent = NvRAMBackupAgent.Stub.asInterface(binder);
-            try {
-                ret = agent.testBackup();
-                Log.v(TAG, "NvRAMBackupAgent succuss");
-            } catch (RemoteException e) {
-                e.printStackTrace();
-                Log.v(TAG, "NvRAMBackupAgent fail" + e);
-            }
-        }
-        else
-        {
-            Log.v(TAG, "NvRAMBackupAgent service = "+binder);
-        }
-    }
-
 
     private static boolean checkIsAllTestOK(){
         boolean isAllTestOK = true;
@@ -122,7 +78,6 @@ public class Utils {
 
         Log.v(TAG,"WriteIsAllTestOK-isAllTestOK="+isAllTestOK);
 
-
         return isAllTestOK;
     }
 
@@ -138,20 +93,5 @@ public class Utils {
             Log.v(TAG,"WriteIsAllTestOK-checkIsAllTestOK()=false");
             DeviceTestApp.result[DeviceTestApp.result.length-1] = AppDefine.DVT_FAIL;
         }
-
-        IBinder binder = ServiceManager.getService("NvRAMAgent");
-        NvRAMAgent agent = NvRAMAgent.Stub.asInterface(binder);
-
-        try {
-            //AP_CFG_CUSTOM_FILE_CUSTOM_DVT_LID 30,AP_CFG_REEB_PRODUCT_INFO_LID is 25
-            int flag = agent.writeFile(DeviceTestApp.AP_CFG_CUSTOM_FILE_CUSTOM_LID, DeviceTestApp.result);
-            Log.v(TAG,"WriteIsAllTestOK-write success flag="+flag);
-
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            Log.v(TAG,"WriteIsAllTestOK-write failed"+e);
-        }
     }
-
-    /*liuyang add begin@20130108*/
 }
