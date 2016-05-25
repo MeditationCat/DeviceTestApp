@@ -84,8 +84,7 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                     angle[1] += e.values[1] * dT;
                     angle[2] += e.values[2] * dT;
 
-                    tvdata.setText(String.format("X:%+f%nY:%+f%nZ:%+f%n",
-                            angle[0], angle[1], angle[2]));
+                    tvdata.setText(String.format("X:%+f%nY:%+f%nZ:%+f%n", angle[0], angle[1], angle[2]));
                 }
                 timestamp = e.timestamp;
 

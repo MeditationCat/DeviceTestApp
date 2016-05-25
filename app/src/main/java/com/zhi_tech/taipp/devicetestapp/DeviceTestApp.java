@@ -2,10 +2,13 @@ package com.zhi_tech.taipp.devicetestapp;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,12 +45,30 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     public static byte result[] = new byte[AppDefine.DVT_NV_ARRAR_LEN]; //0 default; 1,success; 2,fail; 3,notest
 
     private final String TAG = "DeviceTestApp";
+
+    private DeviceTestAppService dtaService = null;
+
+    private ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+
+        Intent intent = new Intent(DeviceTestApp.this,DeviceTestAppService.class);
+        bindService(intent, conn, Context.BIND_AUTO_CREATE);
+
         init();
         mBtAuto = (Button) findViewById(R.id.main_bt_autotest);
         mBtAuto.setOnClickListener(cl);
@@ -58,8 +79,8 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
 
     @Override
     protected void onResume() {
-        super.onResume();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        super.onResume();
         mGrid.setAdapter(mAdapter);
         mGrid.setOnItemClickListener(this);
     }
@@ -240,21 +261,22 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
 
     @Override
     protected void onStop() {
-        super.onStop();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        super.onStop();
     }
 
     @Override
     public void finish() {
-        super.finish();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        super.finish();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        unbindService(conn);
         android.os.Process.killProcess(android.os.Process.myPid());
+        super.onDestroy();
     }
 }
 

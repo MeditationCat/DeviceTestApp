@@ -11,43 +11,23 @@ import android.widget.Toast;
 
 public class DetectUSBReceiver extends BroadcastReceiver {
 
-    private static final String TAG = "DetectUSBReceiver";
+    private final String TAG = "DetectUSBReceiver";
 
     public DetectUSBReceiver() {
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // TODO: This method is called when the BroadcastReceiver is receiving
-        // an Intent broadcast.
-        if (intent.getAction().equalsIgnoreCase( "android.intent.action.UMS_CONNECTED"))
-        {
-            TextView textView = new TextView(context);
-            textView.setBackgroundColor(Color.MAGENTA);
-            textView.setTextColor(Color.BLUE);
-            textView.setPadding(10,10,10,10);
-            textView.setText("USB connected..........");
-            Toast toastView = new Toast(context);
-            toastView.setDuration(Toast.LENGTH_LONG);
-            toastView.setGravity(Gravity.CENTER, 0,0);
-            toastView.setView(textView);
-            toastView.show();
-            Log.i(TAG,"USB connected..");
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + intent.getAction());
+
+        if (intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)
+                || intent.getAction().equalsIgnoreCase(Intent.ACTION_UMS_CONNECTED)) {
+
+            context.startService(new Intent(context, DeviceTestAppService.class));
         }
 
-        if (intent.getAction().equalsIgnoreCase( "android.intent.action.UMS_DISCONNECTED"))
-        {
-            TextView textView = new TextView(context);
-            textView.setBackgroundColor(Color.MAGENTA);
-            textView.setTextColor(Color.BLUE);
-            textView.setPadding(10,10,10,10);
-            textView.setText("USB Disconnected..........");
-            Toast toastView = new Toast(context);
-            toastView.setDuration(Toast.LENGTH_LONG);
-            toastView.setGravity(Gravity.CENTER, 0,0);
-            toastView.setView(textView);
-            toastView.show();
+        if (intent.getAction().equalsIgnoreCase(Intent.ACTION_UMS_DISCONNECTED)) {
+
         }
-        //throw new UnsupportedOperationException("Not yet implemented");
     }
 }

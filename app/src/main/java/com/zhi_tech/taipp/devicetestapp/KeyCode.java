@@ -36,15 +36,12 @@ public class KeyCode extends Activity implements OnClickListener {
             R.drawable.home, R.drawable.menu, R.drawable.vldown, R.drawable.vlup, R.drawable.back,
             R.drawable.search, R.drawable.camera, R.drawable.power,  R.drawable.unknown
     };
-    public static final String POWERKEY_INTERCEPT = "android.intent.action.INTERCEPT_POWER_KEY";
     private final String TAG = "KeyCode";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        this.getWindow().addFlags(0x90000000);
-        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.keycode);
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mInfo = (TextView) findViewById(R.id.keycode_info);
@@ -54,9 +51,6 @@ public class KeyCode extends Activity implements OnClickListener {
         mBtFailed.setOnClickListener(this);
         mListData = new ArrayList<Integer>();
         mGrid = (GridView) findViewById(R.id.keycode_grid);
-        Intent intent = new Intent(POWERKEY_INTERCEPT);
-        intent.putExtra("state", true);
-        sendBroadcast(intent);
     }
 
     @Override
@@ -164,12 +158,8 @@ public class KeyCode extends Activity implements OnClickListener {
     @Override
     protected void onDestroy() {
         // TODO Auto-generated method stub
-        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        Intent intent = new Intent(POWERKEY_INTERCEPT);
-        intent.putExtra("state", false);
-        sendBroadcast(intent);
         super.onDestroy();
-
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
     }
 
     @Override
