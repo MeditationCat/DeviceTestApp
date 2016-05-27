@@ -17,7 +17,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,8 +26,6 @@ import java.util.List;
 public class DeviceTestAppService extends Service {
 
     private static final String TAG = "DeviceTestAppService";
-    private static byte result[] = new byte[AppDefine.DVT_NV_ARRAR_LEN];
-    private static final long delaytime = 5000;
 
     private Handler mHandler = new Handler();
 
@@ -40,25 +37,26 @@ public class DeviceTestAppService extends Service {
             Log.d(TAG, "mHandler---mRunnable!---");
             //readDataFromNvram();
             //checkDVTResult();
-            mHandler.postDelayed(this, delaytime);
+            //mHandler.postDelayed(this, delaytime);
         }
     };
 
+    private OnDataChangedListener onDataChangedListener;
+
     private DtaBinder dtaBinder = null;
 
-    private final int vendorID = 48899;
-    private final int productID = 48898;
-    private UsbManager usbManager = null;
-    private UsbDevice usbDevice = null;
-    private List<UsbInterface> usbInterfaceList = null;
-    private UsbEndpoint epControl = null;
-    private UsbEndpoint epBulkOut = null;
-    private UsbEndpoint epBulkIn = null;
-    private UsbEndpoint epIntOut = null;
-    private UsbEndpoint epIntIn = null;
-    private UsbDeviceConnection usbDeviceConnection = null;
-    private PendingIntent pendingIntent = null;
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
+
+    private UsbManager usbManager;
+    private UsbDevice usbDevice;
+    private List<UsbInterface> usbInterfaceList;
+    private UsbInterface usbInterface;
+    private UsbEndpoint epControl;
+    private UsbEndpoint epBulkOut,epBulkOut2, epBulkIn, epBulkIn2;
+    private UsbEndpoint epIntOut, epIntOut2, epIntIn, epIntIn2;
+    private UsbDeviceConnection usbDeviceConnection;
+
+    private PendingIntent pendingIntent = null;
 
     @Override
     public void onCreate() {
@@ -76,14 +74,6 @@ public class DeviceTestAppService extends Service {
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + intent.getAction());
-
-        usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        enumerateDevice();
-        getDeviceInterface();
-        assignEndpoint(usbInterfaceList.get(0));
-        openDevice(usbInterfaceList.get(0));
-
-
     }
 
     @Override
@@ -115,26 +105,85 @@ public class DeviceTestAppService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        unregisterReceiver(mUsbReceiver);
         super.onDestroy();
     }
 
-    // 枚举设备函数
-    private void enumerateDevice() {
-        if (usbManager != null) {
-            HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
+    public void setOnDataChangedListener(OnDataChangedListener onDataChangedListener) {
+        this.onDataChangedListener = onDataChangedListener;
+    }
 
-            if (!(deviceList.isEmpty())) {
-                Iterator<UsbDevice> deviceIterator = deviceList.values().iterator();
+    /* usb device operation methods */
+    private  void initConnection() {
+        usbManager = null;
+        usbDevice = null;
+        usbInterfaceList.clear();
+        usbInterface = null;
 
-                while (deviceIterator.hasNext()) {
-                    UsbDevice device = deviceIterator.next();
-                    Log.d(TAG, "DeviceInfo: " + device.getVendorId() + " , " + device.getProductId());
-                    if (device.getVendorId() == vendorID && device.getProductId() == productID) {
-                        usbDevice = device;
-                    }
+        epControl = null;
+
+        epBulkOut = null;
+        epBulkIn = null;
+        epIntOut = null;
+        epIntIn = null;
+
+        epBulkOut2 = null;
+        epBulkIn2 = null;
+        epIntOut2 = null;
+        epIntIn2 = null;
+
+        usbDeviceConnection = null;
+    }
+
+    public void startToConnectDevice() {
+        try {
+            initConnection();
+            usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+            enumerateDevice();
+            getDeviceInterface();
+
+            if (!usbInterfaceList.isEmpty()) {
+                setDeviceInterface(usbInterfaceList.get(0));
+                if (usbInterfaceList.size() > 1) {
+                    // custom to select one interface;
+                    Log.d(TAG, "usbInterfaceList.size() = " + usbInterfaceList.size());
                 }
-            } else {
-                Log.d(TAG, "deviceList.isEmpty():" + deviceList.isEmpty());
+            }
+
+            assignEndpoint(usbInterface);
+
+            if (checkDevicePermission(usbDevice)) {
+                connectToDevice(usbInterface);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void enumerateDevice() {
+
+        if (usbManager != null) {
+            try {
+                HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
+
+                if (!(deviceList.isEmpty())) {
+                    final int vendorID = 48899;
+                    final int productID = 48898;
+
+                    Iterator<UsbDevice> deviceIterator = deviceList.values().iterator();
+
+                    while (deviceIterator.hasNext()) {
+                        UsbDevice device = deviceIterator.next();
+                        Log.d(TAG, "DeviceInfo: " + device.getVendorId() + " , " + device.getProductId());
+                        if (device.getVendorId() == vendorID && device.getProductId() == productID) {
+                            usbDevice = device;
+                        }
+                    }
+                } else {
+                    Log.d(TAG, "deviceList.isEmpty():" + deviceList.isEmpty());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
         } else {
@@ -146,45 +195,66 @@ public class DeviceTestAppService extends Service {
         if (usbDevice != null) {
             Log.d(TAG, "usbDevice.getInterfaceCount() : " + usbDevice.getInterfaceCount());
 
-            for (int i = 0; i < usbDevice.getInterfaceCount(); i++) {
-                UsbInterface intf = usbDevice.getInterface(i);
-                usbInterfaceList.add(intf);
+            try {
+                for (int i = 0; i < usbDevice.getInterfaceCount(); i++) {
+                    UsbInterface intf = usbDevice.getInterface(i);
+                    usbInterfaceList.add(intf);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } else {
             Log.d(TAG, "usbDevice = null!");
         }
     }
 
+    private void setDeviceInterface(UsbInterface mInterface) {
+        if (usbInterface != null) {
+            usbInterface = mInterface;
+        }
+    }
+
     private void assignEndpoint(UsbInterface mInterface) {
 
-        for (int i = 0; i < mInterface.getEndpointCount(); i++) {
-            UsbEndpoint ep = mInterface.getEndpoint(i);
-            Log.d(TAG,"ep[" + i + "] = " + ep.toString());
-            // look for bulk endpoint
-            if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
-                if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
-                    epBulkOut = ep;
-                    Log.d(TAG,"epBulkOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
-                } else {
-                    epBulkIn = ep;
-                    Log.d(TAG,"epBulkIn info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
+        if (mInterface != null) {
+            try {
+                for (int i = 0; i < mInterface.getEndpointCount(); i++) {
+                    UsbEndpoint ep = mInterface.getEndpoint(i);
+                    Log.d(TAG,"ep[" + i + "] = " + ep.toString());
+                    // look for bulk endpoint
+                    if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
+                        if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
+                            epBulkOut = ep;
+                            Log.d(TAG,"epBulkOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
+                        } else {
+                            if (ep.getAddress() == 0x82) {
+                                epBulkIn = ep;
+                            } else {
+                                epBulkIn2 = ep;
+                            }
+
+                            Log.d(TAG,"epBulkIn info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
+                        }
+                    }
+                    // look for contorl endpoint
+                    if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_CONTROL) {
+                        epControl = ep;
+                        Log.d(TAG,"epControl info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
+                    }
+                    // look for interrupt endpoint
+                    if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_INT) {
+                        if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
+                            epIntOut = ep;
+                            Log.d(TAG,"epIntOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
+                        }
+                        if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
+                            epIntIn = ep;
+                            Log.d(TAG,"epIntIn info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
+                        }
+                    }
                 }
-            }
-            // look for contorl endpoint
-            if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_CONTROL) {
-                epControl = ep;
-                Log.d(TAG,"epControl info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
-            }
-            // look for interrupt endpoint
-            if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_INT) {
-                if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
-                    epIntOut = ep;
-                    Log.d(TAG,"epIntOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
-                }
-                if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
-                    epIntIn = ep;
-                    Log.d(TAG,"epIntIn info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -195,45 +265,132 @@ public class DeviceTestAppService extends Service {
         }
     }
 
-    public void openDevice(UsbInterface mInterface) {
-        if (mInterface != null) {
-            UsbDeviceConnection conn = null;
-            // 在open前判断是否有连接权限；对于连接权限可以静态分配，也可以动态分配权限
-            if (usbManager.hasPermission(usbDevice)) {
-                conn = usbManager.openDevice(usbDevice);
-            } else {
-                usbManager.requestPermission(usbDevice,pendingIntent);
-            }
+    private boolean checkDevicePermission(UsbDevice mUsbDevice) {
 
-            if (conn != null) {
-                if (conn.claimInterface(mInterface, true)) {
-                    usbDeviceConnection = conn;
-                    if (usbDeviceConnection != null)// 到此你的android设备已经连上zigbee设备
-                        System.out.println("open设备成功！");
-                    final String mySerial = usbDeviceConnection.getSerial();
-                    System.out.println("设备serial number：" + mySerial);
+        if (mUsbDevice != null) {
+            try {
+                if (usbManager.hasPermission(mUsbDevice)) {
+                    return true;
                 } else {
-                    System.out.println("无法打开连接通道。");
-                    conn.close();
+                    usbManager.requestPermission(usbDevice, pendingIntent);
+                    return false;
                 }
-            } else {
-                Log.d(TAG, "conn = null!");
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
+
+        return false;
     }
 
-    BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+    private boolean connectToDevice(UsbInterface mInterface) {
+
+        boolean openResult = false;
+        if (mInterface != null) {
+            try {
+                if (usbManager.hasPermission(usbDevice)) {
+                    usbDeviceConnection = usbManager.openDevice(usbDevice);
+                } else {
+                    checkDevicePermission(usbDevice);
+                    return false;
+                }
+
+                if (usbDeviceConnection != null) {
+                    openResult = usbDeviceConnection.claimInterface(mInterface, true);
+                    Log.d(TAG, "usbDeviceConnection.getSerial(): " + usbDeviceConnection.getSerial());
+                } else {
+                    Log.d(TAG, "usbDeviceConnection = null!");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return openResult;
+    }
+
+    private boolean deviceIsConnected() {
+        if (usbDeviceConnection != null && usbDeviceConnection.getSerial() != null) {
+            return true;
+        }
+        return false;
+    }
+
+    private void startCommunication() {
+        //set up to send cmd to the device or receive data from the device.
+        Log.d(TAG, "start to communicate with the device!");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                onDataChangedListener.dataUpdate("ctm:" + System.currentTimeMillis()/1000);
+
+                try {
+                    Thread.sleep(5000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+
+
+    }
+    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + action);
+
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                synchronized (this) {
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        Log.d(TAG, "extra permission is granted for device" + device);
+                        if(device != null){
+                            //call method to set up device communication
+                            try {
+                                connectToDevice(usbInterface);
+                                if (deviceIsConnected()) {
+                                    Log.d(TAG, "startCommunication()!");
+                                    startCommunication();
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    else {
+                        Log.d(TAG, "permission denied for device " + device);
+                    }
+                }
+            }
+
+            if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+                if (!deviceIsConnected()) {
+                    Log.d(TAG, "startToConnectDevice()!");
+                    startToConnectDevice();
+                }
+            }
 
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
-                UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                 if (device != null) {
+                    Log.d(TAG, "close the device connection!");
                     // call your method that cleans up and closes communication with the device
+                    synchronized (this) {
+                        try {
+                            usbDeviceConnection.releaseInterface(usbInterface);
+                            usbDeviceConnection.close();
+                            initConnection();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         }
     };
+
+
     /*
     @Override
     public IBinder onBind(Intent intent) {

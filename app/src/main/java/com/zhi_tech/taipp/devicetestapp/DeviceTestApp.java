@@ -52,6 +52,14 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+
+            dtaService.setOnDataChangedListener(new OnDataChangedListener() {
+                @Override
+                public void dataUpdate(String data) {
+                    //
+                    mBtAuto.setText(data);
+                }
+            });
         }
 
         @Override
@@ -83,6 +91,9 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         super.onResume();
         mGrid.setAdapter(mAdapter);
         mGrid.setOnItemClickListener(this);
+        if (dtaService != null) {
+            //dtaService.startCommunication();
+        }
     }
 
     public View.OnClickListener cl = new View.OnClickListener() {
@@ -274,7 +285,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     @Override
     protected void onDestroy() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        unbindService(conn);
+        //unbindService(conn);
         android.os.Process.killProcess(android.os.Process.myPid());
         super.onDestroy();
     }

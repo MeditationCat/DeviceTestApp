@@ -99,13 +99,11 @@
             android:screenOrientation="portrait" />
 
         <receiver
-            android:name=".DetectUSBReceiver"
+            android:name=".BootCompletedReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.acion.UMS_CONNECTED"/>
-                <action android:name="android.intent.action.UMS_DISCONNECTED"/>
             </intent-filter>
         </receiver>
 
