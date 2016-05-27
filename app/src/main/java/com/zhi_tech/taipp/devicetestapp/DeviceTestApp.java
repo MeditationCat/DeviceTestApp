@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,6 +42,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     };
     public static ArrayList<Integer> excludeIds = new ArrayList<Integer>();
     private Button mBtAuto;
+    private TextView textView;
 
     public static byte result[] = new byte[AppDefine.DVT_NV_ARRAR_LEN]; //0 default; 1,success; 2,fail; 3,notest
 
@@ -57,9 +59,22 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                 @Override
                 public void dataUpdate(String data) {
                     //
-                    mBtAuto.setText(data);
+                    postHanderViewMsg(data);
+                }
+
+                @Override
+                public void packageDataUpdate(SensorPackageObject object) {
+                    //to get the data from the object.
+
+                    //postHanderViewMsg("sec:" + object.getTimestamp());
                 }
             });
+
+            if (dtaService != null) {
+                dtaService.startCommunication();
+            }
+
+
         }
 
         @Override
@@ -67,6 +82,19 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
 
         }
     };
+
+    private Handler handler = new Handler();
+
+    private void postHanderViewMsg(final String data) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText(data);
+                }
+        });
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
@@ -80,6 +108,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         init();
         mBtAuto = (Button) findViewById(R.id.main_bt_autotest);
         mBtAuto.setOnClickListener(cl);
+        textView = (TextView) findViewById(R.id.textView);
         mGrid = (GridView) findViewById(R.id.main_grid);
         mListData = getData();
         mAdapter = new MyAdapter(this);
@@ -91,9 +120,6 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         super.onResume();
         mGrid.setAdapter(mAdapter);
         mGrid.setOnItemClickListener(this);
-        if (dtaService != null) {
-            //dtaService.startCommunication();
-        }
     }
 
     public View.OnClickListener cl = new View.OnClickListener() {
@@ -285,7 +311,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     @Override
     protected void onDestroy() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        //unbindService(conn);
+        unbindService(conn);
         android.os.Process.killProcess(android.os.Process.myPid());
         super.onDestroy();
     }

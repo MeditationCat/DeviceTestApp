@@ -13,8 +13,6 @@ public abstract class AppDefine {
 
     public final static int DT_AUTOTESTID = 0x1000;
 
-    public final static int DT_ALLTESTID = 0x2000;
-
     public final static int DT_KEYCODEID = 0x100;
 
     public final static int DT_GSENSORID = 0x110;

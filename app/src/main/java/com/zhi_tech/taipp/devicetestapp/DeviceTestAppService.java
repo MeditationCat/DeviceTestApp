@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.Sensor;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -18,7 +19,14 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.nio.ByteBuffer;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -316,22 +324,117 @@ public class DeviceTestAppService extends Service {
         return false;
     }
 
-    private void startCommunication() {
+    public class PackageDataParseThread implements Runnable {
+
+        private String name;
+        public final static int TIME_OUT = 4;
+
+        private char[] packageHeader = new char[2];
+        private short[] packageDataGyroscope = new short[3];
+        private short[] packageDataAccelerometer = new short[3];
+        private short[] packageDataMagnetic = new short[3];
+        private short[] packageDataTemperature = new short[1];
+        private short[] packageDataLight = new short[1];
+        private short[] packageDataProximity = new short[1];
+        private int[] packageDataTimestamp = new int[1];
+
+        PackageDataParseThread(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void run() {
+
+            if (deviceIsConnected()) {
+                // receive data
+                int receiveBufferLength = epBulkIn.getMaxPacketSize();
+                ByteBuffer receiveBuffer = ByteBuffer.allocate(receiveBufferLength);
+                int receivedLength = -1;
+                SensorPackageObject sensorPackageObject = new SensorPackageObject();
+
+                while (true) {
+                    try {
+                        receivedLength = usbDeviceConnection.bulkTransfer(epBulkIn, receiveBuffer.array(), receiveBuffer.array().length, TIME_OUT);
+                        //Log.d(TAG, Thread.currentThread().getName() + "->" + System.currentTimeMillis());
+                        if (receivedLength > 0) {
+                            int dstOffset = 0;
+                            //package header: char: 'M','5'
+                            receiveBuffer.asCharBuffer().get(packageHeader, dstOffset, packageHeader.length);
+                            dstOffset += packageHeader.length;
+                            //package data: gryo: short: x, y, z
+                            receiveBuffer.asShortBuffer().get(packageDataGyroscope,dstOffset, packageDataGyroscope.length);
+                            dstOffset += packageDataGyroscope.length;
+                            //package data: accelerometer: short: x, y, z
+                            receiveBuffer.asShortBuffer().get(packageDataAccelerometer,dstOffset, packageDataAccelerometer.length);
+                            dstOffset += packageDataAccelerometer.length;
+                            //package data: magnetic: short: x, y, z
+                            receiveBuffer.asShortBuffer().get(packageDataMagnetic,dstOffset, packageDataMagnetic.length);
+                            dstOffset += packageDataMagnetic.length;
+                            //package data: temperature: short
+                            receiveBuffer.asShortBuffer().get(packageDataTemperature,dstOffset, packageDataTemperature.length);
+                            dstOffset += packageDataTemperature.length;
+                            //package data: light: short
+                            receiveBuffer.asShortBuffer().get(packageDataLight,dstOffset, packageDataLight.length);
+                            dstOffset += packageDataLight.length;
+                            //package data: proximity: short
+                            receiveBuffer.asShortBuffer().get(packageDataProximity,dstOffset, packageDataProximity.length);
+                            dstOffset += packageDataProximity.length;
+
+                            //package data: timestamp: int
+                            receiveBuffer.asIntBuffer().get(packageDataTimestamp, dstOffset, packageDataTimestamp.length);
+                            dstOffset += packageDataTimestamp.length;
+
+                            sensorPackageObject.setHeader(packageHeader);
+                            sensorPackageObject.gyroscopeSensor.setValues(packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]);
+                            sensorPackageObject.accelerometerSensor.setValues(packageDataAccelerometer[0], packageDataAccelerometer[1], packageDataAccelerometer[2]);
+                            sensorPackageObject.magneticSensor.setValues(packageDataMagnetic[0], packageDataMagnetic[1], packageDataMagnetic[2]);
+                            sensorPackageObject.temperatureSensor.setTemperature(packageDataTemperature[0]);
+                            sensorPackageObject.lightSensor.setLightSensorValue(packageDataLight[0]);
+                            sensorPackageObject.proximitySensor.setProximitySensorValue(packageDataProximity[0]);
+                            sensorPackageObject.setTimestampValue(packageDataTimestamp[0]);
+
+                            onDataChangedListener.packageDataUpdate(sensorPackageObject);
+                        }
+
+                        Thread.sleep(4);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    //private
+    public void startCommunication() {
         //set up to send cmd to the device or receive data from the device.
         Log.d(TAG, "start to communicate with the device!");
+        // test
         new Thread(new Runnable() {
             @Override
             public void run() {
-                onDataChangedListener.dataUpdate("ctm:" + System.currentTimeMillis()/1000);
+                while (true) {
+                    try {
+                        onDataChangedListener.dataUpdate(Calendar.getInstance().getTime().toString());
+                        Thread.sleep(4);
 
-                try {
-                    Thread.sleep(5000);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        break;
+                    }
                 }
             }
         }).start();
 
+        // start new thread to parse package
+        PackageDataParseThread dataParseThread = new PackageDataParseThread("dataParseThread");
+        Thread thread1 = new Thread(dataParseThread, "dataParseThread-01");
+        Thread thread2 = new Thread(dataParseThread, "dataParseThread-02");
+
+        thread1.start();
+        //thread2.start();
 
 
     }
@@ -378,8 +481,10 @@ public class DeviceTestAppService extends Service {
                     // call your method that cleans up and closes communication with the device
                     synchronized (this) {
                         try {
-                            usbDeviceConnection.releaseInterface(usbInterface);
-                            usbDeviceConnection.close();
+                            if (usbDeviceConnection != null) {
+                                usbDeviceConnection.releaseInterface(usbInterface);
+                                usbDeviceConnection.close();
+                            }
                             initConnection();
                         } catch (Exception e) {
                             e.printStackTrace();

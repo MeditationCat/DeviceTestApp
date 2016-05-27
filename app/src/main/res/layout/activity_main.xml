@@ -12,9 +12,15 @@
             android:id="@+id/main_bt_autotest"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
             android:text="@string/AutoTest"
             android:textSize="30dip" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="AAAAAAAAAA"
+            android:id="@+id/textView"
+            android:gravity="center_vertical|center_horizontal" />
     </LinearLayout>
     <GridView
         android:id="@+id/main_grid"
