@@ -19,14 +19,12 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -171,6 +169,20 @@ public class DeviceTestAppService extends Service {
     private void enumerateDevice() {
 
         if (usbManager != null) {
+            ArrayList<UsbDevice> devices;
+            try {
+                devices = UsbDeviceFilter.getMatchingHostDevices(this, R.xml.device_filter);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.d(TAG, "Failed to parse devices.xml: " + e.getMessage());
+                return;
+            }
+
+            for (UsbDevice device : devices) {
+                usbDevice = device;
+                Log.d(TAG, "Matched device " + device);
+            }
+/*
             try {
                 HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
 
@@ -193,7 +205,7 @@ public class DeviceTestAppService extends Service {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+*/
         } else {
             Log.d(TAG, "usbManager = null!");
         }
@@ -431,7 +443,7 @@ public class DeviceTestAppService extends Service {
         // start new thread to parse package
         PackageDataParseThread dataParseThread = new PackageDataParseThread("dataParseThread");
         Thread thread1 = new Thread(dataParseThread, "dataParseThread-01");
-        Thread thread2 = new Thread(dataParseThread, "dataParseThread-02");
+        //Thread thread2 = new Thread(dataParseThread, "dataParseThread-02");
 
         thread1.start();
         //thread2.start();
