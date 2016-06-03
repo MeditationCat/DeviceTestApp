@@ -45,16 +45,16 @@ public class Report extends Activity {
         mFailedList = new ArrayList<String>();
         mDefaultList = new ArrayList<String>();
 
-        for (int i = 0; i < itemString.length; i++) {
-            if((mSp.getString(getString(itemString[i]), null) == null)){
+        for (int itemId : itemString) {
+            if((mSp.getString(getString(itemId), null) == null)){
                 continue;
             }
-            if (mSp.getString(getString(itemString[i]), null).equals(AppDefine.DT_SUCCESS)) {
-                mOkList.add(getString(itemString[i]));
-            } else if (mSp.getString(getString(itemString[i]), null).equals(AppDefine.DT_FAILED)) {
-                mFailedList.add(getString(itemString[i]));
+            if (AppDefine.DT_SUCCESS.equals(mSp.getString(getString(itemId), null))) {
+                mOkList.add(getString(itemId));
+            } else if (AppDefine.DT_FAILED.equals(mSp.getString(getString(itemId), null))) {
+                mFailedList.add(getString(itemId));
             } else {
-                mDefaultList.add(getString(itemString[i]));
+                mDefaultList.add(getString(itemId));
             }
         }
         ShowInfo();

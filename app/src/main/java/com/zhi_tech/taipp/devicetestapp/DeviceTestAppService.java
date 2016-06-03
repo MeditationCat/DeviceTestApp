@@ -6,23 +6,21 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.Sensor;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import android.hardware.usb.UsbRequest;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -33,20 +31,6 @@ public class DeviceTestAppService extends Service {
 
     private static final String TAG = "DeviceTestAppService";
 
-    private Handler mHandler = new Handler();
-
-    private Runnable mRunnable = new Runnable() {
-
-        @Override
-        public void run() {
-            // TODO Auto-generated method stub
-            Log.d(TAG, "mHandler---mRunnable!---");
-            //readDataFromNvram();
-            //checkDVTResult();
-            //mHandler.postDelayed(this, delaytime);
-        }
-    };
-
     private OnDataChangedListener onDataChangedListener;
 
     private DtaBinder dtaBinder = null;
@@ -56,11 +40,12 @@ public class DeviceTestAppService extends Service {
     private UsbManager usbManager;
     private UsbDevice usbDevice;
     private List<UsbInterface> usbInterfaceList;
-    private UsbInterface usbInterface;
+    private UsbInterface usbInterface, usbInterface2;
     private UsbEndpoint epControl;
     private UsbEndpoint epBulkOut,epBulkOut2, epBulkIn, epBulkIn2;
-    private UsbEndpoint epIntOut, epIntOut2, epIntIn, epIntIn2;
+    private UsbEndpoint epIntOut, epIntOut2, epIntIn, epIntIn2, epIntIn3;
     private UsbDeviceConnection usbDeviceConnection;
+    private UsbRequest usbRequestEpIntIn2;
 
     private PendingIntent pendingIntent = null;
 
@@ -71,9 +56,11 @@ public class DeviceTestAppService extends Service {
         dtaBinder = new DtaBinder();
         usbInterfaceList = new ArrayList<>();
         pendingIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_USB_PERMISSION);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         registerReceiver(mUsbReceiver, filter);
-
     }
 
     @Override
@@ -125,6 +112,7 @@ public class DeviceTestAppService extends Service {
         usbDevice = null;
         usbInterfaceList.clear();
         usbInterface = null;
+        usbInterface2 = null;
 
         epControl = null;
 
@@ -137,11 +125,18 @@ public class DeviceTestAppService extends Service {
         epBulkIn2 = null;
         epIntOut2 = null;
         epIntIn2 = null;
+        epIntIn3 = null;
 
         usbDeviceConnection = null;
+        usbRequestEpIntIn2 = null;
     }
 
     public void startToConnectDevice() {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        if (deviceIsConnected()) {
+            Log.d(TAG, "device has been already connected!");
+            return;
+        }
         try {
             initConnection();
             usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
@@ -149,17 +144,15 @@ public class DeviceTestAppService extends Service {
             getDeviceInterface();
 
             if (!usbInterfaceList.isEmpty()) {
-                setDeviceInterface(usbInterfaceList.get(0));
-                if (usbInterfaceList.size() > 1) {
-                    // custom to select one interface;
-                    Log.d(TAG, "usbInterfaceList.size() = " + usbInterfaceList.size());
-                }
+                setDeviceInterface(usbInterfaceList);
             }
 
-            assignEndpoint(usbInterface);
+            assignEndpoint(usbInterfaceList);
 
             if (checkDevicePermission(usbDevice)) {
-                connectToDevice(usbInterface);
+                if (connectToDevice(usbInterface)) {
+                    startCommunication();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -167,8 +160,9 @@ public class DeviceTestAppService extends Service {
     }
 
     private void enumerateDevice() {
-
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         if (usbManager != null) {
+
             ArrayList<UsbDevice> devices;
             try {
                 devices = UsbDeviceFilter.getMatchingHostDevices(this, R.xml.device_filter);
@@ -180,15 +174,17 @@ public class DeviceTestAppService extends Service {
 
             for (UsbDevice device : devices) {
                 usbDevice = device;
-                Log.d(TAG, "Matched device " + device);
+                Log.d(TAG, "Matched device->{vid, pid} ->{" + device.getVendorId() + ", " + device.getProductId() + "}");
+                Log.d(TAG, "Matched device->" + device.getDeviceName());
             }
+
 /*
             try {
                 HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
 
                 if (!(deviceList.isEmpty())) {
-                    final int vendorID = 48899;
-                    final int productID = 48898;
+                    final int vendorID =0x2d29; //48899;
+                    final int productID = 0x1001; //48898;
 
                     Iterator<UsbDevice> deviceIterator = deviceList.values().iterator();
 
@@ -212,9 +208,9 @@ public class DeviceTestAppService extends Service {
     }
 
     private void getDeviceInterface() {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         if (usbDevice != null) {
             Log.d(TAG, "usbDevice.getInterfaceCount() : " + usbDevice.getInterfaceCount());
-
             try {
                 for (int i = 0; i < usbDevice.getInterfaceCount(); i++) {
                     UsbInterface intf = usbDevice.getInterface(i);
@@ -228,60 +224,84 @@ public class DeviceTestAppService extends Service {
         }
     }
 
-    private void setDeviceInterface(UsbInterface mInterface) {
-        if (usbInterface != null) {
-            usbInterface = mInterface;
+    private void setDeviceInterface(List<UsbInterface> interfaceList) {
+        if (!interfaceList.isEmpty()) {
+            for (int i = 0; i < interfaceList.size(); i++) {
+                if (interfaceList.get(i).getId() == 0) {
+                    usbInterface = interfaceList.get(i);
+                } else if (interfaceList.get(i).getId() == 1) {
+                    usbInterface2 = interfaceList.get(i);
+                } else {
+                    //
+                    Log.d(TAG, "interface[" + i + "]->" + interfaceList.get(i).getId());
+                }
+
+            }
         }
     }
 
-    private void assignEndpoint(UsbInterface mInterface) {
+    private void assignEndpoint(List<UsbInterface> interfaceList) {
 
-        if (mInterface != null) {
-            try {
-                for (int i = 0; i < mInterface.getEndpointCount(); i++) {
-                    UsbEndpoint ep = mInterface.getEndpoint(i);
-                    Log.d(TAG,"ep[" + i + "] = " + ep.toString());
-                    // look for bulk endpoint
-                    if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
-                        if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
-                            epBulkOut = ep;
-                            Log.d(TAG,"epBulkOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
-                        } else {
-                            if (ep.getAddress() == 0x82) {
-                                epBulkIn = ep;
+        for (UsbInterface mInterface : interfaceList) {
+            if (mInterface != null) {
+                try {
+                    for (int i = 0; i < mInterface.getEndpointCount(); i++) {
+                        UsbEndpoint ep = mInterface.getEndpoint(i);
+                        Log.d(TAG,"ep[" + i + "] = " + ep.toString());
+                        // look for bulk endpoint
+                        if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
+                            if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
+                                epBulkOut = ep;
+                                Log.d(TAG,"epBulkOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
                             } else {
-                                epBulkIn2 = ep;
-                            }
+                                if (ep.getAddress() == 0x82) {
+                                    epBulkIn = ep;
+                                } else {
+                                    epBulkIn2 = ep;
+                                }
 
-                            Log.d(TAG,"epBulkIn info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
+                                Log.d(TAG,"epBulkIn info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
+                            }
+                        }
+                        // look for contorl endpoint
+                        if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_CONTROL) {
+                            epControl = ep;
+                            Log.d(TAG,"epControl info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
+                        }
+                        // look for interrupt endpoint
+                        if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_INT) {
+                            if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
+                                if (ep.getAddress() == 0x01) {
+                                    epIntOut = ep;
+                                } else {
+                                    epIntOut2 = ep;
+                                }
+
+                                Log.d(TAG,"epIntOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
+                            }
+                            if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
+                                if (ep.getAddress() == 0x81) {
+                                    epIntIn = ep;
+                                } else if (ep.getAddress() == 0x82) {
+                                    epIntIn2 = ep;
+                                } else if (ep.getAddress() == 0x83) {
+                                    epIntIn3 = ep;
+                                }
+                                Log.d(TAG,"epIntIn info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
+                            }
                         }
                     }
-                    // look for contorl endpoint
-                    if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_CONTROL) {
-                        epControl = ep;
-                        Log.d(TAG,"epControl info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
-                    }
-                    // look for interrupt endpoint
-                    if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_INT) {
-                        if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
-                            epIntOut = ep;
-                            Log.d(TAG,"epIntOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
-                        }
-                        if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
-                            epIntIn = ep;
-                            Log.d(TAG,"epIntIn info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
-                        }
-                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
+
 
         if (epBulkOut == null && epBulkIn == null && epControl == null
                 && epIntOut == null && epIntIn == null) {
             Log.d(TAG,"No endpoint is available!");
-            throw new IllegalArgumentException("No endpoint is available!");
+            //throw new IllegalArgumentException("No endpoint is available!");
         }
     }
 
@@ -330,13 +350,136 @@ public class DeviceTestAppService extends Service {
     }
 
     private boolean deviceIsConnected() {
-        if (usbDeviceConnection != null && usbDeviceConnection.getSerial() != null) {
-            return true;
-        }
-        return false;
+        return (usbDeviceConnection != null && usbDeviceConnection.getSerial() != null);
     }
 
-    public class PackageDataParseThread implements Runnable {
+    public class InterruptTransferThread implements Runnable {
+
+        private String name;
+
+        private char[] packageHeader = new char[2];
+        private short[] packageDataGyroscope = new short[3];
+        private short[] packageDataAccelerometer = new short[3];
+        private short[] packageDataMagnetic = new short[3];
+        private short[] packageDataTemperature = new short[1];
+        private short[] packageDataLight = new short[1];
+        private short[] packageDataProximity = new short[1];
+        private int[] packageDataTimestamp = new int[1];
+
+        InterruptTransferThread(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void run() {
+
+            try {
+                if (deviceIsConnected() && epIntIn2 != null) {
+                    // receive data
+                    int receiveBufferLength = epIntIn2.getMaxPacketSize();
+                    ByteBuffer receiveBuffer = ByteBuffer.allocate(receiveBufferLength);
+
+                    usbRequestEpIntIn2 = new UsbRequest(); // create an URB
+
+                    boolean initialized = usbRequestEpIntIn2.initialize(usbDeviceConnection, epIntIn2);
+
+                    if (initialized) {
+
+                        SensorPackageObject sensorPackageObject = new SensorPackageObject();
+
+                        long timeStamp = System.currentTimeMillis();
+                        long timeStamp2;
+
+                        int dstOffset = 0;
+
+                        while (true) {
+
+                            try {
+                                if (usbRequestEpIntIn2.queue(receiveBuffer, receiveBuffer.array().length)) {
+
+                                    if (usbRequestEpIntIn2.equals(usbDeviceConnection.requestWait())) {
+
+                                        timeStamp2 = System.currentTimeMillis();
+                                        if (timeStamp2 - timeStamp > 8) {
+                                            Log.d(TAG, Thread.currentThread().getName() + "->" + String.valueOf(timeStamp2 - timeStamp) + "ms");
+                                        } else {
+                                            //Log.d(TAG, "gap: " + String.valueOf(timeStamp2 - timeStamp) + "ms");
+                                        }
+                                        timeStamp = timeStamp2;
+                                        //
+                                        dstOffset = 0;
+                                        //package header: char: 'M','5'
+                                        for (int i = 0; i < packageHeader.length; i++) {
+                                            packageHeader[i] = receiveBuffer.getChar(i);
+                                        }
+                                        //package data: gryo: short: x, y, z
+                                        for (int i = 0; i < packageDataGyroscope.length; i++) {
+                                            packageDataGyroscope[i] = receiveBuffer.getShort(i);
+                                        }
+                                        //package data: accelerometer: short: x, y, z
+                                        for (int i = 0; i < packageDataAccelerometer.length; i++) {
+                                            packageDataAccelerometer[i] = receiveBuffer.getShort(i);
+                                        }
+                                        //package data: magnetic: short: x, y, z
+                                        for (int i = 0; i < packageDataMagnetic.length; i++) {
+                                            packageDataMagnetic[i] = receiveBuffer.getShort(i);
+                                        }
+                                        //package data: temperature: short
+                                        packageDataTemperature[0] = receiveBuffer.getShort(0);
+                                        //package data: light: short
+                                        packageDataLight[0] = receiveBuffer.getShort(0);
+                                        //package data: proximity: short
+                                        packageDataProximity[0] = receiveBuffer.getShort(0);
+                                        //package data: timestamp: int
+                                        packageDataTimestamp[0] = receiveBuffer.getInt(0);
+
+                                        sensorPackageObject.setHeader(packageHeader);
+                                        sensorPackageObject.gyroscopeSensor.setValues(packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]);
+                                        sensorPackageObject.accelerometerSensor.setValues(packageDataAccelerometer[0], packageDataAccelerometer[1], packageDataAccelerometer[2]);
+                                        sensorPackageObject.magneticSensor.setValues(packageDataMagnetic[0], packageDataMagnetic[1], packageDataMagnetic[2]);
+                                        sensorPackageObject.temperatureSensor.setTemperature(packageDataTemperature[0]);
+                                        sensorPackageObject.lightSensor.setLightSensorValue(packageDataLight[0]);
+                                        sensorPackageObject.proximitySensor.setProximitySensorValue(packageDataProximity[0]);
+                                        sensorPackageObject.setTimestampValue(packageDataTimestamp[0]);
+
+                                        Log.d(TAG, String.format("Header:%c%c", (char)packageHeader[0], (char)packageHeader[1]));
+                                        Log.d(TAG, String.format("Gyroscope:%d,%d,%d", packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]));
+                                        Log.d(TAG, String.format("Accelerometer:%d,%d,%d", packageDataAccelerometer[0], packageDataAccelerometer[1], packageDataAccelerometer[2]));
+                                        Log.d(TAG, String.format("Magnetic:%d,%d,%d", packageDataMagnetic[0], packageDataMagnetic[1], packageDataMagnetic[2]));
+                                        Log.d(TAG, String.format("Temperature:%d", packageDataTemperature[0]));
+                                        Log.d(TAG, String.format("Light:%d", packageDataLight[0]));
+                                        Log.d(TAG, String.format("Proximity:%d", packageDataProximity[0]));
+                                        Log.d(TAG, String.format("Timestamp:%d", packageDataTimestamp[0]));
+
+                                        onDataChangedListener.sensorDataChanged(sensorPackageObject);
+                                        break;
+                                        //*/
+
+                                    } else {
+                                        Log.d(TAG, Thread.currentThread().getName() + "->usbDeviceConnection.requestWait() failed!");
+                                    }
+
+                                } else {
+                                    Log.d(TAG, Thread.currentThread().getName() + "->request.queue() failed!");
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                break;
+                            }
+                        }
+                    } else {
+                        Log.d(TAG, Thread.currentThread().getName() + "->request.initialize() failed!");
+                    }
+                } else {
+                    Log.d(TAG, Thread.currentThread().getName() + "-> device is not open or epIntIn2 is null!");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public class BulkTransferThread implements Runnable {
 
         private String name;
         public final static int TIME_OUT = 4;
@@ -350,106 +493,264 @@ public class DeviceTestAppService extends Service {
         private short[] packageDataProximity = new short[1];
         private int[] packageDataTimestamp = new int[1];
 
-        PackageDataParseThread(String name) {
+        BulkTransferThread(String name) {
             this.name = name;
         }
 
         @Override
         public void run() {
 
-            if (deviceIsConnected()) {
-                // receive data
-                int receiveBufferLength = epBulkIn.getMaxPacketSize();
-                ByteBuffer receiveBuffer = ByteBuffer.allocate(receiveBufferLength);
-                int receivedLength = -1;
-                SensorPackageObject sensorPackageObject = new SensorPackageObject();
+            try {
+                if (deviceIsConnected() && epBulkIn != null) {
+                    // receive data
+                    int receiveBufferLength = epBulkIn.getMaxPacketSize();
+                    ByteBuffer receiveBuffer = ByteBuffer.allocate(receiveBufferLength);
+                    int receivedLength = -1;
+                    SensorPackageObject sensorPackageObject = new SensorPackageObject();
 
-                while (true) {
-                    try {
-                        receivedLength = usbDeviceConnection.bulkTransfer(epBulkIn, receiveBuffer.array(), receiveBuffer.array().length, TIME_OUT);
-                        //Log.d(TAG, Thread.currentThread().getName() + "->" + System.currentTimeMillis());
-                        if (receivedLength > 0) {
-                            int dstOffset = 0;
-                            //package header: char: 'M','5'
-                            receiveBuffer.asCharBuffer().get(packageHeader, dstOffset, packageHeader.length);
-                            dstOffset += packageHeader.length;
-                            //package data: gryo: short: x, y, z
-                            receiveBuffer.asShortBuffer().get(packageDataGyroscope,dstOffset, packageDataGyroscope.length);
-                            dstOffset += packageDataGyroscope.length;
-                            //package data: accelerometer: short: x, y, z
-                            receiveBuffer.asShortBuffer().get(packageDataAccelerometer,dstOffset, packageDataAccelerometer.length);
-                            dstOffset += packageDataAccelerometer.length;
-                            //package data: magnetic: short: x, y, z
-                            receiveBuffer.asShortBuffer().get(packageDataMagnetic,dstOffset, packageDataMagnetic.length);
-                            dstOffset += packageDataMagnetic.length;
-                            //package data: temperature: short
-                            receiveBuffer.asShortBuffer().get(packageDataTemperature,dstOffset, packageDataTemperature.length);
-                            dstOffset += packageDataTemperature.length;
-                            //package data: light: short
-                            receiveBuffer.asShortBuffer().get(packageDataLight,dstOffset, packageDataLight.length);
-                            dstOffset += packageDataLight.length;
-                            //package data: proximity: short
-                            receiveBuffer.asShortBuffer().get(packageDataProximity,dstOffset, packageDataProximity.length);
-                            dstOffset += packageDataProximity.length;
+                    long timeStamp = System.currentTimeMillis();
+                    long timeStamp2;
 
-                            //package data: timestamp: int
-                            receiveBuffer.asIntBuffer().get(packageDataTimestamp, dstOffset, packageDataTimestamp.length);
-                            dstOffset += packageDataTimestamp.length;
+                    Log.d(TAG, Thread.currentThread().getName() + "bulkTransfer->Start receive package data!");
+                    while (true) {
+                        try {
+                            receivedLength = usbDeviceConnection.bulkTransfer(epBulkIn, receiveBuffer.array(), receiveBuffer.array().length, TIME_OUT);
+                            //Log.d(TAG, Thread.currentThread().getName() + "->" + System.currentTimeMillis());
+                            timeStamp2 = System.currentTimeMillis();
+                            if (timeStamp2 - timeStamp > 8) {
+                                Log.d(TAG, Thread.currentThread().getName() + "->" + String.valueOf(timeStamp2 - timeStamp) + "ms");
+                            } else {
+                                //Log.d(TAG, "gap: " + String.valueOf(timeStamp2 - timeStamp) + "ms");
+                            }
 
-                            sensorPackageObject.setHeader(packageHeader);
-                            sensorPackageObject.gyroscopeSensor.setValues(packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]);
-                            sensorPackageObject.accelerometerSensor.setValues(packageDataAccelerometer[0], packageDataAccelerometer[1], packageDataAccelerometer[2]);
-                            sensorPackageObject.magneticSensor.setValues(packageDataMagnetic[0], packageDataMagnetic[1], packageDataMagnetic[2]);
-                            sensorPackageObject.temperatureSensor.setTemperature(packageDataTemperature[0]);
-                            sensorPackageObject.lightSensor.setLightSensorValue(packageDataLight[0]);
-                            sensorPackageObject.proximitySensor.setProximitySensorValue(packageDataProximity[0]);
-                            sensorPackageObject.setTimestampValue(packageDataTimestamp[0]);
+                            timeStamp = timeStamp2;
 
-                            onDataChangedListener.packageDataUpdate(sensorPackageObject);
+                            if (receivedLength > -1) {
+                                int dstOffset = 0;
+                                //package header: char: 'M','5'
+                                for (int i = 0; i < packageHeader.length; i++) {
+                                    packageHeader[i] = receiveBuffer.getChar(i);
+                                }
+                                dstOffset += packageHeader.length;
+                                receiveBuffer.position(dstOffset);
+                                //package data: gryo: short: x, y, z
+                                for (int i = 0; i < packageDataGyroscope.length / 2; i++) {
+                                    packageDataGyroscope[i] = receiveBuffer.getShort(i);
+                                }
+                                dstOffset += packageDataGyroscope.length;
+                                receiveBuffer.position(dstOffset);
+                                //package data: accelerometer: short: x, y, z
+                                for (int i = 0; i < packageDataAccelerometer.length / 2; i++) {
+                                    packageDataAccelerometer[i] = receiveBuffer.getShort(i);
+                                }
+                                dstOffset += packageDataAccelerometer.length;
+                                receiveBuffer.position(dstOffset);
+                                //package data: magnetic: short: x, y, z
+                                for (int i = 0; i < packageDataMagnetic.length / 2; i++) {
+                                    packageDataMagnetic[i] = receiveBuffer.getShort(i);
+                                }
+                                dstOffset += packageDataMagnetic.length;
+                                receiveBuffer.position(dstOffset);
+                                //package data: temperature: short
+                                packageDataTemperature[0] = receiveBuffer.getShort(0);
+                                dstOffset += packageDataTemperature.length;
+                                receiveBuffer.position(dstOffset);
+                                //package data: light: short
+                                packageDataLight[0] = receiveBuffer.getShort(0);
+                                dstOffset += packageDataLight.length;
+                                receiveBuffer.position(dstOffset);
+                                //package data: proximity: short
+                                packageDataProximity[0] = receiveBuffer.getShort(0);
+                                dstOffset += packageDataProximity.length;
+                                receiveBuffer.position(dstOffset);
+                                //package data: timestamp: int
+                                packageDataTimestamp[0] = receiveBuffer.getInt(0);
+                                dstOffset += packageDataTimestamp.length;
+                                receiveBuffer.position(dstOffset);
+
+                                sensorPackageObject.setHeader(packageHeader);
+                                sensorPackageObject.gyroscopeSensor.setValues(packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]);
+                                sensorPackageObject.accelerometerSensor.setValues(packageDataAccelerometer[0], packageDataAccelerometer[1], packageDataAccelerometer[2]);
+                                sensorPackageObject.magneticSensor.setValues(packageDataMagnetic[0], packageDataMagnetic[1], packageDataMagnetic[2]);
+                                sensorPackageObject.temperatureSensor.setTemperature(packageDataTemperature[0]);
+                                sensorPackageObject.lightSensor.setLightSensorValue(packageDataLight[0]);
+                                sensorPackageObject.proximitySensor.setProximitySensorValue(packageDataProximity[0]);
+                                sensorPackageObject.setTimestampValue(packageDataTimestamp[0]);
+
+                                onDataChangedListener.sensorDataChanged(sensorPackageObject);
+                            } else {
+                                Log.d(TAG, Thread.currentThread().getName() + "-> bulkTransfer failed!");
+                            }
+
+                            Thread.sleep(4);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            break;
                         }
-
-                        Thread.sleep(4);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        break;
                     }
+                } else {
+                    Log.d(TAG, Thread.currentThread().getName() + "-> device is not open or epBulkIn is null!");
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
 
-    //private
-    public void startCommunication() {
-        //set up to send cmd to the device or receive data from the device.
-        Log.d(TAG, "start to communicate with the device!");
-        // test
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        onDataChangedListener.dataUpdate(Calendar.getInstance().getTime().toString());
-                        Thread.sleep(4);
+    //encrypt code
+    final int L01 = 1;
+    final int L02 = 2;
+    final int L03 = 3;
+    final int L04 = 4;
+    final int L05 = 5;
+    final int L06 = 6;
+    final int L07 = 7;
+    final int L08 = 8;
+    final int L09 = 9;
+    final int L10 = 10;
+    final int L11 = 11;
+    final int L12 = 12;
+    final int L13 = 13;
+    final int L14 = 14;
+    final int L15 = 15;
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        break;
-                    }
+    final int B0 = 0;
+    final int B1 = 1;
+    final int B2 = 2;
+    final int B3 = 3;
+    final int B4 = 4;
+    final int B5 = 5;
+    final int B6 = 6;
+    final int B7 = 7;
+
+    final int[][] jiami_data_tab = { { L13, B7 }, { L12, B6 }, { L11, B5 },
+            { L02, B1 }, { L02, B0 }, { L10, B7 }, { L09, B6 }, { L08, B5 },
+            { L13, B6 }, { L12, B5 }, { L11, B4 }, { L03, B1 }, { L03, B0 },
+            { L10, B6 }, { L09, B5 }, { L08, B4 }, { L13, B5 }, { L12, B4 },
+            { L11, B3 }, { L04, B1 }, { L04, B0 }, { L10, B5 }, { L09, B4 },
+            { L08, B3 }, { L13, B4 }, { L12, B3 }, { L11, B2 }, { L05, B1 },
+            { L05, B0 }, { L10, B4 }, { L09, B3 }, { L08, B2 }, { L13, B3 },
+            { L12, B2 }, { L11, B1 }, { L06, B1 }, { L06, B0 }, { L10, B3 },
+            { L09, B2 }, { L08, B1 }, { L13, B2 }, { L12, B1 }, { L11, B0 },
+            { L07, B1 }, { L07, B0 }, { L10, B2 }, { L09, B1 }, { L08, B0 },
+            { L07, B7 }, { L05, B6 }, { L06, B5 }, { L04, B4 }, { L02, B3 },
+            { L08, B7 }, { L08, B6 }, { L03, B5 }, { L07, B6 }, { L05, B5 },
+            { L06, B4 }, { L04, B3 }, { L02, B2 }, { L09, B7 }, { L09, B0 },
+            { L03, B4 }, { L07, B5 }, { L05, B4 }, { L06, B3 }, { L04, B2 },
+            { L02, B4 }, { L10, B1 }, { L10, B0 }, { L03, B3 }, { L07, B4 },
+            { L05, B3 }, { L06, B2 }, { L04, B5 }, { L02, B5 }, { L11, B7 },
+            { L11, B6 }, { L03, B2 }, { L07, B3 }, { L05, B2 }, { L06, B6 },
+            { L04, B6 }, { L02, B6 }, { L12, B7 }, { L12, B0 }, { L03, B6 },
+            { L07, B2 }, { L05, B7 }, { L06, B7 }, { L04, B7 }, { L02, B7 },
+            { L13, B1 }, { L13, B0 }, { L03, B7 } };
+
+    public int[] check_sum(int[] in)
+    {
+        int[] out = new int[16];
+        // int i=0;
+
+        int i, j, n, m;
+        for (i = 0; i < 12; i++)
+        {
+            for (j = 0; j < 8; j++)
+            {
+                n = jiami_data_tab[i * 8 + j][1];
+                m = in[i + 2] & (1 << (7 - j));
+                if (m != 0)
+                {
+                    out[jiami_data_tab[i * 8 + j][0]] |= (1 << n);
                 }
             }
-        }).start();
+        }
+        out[0] = in[0];
+        out[0] = in[0];
+        out[14] = in[14];
+        out[15] = in[15];
+        return out;
+    }
+
+
+
+
+    private void startCommunication() {
+        //set up to send cmd to the device or receive data from the device.
+        Log.d(TAG, "start to communicate with the device!");
+
+        //send request command to the device.
+        int sendBufferLength = epIntOut.getMaxPacketSize();
+        ByteBuffer sendBuffer = ByteBuffer.allocate(sendBufferLength);
+        int receiveBufferLength = epIntIn.getMaxPacketSize();
+        ByteBuffer receiveBuffer = ByteBuffer.allocate(receiveBufferLength);
+        int sendLength = -1;
+        int receiveLength = -1;
+        sendBuffer.clear();
+        receiveBuffer.clear();
+
+        UsbRequest sendRequest = new UsbRequest(); // create an URB
+        UsbRequest receiveRequest = new UsbRequest(); // create an URB
+        boolean sendInitialized = sendRequest.initialize(usbDeviceConnection, epIntOut);
+        boolean receiveInitialized = receiveRequest.initialize(usbDeviceConnection, epIntIn);
+
+        int cmdCodeOffset = 0, cmdCodeLength = 1;
+        int cmdLenOffset = cmdCodeOffset + cmdCodeLength, cmdLenLength = 2;
+        int cmdDataOffset = cmdLenOffset + cmdLenLength, cmdDataLength = 0;
+        byte[] cmdCode = new byte[4];
+        cmdCode[0] = 0x01;
+        cmdCode[1] = 0x02;
+        cmdCode[2] = 0x03;
+        cmdCode[3] = 0x04;
+        byte[] cmdEp1 = new byte[3];
+        cmdEp1[0] = 0x09;
+        cmdEp1[1] = 0x00;
+        cmdEp1[2] = 0x00;
+
+
+        if (sendInitialized && receiveInitialized) {
+            //send request to device EP1
+            sendBuffer.put(cmdEp1);
+            if (sendRequest.queue(sendBuffer, cmdCodeLength + cmdLenLength)) {
+                Log.d(TAG, "send request OK!");
+            }
+            /*
+            while (true) {
+                if (receiveRequest.queue(receiveBuffer, receiveBuffer.array().length)) {
+                    if (usbDeviceConnection.requestWait() == receiveRequest) {
+                        if (receiveBuffer.get(cmdCodeOffset) == cmdCode[1]) {
+                            short cmdLen = receiveBuffer.getShort(cmdLenOffset);
+                        }
+                        String result = new String(buffer.array());
+                        Log.i("GELEN DATA : ", result);
+                        listener.readData(result);
+                    }
+                }
+            } */
+
+        } else {
+            Log.d(TAG, "USB CONNECTION FAILED Request initialization failed for reading!");
+            return;
+        }
+
+
+
+        //sendLength = usbDeviceConnection.bulkTransfer(epBulkOut,sendBuffer.array(), sendBuffer.array().length, 5);
+        //int bufferMaxLength = epBulkOut.getMaxPacketSize();
+        // ByteBuffer buffer = ByteBuffer.allocate(bufferMaxLength);
+
+
+
 
         // start new thread to parse package
-        PackageDataParseThread dataParseThread = new PackageDataParseThread("dataParseThread");
-        Thread thread1 = new Thread(dataParseThread, "dataParseThread-01");
-        //Thread thread2 = new Thread(dataParseThread, "dataParseThread-02");
+        InterruptTransferThread  interruptTransferThread = new InterruptTransferThread("InterruptTransferThread");
+        BulkTransferThread bulkTransferThread = new BulkTransferThread("BulkTransferThread");
+        Thread interruptThread = new Thread(interruptTransferThread, interruptTransferThread.name);
+        Thread bulkThread = new Thread(bulkTransferThread, bulkTransferThread.name);
 
-        thread1.start();
-        //thread2.start();
-
+        interruptThread.start();
+        bulkThread.start();
 
     }
+
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 
         public void onReceive(Context context, Intent intent) {
@@ -484,6 +785,8 @@ public class DeviceTestAppService extends Service {
                 if (!deviceIsConnected()) {
                     Log.d(TAG, "startToConnectDevice()!");
                     startToConnectDevice();
+                } else {
+                    startCommunication();
                 }
             }
 
@@ -497,6 +800,9 @@ public class DeviceTestAppService extends Service {
                                 usbDeviceConnection.releaseInterface(usbInterface);
                                 usbDeviceConnection.close();
                             }
+                            if (usbRequestEpIntIn2 != null) {
+                                usbRequestEpIntIn2.close();
+                            }
                             initConnection();
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -507,44 +813,4 @@ public class DeviceTestAppService extends Service {
         }
     };
 
-
-    /*
-    @Override
-    public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
-        //Log.d(TAG, "Service---onBind!---");
-        //return null;
-    }
-
-    @Override
-    public void onCreate() {
-        // TODO Auto-generated method stub
-        super.onCreate();
-        Log.d(TAG, "Service---onCreate!---");
-        if (!getResources().getBoolean(R.bool.config_notest_warning)){
-            stopSelf();
-            return;
-        }
-
-        mHandler.postDelayed(mRunnable, delaytime);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "Service-----onDestroy");
-        mHandler.removeCallbacks(mRunnable);
-    }
-
-    private void checkDVTResult() {
-        if (result[result.length -1] != AppDefine.DVT_OK){
-            Toast.makeText(getApplicationContext(), getString(R.string.complate_fmtest), Toast.LENGTH_LONG).show();
-            mHandler.postDelayed(mRunnable, delaytime);
-        }else{
-            mHandler.removeCallbacks(mRunnable);
-            stopSelf();
-        }
-
-    } */
 }

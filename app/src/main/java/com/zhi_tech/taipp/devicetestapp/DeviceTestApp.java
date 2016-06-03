@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,58 +43,44 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     };
     public static ArrayList<Integer> excludeIds = new ArrayList<Integer>();
     private Button mBtAuto;
+    private Button mBtStart;
     private TextView textView;
 
     public static byte result[] = new byte[AppDefine.DVT_NV_ARRAR_LEN]; //0 default; 1,success; 2,fail; 3,notest
 
     private final String TAG = "DeviceTestApp";
 
+    //service connection
     private DeviceTestAppService dtaService = null;
-
     private ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
-
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
                 @Override
-                public void dataUpdate(String data) {
-                    //
-                    postHanderViewMsg(data);
-                }
-
-                @Override
-                public void packageDataUpdate(SensorPackageObject object) {
+                public void sensorDataChanged(SensorPackageObject object) {
                     //to get the data from the object.
-
-                    //postHanderViewMsg("sec:" + object.getTimestamp());
+                    postUpdateHandlerMsg(object);
                 }
             });
-
-            if (dtaService != null) {
-                dtaService.startCommunication();
-            }
-
-
         }
-
         @Override
         public void onServiceDisconnected(ComponentName name) {
-
+            dtaService = null;
         }
     };
 
     private Handler handler = new Handler();
 
-    private void postHanderViewMsg(final String data) {
+    private void postUpdateHandlerMsg(final SensorPackageObject object) {
+
         handler.post(new Runnable() {
             @Override
             public void run() {
-                textView.setText(data);
+                textView.setText(String.valueOf(object.getHeader()) + object.getTimestamp());
                 }
         });
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +95,10 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         init();
         mBtAuto = (Button) findViewById(R.id.main_bt_autotest);
         mBtAuto.setOnClickListener(cl);
+        mBtStart = (Button) findViewById(R.id.main_bt_start);
+        mBtStart.setOnClickListener(cl);
         textView = (TextView) findViewById(R.id.textView);
+        //textView.setVisibility(View.GONE);
         mGrid = (GridView) findViewById(R.id.main_grid);
         mListData = getData();
         mAdapter = new MyAdapter(this);
@@ -130,9 +120,12 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
             if (v.getId() == mBtAuto.getId()) {
                 intent.setClassName("com.zhi_tech.taipp.devicetestapp", "com.zhi_tech.taipp.devicetestapp.AutoTest");
                 reqId = AppDefine.DT_AUTOTESTID;
+                startActivityForResult(intent, reqId);
+            } else if (v.getId() == mBtStart.getId()) {
+                if (dtaService != null) {
+                    dtaService.startToConnectDevice();
+                }
             }
-
-            startActivityForResult(intent, reqId);
         }
     };
 
@@ -314,6 +307,27 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         unbindService(conn);
         android.os.Process.killProcess(android.os.Process.myPid());
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + " keyCode: " + keyCode);
+        return true;
+        //return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + " keyCode: " + keyCode);
+        return true;
+        //return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + " keyCode: " + keyCode);
+        return true;
+        //return super.onKeyLongPress(keyCode, event);
     }
 }
 

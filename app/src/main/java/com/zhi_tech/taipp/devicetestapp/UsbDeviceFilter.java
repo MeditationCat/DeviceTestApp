@@ -5,6 +5,7 @@ import android.content.res.XmlResourceParser;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -17,6 +18,8 @@ import java.util.List;
  * Created by taipp on 5/30/2016.
  */
 public class UsbDeviceFilter {
+
+    private final static String TAG = "UsbDeviceFilter";
 
     private final List<DeviceFilter> hostDeviceFilters;
 
@@ -62,6 +65,7 @@ public class UsbDeviceFilter {
         ArrayList<UsbDevice> matchedDevices = new ArrayList<UsbDevice>();
 
         for (UsbDevice device : usbManager.getDeviceList().values()) {
+            Log.d(TAG, "DeviceInfo->{vid, pid} ->{" + device.getVendorId() + ", " + device.getProductId() + "} deviceName: " + device.getDeviceName());
             if (devFilter.matchesHostDevice(device)) {
                 matchedDevices.add(device);
             }
@@ -81,8 +85,7 @@ public class UsbDeviceFilter {
         // USB device protocol (or -1 for unspecified)
         public final int mProtocol;
 
-        private DeviceFilter(int vid, int pid, int clasz, int subclass,
-                             int protocol) {
+        private DeviceFilter(int vid, int pid, int clasz, int subclass, int protocol) {
             mVendorId = vid;
             mProductId = pid;
             mClass = clasz;
@@ -116,8 +119,7 @@ public class UsbDeviceFilter {
                 }
             }
 
-            return new DeviceFilter(vendorId, productId, deviceClass,
-                    deviceSubclass, deviceProtocol);
+            return new DeviceFilter(vendorId, productId, deviceClass, deviceSubclass, deviceProtocol);
         }
 
         private boolean matches(int clasz, int subclass, int protocol) {
@@ -146,10 +148,7 @@ public class UsbDeviceFilter {
                         intf.getInterfaceProtocol()))
                     return true;
             }
-
             return false;
         }
-
-
     }
 }

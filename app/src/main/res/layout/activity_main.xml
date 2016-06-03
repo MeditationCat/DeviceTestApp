@@ -10,18 +10,29 @@
         android:layout_height="wrap_content">
         <Button
             android:id="@+id/main_bt_autotest"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/AutoTest"
-            android:textSize="30dip" />
+            android:textSize="30dip"
+            android:gravity="center_vertical|center|center_horizontal" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="DATE &amp; TIME"
-            android:id="@+id/textView"
-            android:gravity="center_vertical|center_horizontal" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/main_bt_start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/StartTest"
+        android:textSize="30dip"
+        android:gravity="center_vertical|center|center_horizontal" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DATE &amp; TIME"
+        android:id="@+id/textView"
+        android:gravity="center_vertical|center_horizontal" />
+
     <GridView
         android:id="@+id/main_grid"
         android:layout_width="match_parent"

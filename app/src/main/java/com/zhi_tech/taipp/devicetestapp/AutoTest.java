@@ -20,25 +20,13 @@ import android.util.Log;
  */
 public class AutoTest extends Activity {
 
-    /*SharedPreferences mSp;
-    boolean mBlueResult = false;
-    private BluetoothAdapter mAdapter = null;
-    boolean isregisterReceiver = false;
-    HandlerThread mBlueThread = new HandlerThread("blueThread");
-    BlueHandler mBlueHandler; */
     private final String TAG = "AutoTest";
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         setContentView(R.layout.autotest);
-
-        /*mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
-        mBlueThread.start();
-        mBlueHandler = new BlueHandler(mBlueThread.getLooper());
-        mBlueHandler.post(bluerunnable); */
 
         Intent intent = new Intent();
         intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.KeyCode");
@@ -80,7 +68,6 @@ public class AutoTest extends Activity {
         }
 
         if (requestCode == AppDefine.DT_BLUETOOTHID) {
-            /*OnFinish(); */
             finish();
             return;
         }
@@ -91,82 +78,8 @@ public class AutoTest extends Activity {
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        /*BackstageDestroy(); */
-    }
-/*
-    public void BackstageDestroy() {
-        mBlueHandler.removeCallbacks(bluerunnable);
-        if (isregisterReceiver == true) {
-            unregisterReceiver(mReceiver);
-        }
-        mAdapter.disable();
     }
 
-    public void BlueInit() {
-        mAdapter = BluetoothAdapter.getDefaultAdapter();
-        mAdapter.enable();
-        if (mAdapter.isEnabled() == true) {
-            StartReciver();
-            while (mAdapter.startDiscovery() == false) {
-                mAdapter.startDiscovery();
-            }
-        } else {
-            mBlueHandler.postDelayed(bluerunnable, 3000);
-        }
-    }
-
-    public void StartReciver() {
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(mReceiver, filter);
-        isregisterReceiver = true;
-    }
-
-    BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
-                    mBlueResult = true;
-                    if (isregisterReceiver == true) {
-                        unregisterReceiver(mReceiver);
-                        isregisterReceiver = false;
-                    }
-                    mAdapter.disable();
-                }
-            }
-        }
-    };
-
-    Runnable bluerunnable = new Runnable() {
-        @Override
-        public void run() {
-            BlueInit();
-            Log.d(TAG, "bluerunnable!");
-        }
-    };
-
-    class BlueHandler extends Handler {
-        public BlueHandler() {
-        }
-
-        public BlueHandler(Looper looper) {
-            super(looper);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-        }
-    }
-
-    public void OnFinish() {
-        Utils.SetPreferences(this, mSp, R.string.bluetooth_name,
-                (mBlueResult == true) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
-        finish();
-    }
-*/
     private boolean isMsensorEnable(){
         return getResources().getBoolean(R.bool.config_Msensor_available);
     }

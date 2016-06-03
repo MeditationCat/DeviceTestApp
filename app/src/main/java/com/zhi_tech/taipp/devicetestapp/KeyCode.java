@@ -55,6 +55,7 @@ public class KeyCode extends Activity implements OnClickListener {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Log.d(TAG, "onKeyDown keyCode->" + String.valueOf(keyCode));
         switch (keyCode) {
             case KeyEvent.KEYCODE_CAMERA:
                 if (mKeycode.indexOf("CAMERA") >= 0) {
@@ -120,6 +121,18 @@ public class KeyCode extends Activity implements OnClickListener {
         }
         mGrid.setAdapter(new MyAdapter(this));
         return true;
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        Log.d(TAG, "onKeyUp keyCode->" + String.valueOf(keyCode));
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+        Log.d(TAG, "onKeyLongPress keyCode->" + String.valueOf(keyCode));
+        return super.onKeyLongPress(keyCode, event);
     }
 
     public class MyAdapter extends BaseAdapter {

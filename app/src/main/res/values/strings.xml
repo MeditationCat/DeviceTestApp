@@ -61,4 +61,5 @@
     <string name="str_smt_test">SMT test</string>
     <string name="gyroscopesensor_name">Gyroscopesensor</string>
     <string name="gyroscopesensor_value">Gyroscopesensor Data</string>
+    <string name="StartTest">Start Test</string>
     </resources>

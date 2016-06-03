@@ -5,14 +5,14 @@ package com.zhi_tech.taipp.devicetestapp;
  */
 public class SensorPackageObject {
 
-    public char[] header;
+    private char[] header;
     public GyroscopeSensor gyroscopeSensor;
     public AccelerometerSensor accelerometerSensor;
     public MagneticSensor magneticSensor;
     public TemperatureSensor temperatureSensor;
     public LightSensor lightSensor;
     public ProximitySensor proximitySensor;
-    public int timestamp;
+    private int timestamp;
 
     public SensorPackageObject() {
         header = new char[2];

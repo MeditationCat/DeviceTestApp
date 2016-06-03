@@ -5,7 +5,6 @@ package com.zhi_tech.taipp.devicetestapp;
  */
 public interface OnDataChangedListener {
 
-    void dataUpdate(String data);
+    void sensorDataChanged(SensorPackageObject object);
 
-    void packageDataUpdate(SensorPackageObject object);
 }

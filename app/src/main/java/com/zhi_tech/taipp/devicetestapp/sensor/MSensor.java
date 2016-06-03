@@ -1,11 +1,16 @@
 package com.zhi_tech.taipp.devicetestapp.sensor;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -16,7 +21,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.zhi_tech.taipp.devicetestapp.AppDefine;
+import com.zhi_tech.taipp.devicetestapp.DeviceTestAppService;
+import com.zhi_tech.taipp.devicetestapp.OnDataChangedListener;
 import com.zhi_tech.taipp.devicetestapp.R;
+import com.zhi_tech.taipp.devicetestapp.SensorPackageObject;
 import com.zhi_tech.taipp.devicetestapp.Utils;
 
 /**
@@ -28,7 +36,7 @@ public class MSensor extends Activity implements SensorListener {
     private ImageView mImgCompass = null;
     private TextView mOrientText = null;
     private TextView mOrientValue = null;
-    private SensorManager mSm = null;
+    //private SensorManager mSm = null;
     private RotateAnimation mMyAni = null;
     private float mDegressQuondam = 0.0f;
     private SharedPreferences mSp;
@@ -36,11 +44,46 @@ public class MSensor extends Activity implements SensorListener {
     private Button mBtFailed;
     private final String TAG = "MSensor";
 
+    private DeviceTestAppService dtaService = null;
+    private ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.setOnDataChangedListener(new OnDataChangedListener() {
+                @Override
+                public void sensorDataChanged(SensorPackageObject object) {
+                    //to get the data from the object.
+                    postUpdateHandlerMsg(object);
+                }
+            });
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            dtaService = null;
+        }
+    };
+
+    private Handler handler = new Handler();
+
+    private void postUpdateHandlerMsg(final SensorPackageObject object) {
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        });
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         setContentView(R.layout.msensor);
+
+        Intent intent = new Intent(MSensor.this,DeviceTestAppService.class);
+        bindService(intent, conn, Context.BIND_AUTO_CREATE);
+
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mOrientText = (TextView) findViewById(R.id.OrientText);
         mImgCompass = (ImageView) findViewById(R.id.ivCompass);
@@ -57,15 +100,14 @@ public class MSensor extends Activity implements SensorListener {
     public void onStart() {
         super.onStart();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        mSm = (SensorManager) getSystemService(SENSOR_SERVICE);
+        //mSm = (SensorManager) getSystemService(SENSOR_SERVICE);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        mSm.registerListener(this, SensorManager.SENSOR_MAGNETIC_FIELD,
-                SensorManager.SENSOR_DELAY_UI);
+        //mSm.registerListener(this, SensorManager.SENSOR_MAGNETIC_FIELD, SensorManager.SENSOR_DELAY_UI);
 
     }
 
@@ -73,14 +115,15 @@ public class MSensor extends Activity implements SensorListener {
     protected void onStop() {
         super.onStop();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        mSm.unregisterListener(this);
+        //mSm.unregisterListener(this);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        mSm.unregisterListener(this);
+        unbindService(conn);
+        //mSm.unregisterListener(this);
     }
 
     private void AniRotateImage(float fDegress) {
