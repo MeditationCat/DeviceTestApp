@@ -2,8 +2,10 @@ package com.zhi_tech.taipp.devicetestapp.sensor;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -11,6 +13,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,7 +22,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.zhi_tech.taipp.devicetestapp.AppDefine;
+import com.zhi_tech.taipp.devicetestapp.DeviceTestAppService;
+import com.zhi_tech.taipp.devicetestapp.OnDataChangedListener;
 import com.zhi_tech.taipp.devicetestapp.R;
+import com.zhi_tech.taipp.devicetestapp.SensorPackageObject;
 import com.zhi_tech.taipp.devicetestapp.Utils;
 
 /**
@@ -38,52 +45,45 @@ public class GSensor extends Activity implements View.OnClickListener {
     private int mZ;
 
     SharedPreferences mSp;
-    SensorManager mSm = null;
-    Sensor mGravitySensor;
     boolean mCheckDataSuccess;
     private final static int OFFSET = 2;
     private final String TAG = "GSensor";
 
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        setContentView(R.layout.gsensor);
-        mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
-        mBtCalibrate = (Button) findViewById(R.id.gsensor_calibrate);
-        mBtCalibrate.setOnClickListener(this);
-        tvdata = (TextView) findViewById(R.id.gsensor_tv_data);
-        ivimg = (ImageView) findViewById(R.id.gsensor_iv_img);
-        mBtOk = (Button) findViewById(R.id.gsensor_bt_ok);
-        mSmtTest = (Button)findViewById(R.id.smt_test);
-        mSmtTest.setOnClickListener(this);
-        mSmtTest.setVisibility(View.INVISIBLE);
-        mBtOk.setOnClickListener(this);
-        mBtFailed = (Button) findViewById(R.id.gsensor_bt_failed);
-        mBtFailed.setOnClickListener(this);
-        mSm = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mGravitySensor = mSm.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER);
-        mSm.registerListener(lsn, mGravitySensor, SensorManager.SENSOR_DELAY_GAME);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        mSm.unregisterListener(lsn);
-        mCheckDataSuccess = false;
-    }
-
-    SensorEventListener lsn = new SensorEventListener() {
-        public void onAccuracyChanged(android.hardware.Sensor sensor, int accuracy) {
+    private DeviceTestAppService dtaService = null;
+    private ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.setOnDataChangedListener(new OnDataChangedListener() {
+                @Override
+                public void sensorDataChanged(SensorPackageObject object) {
+                    //to get the data from the object.
+                    postUpdateHandlerMsg(object);
+                }
+            });
         }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            dtaService = null;
+        }
+    };
 
-        public void onSensorChanged(SensorEvent e) {
-            if (e.sensor == mGravitySensor) {
-                tvdata.setText(String.format("X:%+f%nY:%+f%nZ:%+f%n",e.values[SensorManager.DATA_X],e.values[SensorManager.DATA_Y],e.values[SensorManager.DATA_Z]));
+    private Handler handler = new Handler();
 
-                int x = (int) e.values[SensorManager.DATA_X];
-                int y = (int) e.values[SensorManager.DATA_Y];
-                int z = (int) e.values[SensorManager.DATA_Z];
+    private void postUpdateHandlerMsg(final SensorPackageObject object) {
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                float[] values = new float[3];
+                values[0] = object.accelerometerSensor.getX();
+                values[1] = object.accelerometerSensor.getY();
+                values[2] = object.accelerometerSensor.getZ();
+                tvdata.setText(String.format("X:%+f%nY:%+f%nZ:%+f%n",values[SensorManager.DATA_X],values[SensorManager.DATA_Y],values[SensorManager.DATA_Z]));
+
+                int x = (int) values[SensorManager.DATA_X];
+                int y = (int) values[SensorManager.DATA_Y];
+                int z = (int) values[SensorManager.DATA_Z];
 
                 mX = x;
                 mY = y;
@@ -96,8 +96,39 @@ public class GSensor extends Activity implements View.OnClickListener {
                     ivimg.setBackgroundResource(R.drawable.gsensor_z);
                 }
             }
-        }
-    };
+        });
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        setContentView(R.layout.gsensor);
+
+        Intent intent = new Intent(GSensor.this,DeviceTestAppService.class);
+        bindService(intent, conn, Context.BIND_AUTO_CREATE);
+
+        mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
+        mBtCalibrate = (Button) findViewById(R.id.gsensor_calibrate);
+        mBtCalibrate.setOnClickListener(this);
+        tvdata = (TextView) findViewById(R.id.gsensor_tv_data);
+        ivimg = (ImageView) findViewById(R.id.gsensor_iv_img);
+        mBtOk = (Button) findViewById(R.id.gsensor_bt_ok);
+        mSmtTest = (Button)findViewById(R.id.smt_test);
+        mSmtTest.setOnClickListener(this);
+        mSmtTest.setVisibility(View.INVISIBLE);
+        mBtOk.setOnClickListener(this);
+        mBtFailed = (Button) findViewById(R.id.gsensor_bt_failed);
+        mBtFailed.setOnClickListener(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        unbindService(conn);
+        mCheckDataSuccess = false;
+    }
 
     private boolean IsCheckDataCorrect(){
 

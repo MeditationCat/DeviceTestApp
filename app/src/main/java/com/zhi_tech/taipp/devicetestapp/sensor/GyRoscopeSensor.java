@@ -6,10 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -42,8 +38,6 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
     private Button mBtFailed;
 
     SharedPreferences mSp;
-    //SensorManager mSm = null;
-    //Sensor mGyRoscopeSensor;
 
     private static final float NS2S = 1.0f / 1000000000.0f;
     private float timestamp;
@@ -95,6 +89,7 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         setContentView(R.layout.gyroscopesensor);
+
         Intent intent = new Intent(GyRoscopeSensor.this,DeviceTestAppService.class);
         bindService(intent, conn, Context.BIND_AUTO_CREATE);
 
@@ -104,10 +99,6 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.gyroscopesensor_bt_failed);
         mBtFailed.setOnClickListener(this);
-
-        //mSm = (SensorManager) getSystemService(SENSOR_SERVICE);
-        //mGyRoscopeSensor = mSm.getDefaultSensor(android.hardware.Sensor.TYPE_GYROSCOPE);
-       // mSm.registerListener(lsn, mGyRoscopeSensor, SensorManager.SENSOR_DELAY_GAME);
     }
 
     @Override
@@ -115,33 +106,8 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
         super.onDestroy();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         unbindService(conn);
-        //mSm.unregisterListener(lsn);
     }
-/*
-    SensorEventListener lsn = new SensorEventListener() {
-        public void onAccuracyChanged(android.hardware.Sensor sensor,
-                                      int accuracy) {
-        }
 
-        public void onSensorChanged(SensorEvent e) {
-            if (e.sensor == mGyRoscopeSensor) {
-
-                // tvdata.setText(String.format("X:%+f%nY:%+f%nZ:%+f%n",e.values[SensorManager.DATA_X],e.values[SensorManager.DATA_Y],e.values[SensorManager.DATA_Z]));
-
-                if (timestamp != 0) {
-                    final float dT = (e.timestamp - timestamp) * NS2S;
-                    angle[0] += e.values[0] * dT;
-                    angle[1] += e.values[1] * dT;
-                    angle[2] += e.values[2] * dT;
-
-                    tvdata.setText(String.format("X:%+f%nY:%+f%nZ:%+f%n", angle[0], angle[1], angle[2]));
-                }
-                timestamp = e.timestamp;
-
-            }
-        }
-    };
-*/
     @Override
     public void onClick(View v) {
 
