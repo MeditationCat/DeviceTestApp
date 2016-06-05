@@ -63,10 +63,17 @@ public class AutoTest extends Activity {
             requestid = AppDefine.DT_GYROSCOPESENSORID;
         }
         if (requestCode == AppDefine.DT_GYROSCOPESENSORID) {
+            intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.TSensor");
+            requestid = AppDefine.DT_TSENSORID;
+        }
+        if (requestCode == AppDefine.DT_TSENSORID) {
+            finish();
+            return;
+        }
+        if (requestCode == AppDefine.DT_TSENSORID) {
             intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.bluetooth.Bluetooth");
             requestid = AppDefine.DT_BLUETOOTHID;
         }
-
         if (requestCode == AppDefine.DT_BLUETOOTHID) {
             finish();
             return;

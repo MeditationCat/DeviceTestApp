@@ -39,7 +39,8 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
             R.string.lsensor_name,
             R.string.psensor_name,
             R.string.gyroscopesensor_name,
-            R.string.bluetooth_name,
+            R.string.tsensor_name,
+            //R.string.bluetooth_name,
     };
     public static ArrayList<Integer> excludeIds = new ArrayList<Integer>();
     private Button mBtAuto;
@@ -233,6 +234,8 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                 classname = "com.zhi_tech.taipp.devicetestapp.KeyCode";
             }else if(name.equals(getString(R.string.gyroscopesensor_name))) {
                 classname = "com.zhi_tech.taipp.devicetestapp.sensor.GyRoscopeSensor";
+            }else if(name.equals(getString(R.string.tsensor_name))) {
+                classname = "com.zhi_tech.taipp.devicetestapp.sensor.TSensor";
             }
             intent.setClassName(this, classname);
             this.startActivity(intent);
@@ -312,22 +315,19 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + " keyCode: " + keyCode);
-        return true;
-        //return super.onKeyUp(keyCode, event);
+        return super.onKeyUp(keyCode, event);
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + " keyCode: " + keyCode);
-        return true;
-        //return super.onKeyDown(keyCode, event);
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
     public boolean onKeyLongPress(int keyCode, KeyEvent event) {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + " keyCode: " + keyCode);
-        return true;
-        //return super.onKeyLongPress(keyCode, event);
+        return super.onKeyLongPress(keyCode, event);
     }
 }
 

@@ -25,7 +25,9 @@ public abstract class AppDefine {
 
     public final static int DT_GYROSCOPESENSORID = 0x150;
 
-    public final static int DT_BLUETOOTHID = 0x160;
+    public final static int DT_TSENSORID = 0x160;
+
+    public final static int DT_BLUETOOTHID = 0x170;
 
     public final static int DT_REPORT = 0x600;
 
