@@ -77,7 +77,7 @@ public class MSensor extends Activity {
                     values[0] = object.magneticSensor.getX();
                     values[1] = object.magneticSensor.getY();
                     values[2] = object.magneticSensor.getZ();
-
+                    mOrientText.setText(String.format("Msensor data:\nX:%f\nY:%f\nZ:%f", values[0], values[1], values[2]));
                     if (Math.abs(values[0] - mDegressQuondam) < 1) {
                         return;
                     }

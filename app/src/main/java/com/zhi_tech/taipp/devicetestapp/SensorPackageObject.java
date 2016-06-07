@@ -12,6 +12,7 @@ public class SensorPackageObject {
     public TemperatureSensor temperatureSensor;
     public LightSensor lightSensor;
     public ProximitySensor proximitySensor;
+    private byte[] keyCode;
     private int timestamp;
 
     public SensorPackageObject() {
@@ -22,6 +23,7 @@ public class SensorPackageObject {
         temperatureSensor = new TemperatureSensor();
         lightSensor = new LightSensor();
         proximitySensor = new ProximitySensor();
+        keyCode = new byte[3];
         timestamp = 0;
     }
 
@@ -29,42 +31,23 @@ public class SensorPackageObject {
         this.header = chars;
     }
 
-    /*
-    public void setGyroscopeSensorValue(short x, short y, short z) {
-        gyroscopeSensor.setValues(x, y, z);
-    }
-
-    public void setAccelerometerSensorValue(short x, short y, short z) {
-        accelerometerSensor.setValues(x, y, z);
-    }
-
-    public void setMagneticSensorValue(short x, short y, short z) {
-        magneticSensor.setValues(x, y, z);
-    }
-
-    public void setTemperatureSensorValue(short temperatureValue) {
-        temperatureSensor.setTemperature(temperatureValue);
-    }
-
-    public void setLightSensorValue(short lightSensorValue) {
-        lightSensor.setLightSensorValue(lightSensorValue);
-    }
-
-    public void setProximitySensorValue(short proximitySensorValue) {
-        proximitySensor.setProximitySensorValue(proximitySensorValue);
-    }
-    */
-
     public void setTimestampValue(int timestampValue) {
         this.timestamp = timestampValue;
     }
 
+    public void setKeyCode(byte[] keyCode) {
+        this.keyCode = keyCode;
+    }
     public char[] getHeader() {
         return header;
     }
 
     public int getTimestamp() {
         return timestamp;
+    }
+
+    public byte[] getKeyCode() {
+        return keyCode;
     }
 
     public class GyroscopeSensor {

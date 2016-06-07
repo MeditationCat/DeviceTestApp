@@ -1,10 +1,14 @@
 package com.zhi_tech.taipp.devicetestapp;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -38,11 +42,78 @@ public class KeyCode extends Activity implements OnClickListener {
     };
     private final String TAG = "KeyCode";
 
+    private DeviceTestAppService dtaService = null;
+    private ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.setOnDataChangedListener(new OnDataChangedListener() {
+                @Override
+                public void sensorDataChanged(SensorPackageObject object) {
+                    //to get the data from the object.
+                    postUpdateHandlerMsg(object);
+                }
+            });
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            dtaService = null;
+        }
+    };
+
+    private Handler handler = new Handler();
+
+    private void postUpdateHandlerMsg(final SensorPackageObject object) {
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                byte[] keyCode = object.getKeyCode();
+                byte keyCodeFlag = keyCode[0];
+                byte keyCodeValue, keyCodeValueX, keyCodeValueY;
+                if (keyCodeFlag > 0x04) {
+                    return;
+                }
+                Log.d(TAG, String.format("keycode:%d,%d,%d", keyCode[0], keyCode[1], keyCode[2]));
+                switch (keyCodeFlag) {
+                    case 0x01:
+                        //board key value
+                        keyCodeValue = keyCode[1];
+                        switch (keyCodeValue) {
+                            case 0x01:
+                                break;
+                        }
+                        break;
+                    case 0x02:
+                        //board touch pad key value
+                        keyCodeValue = keyCode[1];
+                        break;
+                    case 0x03:
+                        //bluetooth key value
+                        keyCodeValue = keyCode[1];
+                        break;
+                    case 0x04:
+                        //bluetooth joystick
+                        keyCodeValueX = keyCode[1];
+                        keyCodeValueY = keyCode[2];
+                        break;
+                    default:
+                        break;
+                }
+                //textView.setText(String.valueOf(object.getHeader()) + ":" + object.getTimestamp());
+            }
+        });
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         setContentView(R.layout.keycode);
+
+        Intent intent = new Intent(KeyCode.this,DeviceTestAppService.class);
+        bindService(intent, conn, Context.BIND_AUTO_CREATE);
+
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mInfo = (TextView) findViewById(R.id.keycode_info);
         mBtOk = (Button) findViewById(R.id.keycode_bt_ok);
@@ -173,6 +244,7 @@ public class KeyCode extends Activity implements OnClickListener {
         // TODO Auto-generated method stub
         super.onDestroy();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        unbindService(conn);
     }
 
     @Override

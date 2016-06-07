@@ -245,11 +245,11 @@ public class DeviceTestAppService extends Service {
                                 epBulkOut = ep;
                                 Log.d(TAG,"epBulkOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
                             } else {
-                                if (ep.getEndpointNumber() == 0x81) {
+                                if (ep.getAddress() == 0x81) {
                                     epBulkIn = ep;
-                                } else if (ep.getEndpointNumber() == 0x82) {
+                                } else if (ep.getAddress() == 0x82) {
                                     epBulkIn2 = ep;
-                                } else if (ep.getEndpointNumber() == 0x83) {
+                                } else if (ep.getAddress() == 0x83) {
                                     epBulkIn3 = ep;
                                 }
                                 Log.d(TAG,"epBulkIn info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
@@ -267,7 +267,7 @@ public class DeviceTestAppService extends Service {
                                 Log.d(TAG,"epIntOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
                             }
                             if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
-                                if (ep.getEndpointNumber() == 0x81) {
+                                if (ep.getAddress() == 0x81) {
                                     epIntIn = ep;
                                 } else if (ep.getAddress() == 0x82) {
                                     epIntIn2 = ep;
@@ -349,6 +349,7 @@ public class DeviceTestAppService extends Service {
         private short[] packageDataLight = new short[1];
         private short[] packageDataProximity = new short[1];
         private int[] packageDataTimestamp = new int[1];
+        private byte[] packageDataKeyCode = new byte[3];
 
         InterruptTransferThread(String name) {
             this.name = name;
@@ -372,71 +373,76 @@ public class DeviceTestAppService extends Service {
                         long timeStamp2;
                         Log.d(TAG, Thread.currentThread().getName() + "InterruptTransfer->Start receive package data!");
                         while (true) {
-                            try {
-                                if (usbRequestEpIntIn2.queue(receiveBuffer, receiveBuffer.array().length)) {
-                                    if (usbRequestEpIntIn2.equals(usbDeviceConnection.requestWait())) {
-                                        timeStamp2 = System.currentTimeMillis();
-                                        if (timeStamp2 - timeStamp > 8) {
-                                            Log.d(TAG, Thread.currentThread().getName() + "->" + String.valueOf(timeStamp2 - timeStamp) + "ms");
+                            synchronized (this) {
+                                try {
+                                    if (usbRequestEpIntIn2.queue(receiveBuffer, receiveBuffer.array().length)) {
+                                        if (usbRequestEpIntIn2.equals(usbDeviceConnection.requestWait())) {
+                                            timeStamp2 = System.currentTimeMillis();
+                                            if (timeStamp2 - timeStamp > 8) {
+                                                Log.d(TAG, Thread.currentThread().getName() + "->" + String.valueOf(timeStamp2 - timeStamp) + "ms");
+                                            } else {
+                                                //Log.d(TAG, "gap: " + String.valueOf(timeStamp2 - timeStamp) + "ms");
+                                            }
+                                            timeStamp = timeStamp2;
+
+                                            receiveBuffer.rewind();
+                                            //package header: char: 'M','5'
+                                            for (int i = 0; i < packageHeader.length; i++) {
+                                                packageHeader[i] = (char)receiveBuffer.get(i);
+                                            }
+                                            //package data: gryo: short: x, y, z
+                                            for (int i = 0; i < packageDataGyroscope.length; i++) {
+                                                packageDataGyroscope[i] = receiveBuffer.getShort(i);
+                                            }
+                                            //package data: accelerometer: short: x, y, z
+                                            for (int i = 0; i < packageDataAccelerometer.length; i++) {
+                                                packageDataAccelerometer[i] = receiveBuffer.getShort(i);
+                                            }
+                                            //package data: magnetic: short: x, y, z
+                                            for (int i = 0; i < packageDataMagnetic.length; i++) {
+                                                packageDataMagnetic[i] = receiveBuffer.getShort(i);
+                                            }
+                                            //package data: temperature: short
+                                            packageDataTemperature[0] = receiveBuffer.getShort(0);
+                                            //package data: light: short
+                                            packageDataLight[0] = receiveBuffer.getShort(0);
+                                            //package data: proximity: short
+                                            packageDataProximity[0] = receiveBuffer.getShort(0);
+                                            //package data: timestamp: int
+                                            packageDataTimestamp[0] = receiveBuffer.getInt(0);
+                                            //package data: keycode: byte 3
+                                             receiveBuffer.get(packageDataKeyCode);
+
+                                            sensorPackageObject.setHeader(packageHeader);
+                                            sensorPackageObject.gyroscopeSensor.setValues(packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]);
+                                            sensorPackageObject.accelerometerSensor.setValues(packageDataAccelerometer[0], packageDataAccelerometer[1], packageDataAccelerometer[2]);
+                                            sensorPackageObject.magneticSensor.setValues(packageDataMagnetic[0], packageDataMagnetic[1], packageDataMagnetic[2]);
+                                            sensorPackageObject.temperatureSensor.setTemperature(packageDataTemperature[0]);
+                                            sensorPackageObject.lightSensor.setLightSensorValue(packageDataLight[0]);
+                                            sensorPackageObject.proximitySensor.setProximitySensorValue(packageDataProximity[0]);
+                                            sensorPackageObject.setTimestampValue(packageDataTimestamp[0]);
+                                            sensorPackageObject.setKeyCode(packageDataKeyCode);
+                                            /*
+                                            Log.d(TAG, String.format("Header:%c%c", (char)packageHeader[0], (char)packageHeader[1]));
+                                            Log.d(TAG, String.format("Gyroscope:%d,%d,%d", packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]));
+                                            Log.d(TAG, String.format("Accelerometer:%d,%d,%d", packageDataAccelerometer[0], packageDataAccelerometer[1], packageDataAccelerometer[2]));
+                                            Log.d(TAG, String.format("Magnetic:%d,%d,%d", packageDataMagnetic[0], packageDataMagnetic[1], packageDataMagnetic[2]));
+                                            Log.d(TAG, String.format("Temperature:%d", packageDataTemperature[0]));
+                                            Log.d(TAG, String.format("Light:%d", packageDataLight[0]));
+                                            Log.d(TAG, String.format("Proximity:%d", packageDataProximity[0]));
+                                            Log.d(TAG, String.format("Timestamp:%d", packageDataTimestamp[0]));
+                                            */
+                                            onDataChangedListener.sensorDataChanged(sensorPackageObject);
                                         } else {
-                                            //Log.d(TAG, "gap: " + String.valueOf(timeStamp2 - timeStamp) + "ms");
+                                            Log.d(TAG, Thread.currentThread().getName() + "->usbDeviceConnection.requestWait() failed!");
                                         }
-                                        timeStamp = timeStamp2;
-
-                                        receiveBuffer.rewind();
-                                        //package header: char: 'M','5'
-                                        for (int i = 0; i < packageHeader.length; i++) {
-                                            packageHeader[i] = (char)receiveBuffer.get(i);
-                                        }
-                                        //package data: gryo: short: x, y, z
-                                        for (int i = 0; i < packageDataGyroscope.length; i++) {
-                                            packageDataGyroscope[i] = receiveBuffer.getShort(i);
-                                        }
-                                        //package data: accelerometer: short: x, y, z
-                                        for (int i = 0; i < packageDataAccelerometer.length; i++) {
-                                            packageDataAccelerometer[i] = receiveBuffer.getShort(i);
-                                        }
-                                        //package data: magnetic: short: x, y, z
-                                        for (int i = 0; i < packageDataMagnetic.length; i++) {
-                                            packageDataMagnetic[i] = receiveBuffer.getShort(i);
-                                        }
-                                        //package data: temperature: short
-                                        packageDataTemperature[0] = receiveBuffer.getShort(0);
-                                        //package data: light: short
-                                        packageDataLight[0] = receiveBuffer.getShort(0);
-                                        //package data: proximity: short
-                                        packageDataProximity[0] = receiveBuffer.getShort(0);
-                                        //package data: timestamp: int
-                                        packageDataTimestamp[0] = receiveBuffer.getInt(0);
-
-                                        sensorPackageObject.setHeader(packageHeader);
-                                        sensorPackageObject.gyroscopeSensor.setValues(packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]);
-                                        sensorPackageObject.accelerometerSensor.setValues(packageDataAccelerometer[0], packageDataAccelerometer[1], packageDataAccelerometer[2]);
-                                        sensorPackageObject.magneticSensor.setValues(packageDataMagnetic[0], packageDataMagnetic[1], packageDataMagnetic[2]);
-                                        sensorPackageObject.temperatureSensor.setTemperature(packageDataTemperature[0]);
-                                        sensorPackageObject.lightSensor.setLightSensorValue(packageDataLight[0]);
-                                        sensorPackageObject.proximitySensor.setProximitySensorValue(packageDataProximity[0]);
-                                        sensorPackageObject.setTimestampValue(packageDataTimestamp[0]);
-                                        /*
-                                        Log.d(TAG, String.format("Header:%c%c", (char)packageHeader[0], (char)packageHeader[1]));
-                                        Log.d(TAG, String.format("Gyroscope:%d,%d,%d", packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]));
-                                        Log.d(TAG, String.format("Accelerometer:%d,%d,%d", packageDataAccelerometer[0], packageDataAccelerometer[1], packageDataAccelerometer[2]));
-                                        Log.d(TAG, String.format("Magnetic:%d,%d,%d", packageDataMagnetic[0], packageDataMagnetic[1], packageDataMagnetic[2]));
-                                        Log.d(TAG, String.format("Temperature:%d", packageDataTemperature[0]));
-                                        Log.d(TAG, String.format("Light:%d", packageDataLight[0]));
-                                        Log.d(TAG, String.format("Proximity:%d", packageDataProximity[0]));
-                                        Log.d(TAG, String.format("Timestamp:%d", packageDataTimestamp[0]));
-                                        */
-                                        onDataChangedListener.sensorDataChanged(sensorPackageObject);
                                     } else {
-                                        Log.d(TAG, Thread.currentThread().getName() + "->usbDeviceConnection.requestWait() failed!");
+                                        Log.d(TAG, Thread.currentThread().getName() + "->request.queue() failed!");
                                     }
-                                } else {
-                                    Log.d(TAG, Thread.currentThread().getName() + "->request.queue() failed!");
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    break;
                                 }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                break;
                             }
                         }
                     } else {
@@ -629,8 +635,8 @@ public class DeviceTestAppService extends Service {
         //set up to send cmd to the device or receive data from the device.
         //send request command to the device.
         UsbEndpoint epIn, epOut;
-        if (epIntOut != null && epIntIn != null) {
-            epIn = epIntIn;
+        if (epIntOut != null && epIntIn2 != null) {
+            epIn = epIntIn2;
             epOut = epIntOut;
         } else if (epBulkOut != null && epBulkIn != null) {
             epIn = epBulkIn;
@@ -641,7 +647,8 @@ public class DeviceTestAppService extends Service {
         }
 
         UsbRequest sendRequest = new UsbRequest();
-        UsbRequest receiveRequest = new UsbRequest();
+        UsbRequest receiveRequest= new UsbRequest();
+
         if (!sendRequest.initialize(usbDeviceConnection, epOut)) {
             Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->sendRequest.initialize() failed!");
             return;
@@ -656,26 +663,21 @@ public class DeviceTestAppService extends Service {
         int receiveBufferLength = epIn.getMaxPacketSize();
         ByteBuffer receiveBuffer = ByteBuffer.allocate(receiveBufferLength);
 
-        byte[] cmdEp1 = new byte[3];
-        cmdEp1[0] = 0x09;
-        cmdEp1[1] = 0x00;
-        cmdEp1[2] = 0x00;
-
         byte cmd =0x01;
-
         while (true) {
             sendBuffer.rewind();
             sendBuffer.clear();
             receiveBuffer.rewind();
             switch (cmd) {
                 case 0x01:
+                    Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->send cmd 0x01!");
                     //send  EP1 to device
-                    sendBuffer.put((byte) 0x09);
-                    sendBuffer.put((byte) 0x00);
+                    sendBuffer.put((byte) 0xaa);
                     sendBuffer.put((byte) 0x00);
                     break;
 
                 case 0x02:
+                    Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->send cmd 0x03!");
                     //get EP2 and decrypt it then send EP3 to device
                     cmd = receiveBuffer.get();
                     byte cmdLength = receiveBuffer.get();
@@ -685,13 +687,13 @@ public class DeviceTestAppService extends Service {
                     decryptData = check_sum(encryptData);
 
                     sendBuffer.put((byte) 0x03);
-                    sendBuffer.put((byte) 0x01);
                     sendBuffer.putShort((short) (encryptData.length * 4));
                     sendBuffer.asIntBuffer().put(decryptData);
                     break;
 
                 case 0x04:
-                    if (sendBuffer.get(4) == 0x01 || true) {
+                    Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->get cmd 0x04!");
+                    if (sendBuffer.get(4) == 0x00 || true) {
                         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->shake hands succeed, start to receive sensor data!");
                         // start new thread to parse package
                         if (epIn.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
@@ -705,13 +707,13 @@ public class DeviceTestAppService extends Service {
                         } else {
                         }
                     }
-                    break;
+                    return;
 
                 default:
                     break;
             }
 
-            if (sendRequest.queue(sendBuffer, sendBuffer.arrayOffset())) {
+            if (sendRequest.queue(sendBuffer, sendBuffer.position())) {
                 if (receiveRequest.queue(receiveBuffer, receiveBuffer.array().length)) {
                     if (receiveRequest.equals(usbDeviceConnection.requestWait())) {
                         cmd = receiveBuffer.get(0);

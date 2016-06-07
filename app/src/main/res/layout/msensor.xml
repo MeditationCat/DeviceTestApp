@@ -4,20 +4,18 @@
     android:layout_height="match_parent">
     <TextView
         android:id="@+id/OrientText"
-        android:textColor="#ffffff"
         android:textSize="20dip"
         android:textStyle="bold"
         android:layout_width="match_parent"
-        android:gravity="center"
+        android:gravity="left|center"
         android:text="@string/MSensor_default_text"
-        android:layout_height="50dp" />
+        android:layout_height="wrap_content" />
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/ivCompass"
         android:src="@drawable/compass" />
     <TextView
-        android:textColor="#ffffff"
         android:textSize="13dip"
         android:textStyle="bold"
         android:layout_width="match_parent"

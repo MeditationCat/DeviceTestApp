@@ -78,7 +78,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                textView.setText(String.valueOf(object.getHeader()) + object.getTimestamp());
+                textView.setText(String.valueOf(object.getHeader()) + ":" + object.getTimestamp());
                 }
         });
     }

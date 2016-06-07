@@ -64,4 +64,5 @@
         <string name="tsensor_name">Temperature</string>
         <string name="tsensor_value">Current Temperature:</string>
         <string name="StartTest">Start Test</string>
+            <string name="tsensor_app_name">Temperature sensor</string>
     </resources>
