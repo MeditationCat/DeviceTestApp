@@ -349,7 +349,7 @@ public class DeviceTestAppService extends Service {
         private short[] packageDataLight = new short[1];
         private short[] packageDataProximity = new short[1];
         private int[] packageDataTimestamp = new int[1];
-        private byte[] packageDataKeyCode = new byte[3];
+        //private byte[] packageDataKeyCode = new byte[3];
 
         InterruptTransferThread(String name) {
             this.name = name;
@@ -411,7 +411,7 @@ public class DeviceTestAppService extends Service {
                                             //package data: timestamp: int
                                             packageDataTimestamp[0] = receiveBuffer.getInt(0);
                                             //package data: keycode: byte 3
-                                             receiveBuffer.get(packageDataKeyCode);
+                                            //receiveBuffer.get(packageDataKeyCode);
 
                                             sensorPackageObject.setHeader(packageHeader);
                                             sensorPackageObject.gyroscopeSensor.setValues(packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]);
@@ -421,7 +421,7 @@ public class DeviceTestAppService extends Service {
                                             sensorPackageObject.lightSensor.setLightSensorValue(packageDataLight[0]);
                                             sensorPackageObject.proximitySensor.setProximitySensorValue(packageDataProximity[0]);
                                             sensorPackageObject.setTimestampValue(packageDataTimestamp[0]);
-                                            sensorPackageObject.setKeyCode(packageDataKeyCode);
+                                            //sensorPackageObject.setKeyCode(packageDataKeyCode);
                                             /*
                                             Log.d(TAG, String.format("Header:%c%c", (char)packageHeader[0], (char)packageHeader[1]));
                                             Log.d(TAG, String.format("Gyroscope:%d,%d,%d", packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]));
@@ -635,8 +635,8 @@ public class DeviceTestAppService extends Service {
         //set up to send cmd to the device or receive data from the device.
         //send request command to the device.
         UsbEndpoint epIn, epOut;
-        if (epIntOut != null && epIntIn2 != null) {
-            epIn = epIntIn2;
+        if (epIntOut != null && epIntIn != null) {
+            epIn = epIntIn;
             epOut = epIntOut;
         } else if (epBulkOut != null && epBulkIn != null) {
             epIn = epBulkIn;

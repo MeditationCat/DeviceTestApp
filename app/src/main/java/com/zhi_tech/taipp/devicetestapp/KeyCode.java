@@ -42,7 +42,7 @@ public class KeyCode extends Activity implements OnClickListener {
     };
     private final String TAG = "KeyCode";
 
-    private DeviceTestAppService dtaService = null;
+/*    private DeviceTestAppService dtaService = null;
     private ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -103,17 +103,17 @@ public class KeyCode extends Activity implements OnClickListener {
                 //textView.setText(String.valueOf(object.getHeader()) + ":" + object.getTimestamp());
             }
         });
-    }
+    }*/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         setContentView(R.layout.keycode);
-
+/*
         Intent intent = new Intent(KeyCode.this,DeviceTestAppService.class);
         bindService(intent, conn, Context.BIND_AUTO_CREATE);
-
+*/
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mInfo = (TextView) findViewById(R.id.keycode_info);
         mBtOk = (Button) findViewById(R.id.keycode_bt_ok);
@@ -244,7 +244,7 @@ public class KeyCode extends Activity implements OnClickListener {
         // TODO Auto-generated method stub
         super.onDestroy();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        unbindService(conn);
+        //unbindService(conn);
     }
 
     @Override

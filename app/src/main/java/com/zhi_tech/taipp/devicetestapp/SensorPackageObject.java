@@ -12,7 +12,7 @@ public class SensorPackageObject {
     public TemperatureSensor temperatureSensor;
     public LightSensor lightSensor;
     public ProximitySensor proximitySensor;
-    private byte[] keyCode;
+    //private byte[] keyCode;
     private int timestamp;
 
     public SensorPackageObject() {
@@ -23,7 +23,7 @@ public class SensorPackageObject {
         temperatureSensor = new TemperatureSensor();
         lightSensor = new LightSensor();
         proximitySensor = new ProximitySensor();
-        keyCode = new byte[3];
+        //keyCode = new byte[3];
         timestamp = 0;
     }
 
@@ -35,9 +35,9 @@ public class SensorPackageObject {
         this.timestamp = timestampValue;
     }
 
-    public void setKeyCode(byte[] keyCode) {
+/*    public void setKeyCode(byte[] keyCode) {
         this.keyCode = keyCode;
-    }
+    }*/
     public char[] getHeader() {
         return header;
     }
@@ -46,10 +46,9 @@ public class SensorPackageObject {
         return timestamp;
     }
 
-    public byte[] getKeyCode() {
+/*    public byte[] getKeyCode() {
         return keyCode;
-    }
-
+    }*/
     public class GyroscopeSensor {
         private short X;
         private short Y;
