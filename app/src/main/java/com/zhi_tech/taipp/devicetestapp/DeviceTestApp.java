@@ -45,6 +45,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     public static ArrayList<Integer> excludeIds = new ArrayList<Integer>();
     private Button mBtAuto;
     private Button mBtStart;
+    private Button mBtUpgrade;
     private TextView textView;
 
     public static byte result[] = new byte[AppDefine.DVT_NV_ARRAR_LEN]; //0 default; 1,success; 2,fail; 3,notest
@@ -98,6 +99,8 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         mBtAuto.setOnClickListener(cl);
         mBtStart = (Button) findViewById(R.id.main_bt_start);
         mBtStart.setOnClickListener(cl);
+        mBtUpgrade = (Button) findViewById(R.id.main_bt_upgrade);
+        mBtUpgrade.setOnClickListener(cl);
         textView = (TextView) findViewById(R.id.textView);
         //textView.setVisibility(View.GONE);
         mGrid = (GridView) findViewById(R.id.main_grid);
@@ -125,6 +128,11 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
             } else if (v.getId() == mBtStart.getId()) {
                 if (dtaService != null) {
                     dtaService.startToConnectDevice();
+                }
+            } else if (v.getId() == mBtUpgrade.getId()) {
+                //start upgrade request
+                if (dtaService != null) {
+                    dtaService.StartUpgrade();
                 }
             }
         }
@@ -161,11 +169,11 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.main_grid, null);
+                convertView = mInflater.inflate(R.layout.main_grid, parent, false);
             }
-            TextView textview = (TextView) convertView.findViewById(R.id.factor_button);
-            textview.setText(mListData.get(position));
-            SetColor(textview);
+            TextView textView = Utils.ViewHolder.get(convertView, R.id.factor_button);
+            textView.setText(mListData.get(position));
+            SetColor(textView);
             return convertView;
         }
     }
@@ -310,24 +318,6 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         unbindService(conn);
         android.os.Process.killProcess(android.os.Process.myPid());
         super.onDestroy();
-    }
-
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + " keyCode: " + keyCode);
-        return super.onKeyUp(keyCode, event);
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + " keyCode: " + keyCode);
-        return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
-        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + " keyCode: " + keyCode);
-        return super.onKeyLongPress(keyCode, event);
     }
 }
 

@@ -36,11 +36,18 @@
     <GridView
         android:id="@+id/main_grid"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="201dp"
         android:padding="1dip"
         android:verticalSpacing="1dip"
         android:horizontalSpacing="1dip"
         android:stretchMode="columnWidth"
         android:gravity="center"
         android:numColumns="auto_fit" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start To Upgrade"
+        android:id="@+id/main_bt_upgrade"
+        android:layout_gravity="center_horizontal" />
 </LinearLayout>

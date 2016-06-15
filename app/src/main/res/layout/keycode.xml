@@ -4,103 +4,74 @@
     android:layout_height="match_parent"
     android:weightSum="1">
 
-    <TextView
-        android:id="@+id/keycode_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/KeyCode_info"
-        android:textColor="@color/blue"
-        android:layout_gravity="center_horizontal"
-        android:textSize="28dip" />
-
-    <LinearLayout
-        android:orientation="horizontal"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.42">
+        android:layout_height="match_parent">
 
-        <Button
-            android:text="Back"
-            android:id="@+id/keycode_bt_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <Button
+        <TextView
+            android:id="@+id/keycode_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Volume Up"
-            android:id="@+id/keycode_bt_vol_up" />
+            android:text="@string/KeyCode_info"
+            android:textColor="@color/blue"
+            android:textSize="28sp" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Volume Down"
-            android:id="@+id/keycode_bt__vol_down" />
-
-        <Button
-            android:text="Up"
-            android:id="@+id/keycode_bt_arrow_up"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:text="Down"
-            android:id="@+id/keycode_bt_arrow_down"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:text="Left"
-            android:id="@+id/keycode_bt_arrow_left"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:text="Right"
-            android:id="@+id/keycode_bt_arrow_right"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:id="@+id/button8"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:id="@+id/button6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
-    <GridView
-        android:id="@+id/keycode_grid"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:padding="1dip"
-        android:verticalSpacing="1dip"
-        android:horizontalSpacing="1dip"
-        android:numColumns="auto_fit"
-        android:columnWidth="50dip"
-        android:stretchMode="columnWidth"
-        android:gravity="center" />
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <Button
-            android:id="@+id/keycode_bt_ok"
+        <GridView
+            android:id="@+id/keycode_grid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.8"
-            android:textSize="25dip"
-            android:text="@string/Success" />
-        <Button
-            android:id="@+id/keycode_bt_failed"
+            android:padding="1dip"
+            android:verticalSpacing="1dip"
+            android:horizontalSpacing="1dip"
+            android:stretchMode="columnWidth"
+            android:gravity="center"
+            android:numColumns="auto_fit"
+            android:layout_below="@+id/keycode_info"
+            android:layout_above="@+id/paint_root" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/keycode_joystick_info"
+            android:id="@+id/keycode_joystick"
+            android:layout_above="@+id/paint_root"
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/blue"
+            android:textSize="28sp" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="160sp"
+            android:layout_height="160sp"
+            android:id="@+id/paint_root"
+            android:layout_above="@+id/linearlayout_bottom_button"
+            android:layout_centerHorizontal="true" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.2"
-            android:textSize="25dip"
-            android:text="@string/Failed" />
-    </LinearLayout>
+            android:orientation="horizontal"
+            android:layout_gravity="bottom"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/linearlayout_bottom_button">
+            <Button
+                android:id="@+id/keycode_bt_ok"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"
+                android:textSize="28sp"
+                android:text="@string/Success"
+                style="@style/Base.TextAppearance.AppCompat.Button" />
+            <Button
+                android:id="@+id/keycode_bt_failed"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"
+                android:textSize="28sp"
+                android:text="@string/Failed"
+                style="@style/Base.TextAppearance.AppCompat.Button" />
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </LinearLayout>

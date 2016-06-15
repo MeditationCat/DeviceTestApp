@@ -3,6 +3,8 @@ package com.zhi_tech.taipp.devicetestapp;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.util.SparseArray;
+import android.view.View;
 
 /**
  * Created by taipp on 5/20/2016.
@@ -92,6 +94,23 @@ public class Utils {
         } else {
             Log.v(TAG,"WriteIsAllTestOK-checkIsAllTestOK()=false");
             DeviceTestApp.result[DeviceTestApp.result.length-1] = AppDefine.DVT_FAIL;
+        }
+    }
+
+    //ViewHolder tools
+    static class ViewHolder {
+        public static <T extends View> T get(View view, int id) {
+            SparseArray<View> viewHolder = (SparseArray<View>) view.getTag();
+            if (viewHolder == null) {
+                viewHolder = new SparseArray<View>();
+                view.setTag(viewHolder);
+            }
+            View childView = viewHolder.get(id);
+            if (childView == null) {
+                childView = view.findViewById(id);
+                viewHolder.put(id, childView);
+            }
+            return (T) childView;
         }
     }
 }

@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -14,11 +15,19 @@ import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbRequest;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
@@ -42,8 +51,8 @@ public class DeviceTestAppService extends Service {
     private List<UsbInterface> usbInterfaceList;
     private UsbInterface usbInterface, usbInterface2;
     private UsbEndpoint epControl;
-    private UsbEndpoint epBulkOut, epBulkIn, epBulkIn2, epBulkIn3;
-    private UsbEndpoint epIntOut, epIntIn, epIntIn2, epIntIn3;
+    private UsbEndpoint epBulkOut, epBulkOut2, epBulkIn, epBulkIn2, epBulkIn3;
+    private UsbEndpoint epIntOut, epIntOut2, epIntIn, epIntIn2, epIntIn3;
     private UsbDeviceConnection usbDeviceConnection;
     private UsbRequest usbRequestEpIntIn2;
 
@@ -116,8 +125,10 @@ public class DeviceTestAppService extends Service {
         epIntIn = null;
 
         epBulkIn2 = null;
+        epBulkOut2 = null;
         epBulkIn3 = null;
         epIntIn2 = null;
+        epIntOut2 = null;
         epIntIn3 = null;
 
         usbDeviceConnection = null;
@@ -242,7 +253,11 @@ public class DeviceTestAppService extends Service {
                         // look for bulk endpoint
                         if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
                             if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
-                                epBulkOut = ep;
+                                if (ep.getAddress() == 0x01) {
+                                    epBulkOut = ep;
+                                } else if (ep.getAddress() == 0x02) {
+                                    epBulkOut2 = ep;
+                                }
                                 Log.d(TAG,"epBulkOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
                             } else {
                                 if (ep.getAddress() == 0x81) {
@@ -263,7 +278,11 @@ public class DeviceTestAppService extends Service {
                         // look for interrupt endpoint
                         if (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_INT) {
                             if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
-                                epIntOut = ep;
+                                if (ep.getAddress() == 0x01) {
+                                    epIntOut = ep;
+                                } else if (ep.getAddress() == 0x02) {
+                                    epIntOut2 = ep;
+                                }
                                 Log.d(TAG,"epIntOut info->addr:" + ep.getAddress() + " epNumber:" + ep.getEndpointNumber());
                             }
                             if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
@@ -284,8 +303,8 @@ public class DeviceTestAppService extends Service {
             }
         }
 
-        if (epBulkOut == null && epBulkIn == null && epBulkIn2 == null && epBulkIn3 == null && epControl == null
-                && epIntOut == null && epIntIn == null && epIntIn2 == null && epIntIn3 == null) {
+        if (epBulkOut == null && epBulkIn == null && epBulkIn2 == null && epBulkOut2 == null && epBulkIn3 == null && epControl == null
+                && epIntOut == null && epIntIn == null && epIntIn2 == null && epIntOut2 == null && epIntIn3 == null) {
             Log.d(TAG,"No endpoint is available!");
             //throw new IllegalArgumentException("No endpoint is available!");
         }
@@ -628,9 +647,180 @@ public class DeviceTestAppService extends Service {
         return out;
     }
 
+    public void StartUpgrade() {
+    //set up to send cmd to the device or receive data from the device.
+    //send request command to the device.
+    UsbEndpoint epIn, epOut, epOut2;
+    if (epIntOut != null && epIntIn != null) {
+        epIn = epIntIn;
+        epOut = epIntOut;
+        epOut2 = epIntOut2;
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("epIn = %x,epIntOut = %x,epIntOut2 = %x", epIn.getAddress(), epIntOut.getAddress(), epIntOut2.getAddress()));
+    } else if (epBulkOut != null && epBulkIn != null && epBulkOut2 != null) {
+        epIn = epBulkIn;
+        epOut = epBulkOut;
+        epOut2 = epBulkOut2;
+    } else {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->epIn and epOut are null!");
+        return;
+    }
 
+    UsbRequest sendRequest = new UsbRequest();
+    UsbRequest receiveRequest= new UsbRequest();
+    //UsbRequest sendDataRequest = new UsbRequest();
 
+    if (!sendRequest.initialize(usbDeviceConnection, epOut)) {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->sendRequest.initialize() failed!");
+        return;
+    }
+    if (!receiveRequest.initialize(usbDeviceConnection, epIn)) {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->receiveRequest.initialize() failed!");
+        return;
+    }
+    //if (!sendDataRequest.initialize(usbDeviceConnection, epOut2)) {
+    //    Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->sendDataRequest.initialize() failed!");
+    //    return;
+    //}
 
+    int sendBufferLength = epOut.getMaxPacketSize();
+    ByteBuffer sendBuffer = ByteBuffer.allocate(sendBufferLength);
+    int receiveBufferLength = epIn.getMaxPacketSize();
+    ByteBuffer receiveBuffer = ByteBuffer.allocate(receiveBufferLength);
+
+    int cmd = 0xA0;
+    short dataLength = 0;
+    //readFileByBytes
+    byte[] readBuffer = new byte[60];
+    int readBytes = 0;
+    int fileSize = 0;
+    //String filePath = getResources().getResourceEntryName();
+
+    FileInputStream inputStream = null;
+    try {
+        String path = Environment.getExternalStorageDirectory() + "/USBIAP.bin";
+        File binFile = new File(path);
+        if (!binFile.exists()) {
+            Log.d(TAG, "Failed to open file!");
+            return;
+        }
+        inputStream = new FileInputStream(path);
+        fileSize = (int) inputStream.getChannel().size();
+
+        Log.d(TAG, "FilePath: " + path + "   fileSize:" + fileSize);
+
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+
+    int count = 0;
+    int sendCount = 0;
+    while (true) {
+        sendBuffer.rewind();
+        sendBuffer.clear();
+        receiveBuffer.rewind();
+
+        switch (cmd) {
+            case 0xA0:
+                Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + String.format("0x%x", cmd));
+                sendBuffer.put((byte) 0xA0);
+                sendBuffer.put((byte) 0x00);
+
+                if (sendRequest.queue(sendBuffer, sendBuffer.position() + 1)) {
+                    cmd = 0x00;
+                    while(true){
+                        if (receiveRequest.queue(receiveBuffer, receiveBuffer.array().length)) {
+                            if (receiveRequest.equals(usbDeviceConnection.requestWait())) {
+                                cmd = receiveBuffer.get(0);
+                                cmd = cmd&0xff;
+                                Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->0xA0 : " + String.format("0x%x", cmd));
+                                if (cmd == 0xA1) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+
+            case 0xA1:
+                Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + String.format("0x%x", cmd));
+                cmd = receiveBuffer.get();
+                cmd = cmd&0xff;
+                dataLength = receiveBuffer.get();
+                Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->fileSize : " + fileSize);
+                sendBuffer.put((byte) 0xA2);
+                sendBuffer.put((byte) 0x04);
+                sendBuffer.putInt(fileSize);
+
+                if (sendRequest.queue(sendBuffer, sendBuffer.position() + 1)) {
+                    cmd = 0x00;
+                    if (fileSize == 0) {
+                        Log.d(TAG, "fileSize == 0! exit!");
+                        return;
+                    }
+                    while (true) {
+                    if (receiveRequest.queue(receiveBuffer, receiveBuffer.array().length)) {
+                        if (receiveRequest.equals(usbDeviceConnection.requestWait())) {
+                            cmd = receiveBuffer.get(0);
+                            cmd = cmd&0xff;
+                            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->0xA2 : " + String.format("0x%x", cmd));
+                            if (cmd == 0xA3) {
+                                break;
+                            }
+                        }
+                    }
+                }}
+                break;
+
+            case 0xA3:
+            //case 0xA5:
+                Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + String.format("0x%x", cmd));
+                cmd = receiveBuffer.get();
+                cmd = cmd&0xff;
+                dataLength = receiveBuffer.get();
+                try {
+                    if (inputStream == null) {
+                        Log.d(TAG,"inputStream == null");
+                        return;
+                    }
+                    while ((readBytes = inputStream.read(readBuffer)) != -1) {
+                        sendBuffer.rewind();
+                        sendBuffer.clear();
+                        sendBuffer.put((byte) 0xA4);
+                        sendBuffer.put((byte) readBytes);
+                        sendBuffer.put(readBuffer);
+
+                        if (sendRequest.queue(sendBuffer, sendBuffer.position() + 1)) {
+                            sendCount++;
+                        } else {
+                            Log.d(TAG, "send error!");
+                        }
+                        Log.d(TAG, "StartUpgrade:send Bytes:" + readBytes + "sendCount: " + sendCount);
+                        if (readBytes < 60) {
+                            cmd = 0;
+                            return;
+                            //break;
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case 0xA6:
+                Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->0xA6");
+                cmd = 0x00;
+                break;
+
+            default:
+                sendCount = 0;
+                break;
+        }
+    }
+}
+
+    private void startCommunication2() {
+        StartUpgrade();
+    }
     private void startCommunication() {
         //set up to send cmd to the device or receive data from the device.
         //send request command to the device.
@@ -670,9 +860,9 @@ public class DeviceTestAppService extends Service {
             receiveBuffer.rewind();
             switch (cmd) {
                 case 0x01:
-                    Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->send cmd 0x01!");
+                    Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->send cmd 0xAA!");
                     //send  EP1 to device
-                    sendBuffer.put((byte) 0xaa);
+                    sendBuffer.put((byte) 0xAA);
                     sendBuffer.put((byte) 0x00);
                     break;
 
@@ -713,7 +903,7 @@ public class DeviceTestAppService extends Service {
                     break;
             }
 
-            if (sendRequest.queue(sendBuffer, sendBuffer.position())) {
+            if (sendRequest.queue(sendBuffer, sendBuffer.position() + 1)) {
                 if (receiveRequest.queue(receiveBuffer, receiveBuffer.array().length)) {
                     if (receiveRequest.equals(usbDeviceConnection.requestWait())) {
                         cmd = receiveBuffer.get(0);
@@ -742,7 +932,7 @@ public class DeviceTestAppService extends Service {
                                 connectToDevice(usbInterface);
                                 if (deviceIsConnected()) {
                                     Log.d(TAG, "startCommunication()!");
-                                    startCommunication();
+                                    //startCommunication();
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -760,7 +950,7 @@ public class DeviceTestAppService extends Service {
                     Log.d(TAG, "startToConnectDevice()!");
                     startToConnectDevice();
                 } else {
-                    startCommunication();
+                    //startCommunication();
                 }
             }
 

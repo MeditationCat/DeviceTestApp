@@ -6,12 +6,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.AttributeSet;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -20,177 +29,106 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 
 /**
  * Created by taipp on 5/20/2016.
  */
-public class KeyCode extends Activity implements OnClickListener {
+public class KeyCode extends Activity implements OnClickListener, View.OnTouchListener {
     SharedPreferences mSp;
     TextView mInfo;
     Button mBtOk;
     Button mBtFailed;
     String mKeycode = "";
     private GridView mGrid;
-    private List<Integer> mListData;
-    final int imgString[] = {
-            R.drawable.home, R.drawable.menu, R.drawable.vldown, R.drawable.vlup, R.drawable.back,
-            R.drawable.search, R.drawable.camera, R.drawable.power,  R.drawable.unknown
+    private MySurfaceView joyStickView;
+    private ArrayList<String> mListData;
+
+    final static int itemString[] = {
+            R.string.keycode_back,
+            R.string.keycode_vol_up,
+            R.string.keycode_vol_down,
+            R.string.keycode_arrow_up,
+            R.string.keycode_arrow_down,
+            R.string.keycode_arrow_left,
+            R.string.keycode_arrow_right
     };
+
     private final String TAG = "KeyCode";
-
-/*    private DeviceTestAppService dtaService = null;
-    private ServiceConnection conn = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
-            dtaService.setOnDataChangedListener(new OnDataChangedListener() {
-                @Override
-                public void sensorDataChanged(SensorPackageObject object) {
-                    //to get the data from the object.
-                    postUpdateHandlerMsg(object);
-                }
-            });
-        }
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            dtaService = null;
-        }
-    };
-
-    private Handler handler = new Handler();
-
-    private void postUpdateHandlerMsg(final SensorPackageObject object) {
-
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                byte[] keyCode = object.getKeyCode();
-                byte keyCodeFlag = keyCode[0];
-                byte keyCodeValue, keyCodeValueX, keyCodeValueY;
-                if (keyCodeFlag > 0x04) {
-                    return;
-                }
-                Log.d(TAG, String.format("keycode:%d,%d,%d", keyCode[0], keyCode[1], keyCode[2]));
-                switch (keyCodeFlag) {
-                    case 0x01:
-                        //board key value
-                        keyCodeValue = keyCode[1];
-                        switch (keyCodeValue) {
-                            case 0x01:
-                                break;
-                        }
-                        break;
-                    case 0x02:
-                        //board touch pad key value
-                        keyCodeValue = keyCode[1];
-                        break;
-                    case 0x03:
-                        //bluetooth key value
-                        keyCodeValue = keyCode[1];
-                        break;
-                    case 0x04:
-                        //bluetooth joystick
-                        keyCodeValueX = keyCode[1];
-                        keyCodeValueY = keyCode[2];
-                        break;
-                    default:
-                        break;
-                }
-                //textView.setText(String.valueOf(object.getHeader()) + ":" + object.getTimestamp());
-            }
-        });
-    }*/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         setContentView(R.layout.keycode);
-/*
-        Intent intent = new Intent(KeyCode.this,DeviceTestAppService.class);
-        bindService(intent, conn, Context.BIND_AUTO_CREATE);
-*/
+
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mInfo = (TextView) findViewById(R.id.keycode_info);
         mBtOk = (Button) findViewById(R.id.keycode_bt_ok);
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.keycode_bt_failed);
         mBtFailed.setOnClickListener(this);
-        mListData = new ArrayList<Integer>();
+        mListData = new ArrayList<String>();
+        for (int item : itemString) {
+            mListData.add(getString(item));
+        }
+
         mGrid = (GridView) findViewById(R.id.keycode_grid);
+        mGrid.setAdapter(new MyAdapter(this, mListData));
+        //
+        //获取布局文件中LinearLayout容器
+        LinearLayout root = (LinearLayout)findViewById(R.id.paint_root);
+        ViewGroup.LayoutParams lp = root.getLayoutParams();
+        joyStickView = new MySurfaceView(this, lp.width / 2, lp.height / 2, lp.height * 5/ 14);
+        root.addView(joyStickView);
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyDown keyCode->" + String.valueOf(keyCode));
         switch (keyCode) {
-            case KeyEvent.KEYCODE_CAMERA:
-                if (mKeycode.indexOf("CAMERA") >= 0) {
-                    return false;
-                }
-                mKeycode += "CAMERA\n";
-                mListData.add(imgString[6]);
-                break;
-            case KeyEvent.KEYCODE_HOME:
-                if (mKeycode.indexOf("HOME") >= 0) {
-                    return false;
-                }
-                mKeycode += "HOME\n";
-                mListData.add(imgString[0]);
-                break;
-            case KeyEvent.KEYCODE_VOLUME_DOWN:
-                if (mKeycode.indexOf("VLDOWN") >= 0) {
-                    return false;
-                }
-                mKeycode += "VLDOWN\n";
-                mListData.add(imgString[2]);
+
+            case KeyEvent.KEYCODE_BACK:
+            case KeyEvent.KEYCODE_BUTTON_B:
+                mListData.remove(getString(R.string.keycode_back));
                 break;
             case KeyEvent.KEYCODE_VOLUME_UP:
-                if (mKeycode.indexOf("VLUP") >= 0) {
-                    return false;
-                }
-                mKeycode += "VLUP\n";
-                mListData.add(imgString[3]);
+                mListData.remove(getString(R.string.keycode_vol_up));
                 break;
-            case KeyEvent.KEYCODE_BACK:
-                if (mKeycode.indexOf("BACK") >= 0) {
-                    return false;
-                }
-                mKeycode += "BACK\n";
-                mListData.add(imgString[4]);
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                mListData.remove(getString(R.string.keycode_vol_down));
                 break;
-            case KeyEvent.KEYCODE_SEARCH:
-                if (mKeycode.indexOf("SEARCH") >= 0) {
-                    return false;
-                }
-                mKeycode += "SEARCH\n";
-                mListData.add(imgString[5]);
+            case 0x15: //single click
+                //mListData.remove(0);
                 break;
-            case KeyEvent.KEYCODE_MENU:
-                if (mKeycode.indexOf("MENU") >= 0) {
-                    return false;
-                }
-                mKeycode += "MENU\n";
-                mListData.add(imgString[1]);
+            case 0x25: //double click
+                //mListData.remove(0);
                 break;
-            case KeyEvent.KEYCODE_POWER:
-                if (mKeycode.indexOf("POWER") >= 0) {
-                    return false;
-                }
-                mKeycode += "POWER\n";
-                mListData.add(imgString[7]);
+            case 0x35: //up -> down
+                mListData.remove(getString(R.string.keycode_arrow_up));
+                break;
+            case 0x45: //down -> up
+                mListData.remove(getString(R.string.keycode_arrow_down));
+                break;
+            case 0x55: //right -> left
+                mListData.remove(getString(R.string.keycode_arrow_left));
+                break;
+            case 0x65: // left -> right
+                mListData.remove(getString(R.string.keycode_arrow_right));
                 break;
 
             default:
-                mListData.add(imgString[8]);
                 break;
-
         }
-        mGrid.setAdapter(new MyAdapter(this));
+        mGrid.setAdapter(mGrid.getAdapter());
+        if (mListData.isEmpty()) {
+        }
         return true;
     }
 
@@ -206,35 +144,54 @@ public class KeyCode extends Activity implements OnClickListener {
         return super.onKeyLongPress(keyCode, event);
     }
 
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent ev) {
+        if ((ev.getDevice().getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
+            Log.d(TAG, String.format("dispatchGenericMotionEvent ev->(%f, %f)", ev.getX(), ev.getY()));
+            joyStickView.updateGenericMotionEvent(ev);
+        }
+        return true; //super.dispatchGenericMotionEvent(ev);
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        Log.d(TAG, "onTouch keyCode->");
+        return false;
+    }
+
     public class MyAdapter extends BaseAdapter {
-        private LayoutInflater mInflater;
+        private Context context;
+        private ArrayList<String> mDataList;
 
-        public MyAdapter(Context context) {
-            this.mInflater = LayoutInflater.from(context);
+        public MyAdapter(Context context, ArrayList<String> mDataList) {
+            this.context = context;
+            this.mDataList = mDataList;
         }
 
-        public MyAdapter(DeviceTestApp deviceTestApp, int deviceButton) {
-        }
-
+        @Override
         public int getCount() {
-            if (mListData == null) {
-                return 0;
-            }
-            return mListData.size();
+            return (mDataList == null) ? 0 : mDataList.size();
         }
 
+        @Override
         public Object getItem(int position) {
-            return position;
+            return (mDataList == null) ? null : mListData.get(position);
         }
 
+        @Override
         public long getItemId(int position) {
             return position;
         }
 
+        @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            convertView = mInflater.inflate(R.layout.keycode_grid, null);
-            ImageView imgview = (ImageView) convertView.findViewById(R.id.imgview);
-            imgview.setBackgroundResource(mListData.get(position));
+            if (convertView == null) {
+                convertView = LayoutInflater.from(this.context).inflate(R.layout.keycode_grid,parent, false);
+            }
+            TextView textView = Utils.ViewHolder.get(convertView, R.id.factor_button);
+            //textView.setBackgroundResource(R.drawable.btn_default_normal);
+            textView.setText(mListData.get(position));
+
             return convertView;
         }
     }
@@ -244,7 +201,6 @@ public class KeyCode extends Activity implements OnClickListener {
         // TODO Auto-generated method stub
         super.onDestroy();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        //unbindService(conn);
     }
 
     @Override
@@ -252,5 +208,188 @@ public class KeyCode extends Activity implements OnClickListener {
         Utils.SetPreferences(this, mSp, R.string.KeyCode_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
+    }
+
+    //draw view for joystick
+    public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
+        private Thread th;
+        private SurfaceHolder sfh;
+        private Canvas canvas;
+        private Paint paint;
+        private boolean flag;
+        //固定摇杆背景圆形的X,Y坐标以及半径
+        private float RockerCircleX = 100;
+        private float RockerCircleY = 100;
+        private float RockerCircleR = 50;
+        //摇杆的X,Y坐标以及摇杆的半径
+        private float SmallRockerCircleX = 100;
+        private float SmallRockerCircleY = 100;
+        private float SmallRockerCircleR = 20;
+        public MySurfaceView(Context context) {
+            super(context);
+            Log.v("Himi", "MySurfaceView");
+            this.setKeepScreenOn(true);
+            sfh = this.getHolder();
+            sfh.addCallback(this);
+            paint = new Paint();
+            paint.setAntiAlias(true);
+            setFocusable(true);
+            setFocusableInTouchMode(true);
+        }
+        public MySurfaceView(Context context, float circleX, float circleY, float circleR) {
+            super(context);
+            Log.v("Himi", "MySurfaceView");
+            //this.setKeepScreenOn(true);
+            this.RockerCircleX = circleX;
+            this.RockerCircleY = circleY;
+            this.RockerCircleR = circleR;
+            this.SmallRockerCircleX = this.RockerCircleX;
+            this.SmallRockerCircleY = this.RockerCircleY;
+            this.SmallRockerCircleR = this.RockerCircleR  * 2 / 5;
+
+            sfh = this.getHolder();
+            sfh.addCallback(this);
+            paint = new Paint();
+            paint.setAntiAlias(true);
+            setFocusable(true);
+            setFocusableInTouchMode(true);
+        }
+
+        public void surfaceCreated(SurfaceHolder holder) {
+            th = new Thread(this);
+            flag = true;
+            th.start();
+        }
+        /***
+         * 得到两点之间的弧度
+         */
+        public double getRad(float px1, float py1, float px2, float py2) {
+            //得到两点X的距离
+            float x = px2 - px1;
+            //得到两点Y的距离
+            float y = py1 - py2;
+            //算出斜边长
+            float xie = (float) Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+            //得到这个角度的余弦值（通过三角函数中的定理 ：邻边/斜边=角度余弦值）
+            float cosAngle = x / xie;
+            //通过反余弦定理获取到其角度的弧度
+            float rad = (float) Math.acos(cosAngle);
+            //注意：当触屏的位置Y坐标<摇杆的Y坐标我们要取反值-0~-180
+            if (py2 < py1) {
+                rad = -rad;
+            }
+            return rad;
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            if (event.getAction() == MotionEvent.ACTION_DOWN ||
+                    event.getAction() == MotionEvent.ACTION_MOVE) {
+                // 当触屏区域不在活动范围内
+                if (Math.sqrt(Math.pow((RockerCircleX - (int) event.getX()), 2)
+                        + Math.pow((RockerCircleY - (int) event.getY()), 2)) >= RockerCircleR) {
+                    //得到摇杆与触屏点所形成的角度
+                    double tempRad = getRad(RockerCircleX, RockerCircleY, event.getX(), event.getY());
+                    //保证内部小圆运动的长度限制
+                    getXY(RockerCircleX, RockerCircleY, RockerCircleR, tempRad);
+                } else {//如果小球中心点小于活动区域则随着用户触屏点移动即可
+                    SmallRockerCircleX = (int) event.getX();
+                    SmallRockerCircleY = (int) event.getY();
+                }
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                //当释放按键时摇杆要恢复摇杆的位置为初始位置
+                SmallRockerCircleX = RockerCircleX;
+                SmallRockerCircleY = RockerCircleY;
+            }
+            return true;
+        }
+
+
+        public boolean updateGenericMotionEvent(MotionEvent event) {
+
+            float CosX = RockerCircleX + event.getX() * RockerCircleR;
+            float CosY = RockerCircleY + event.getY() * RockerCircleR;
+
+            if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
+                // 当触屏区域不在活动范围内
+                if (Math.sqrt(Math.pow((RockerCircleX - CosX), 2) + Math.pow((RockerCircleY - CosY), 2)) >= RockerCircleR) {
+                    //得到摇杆与触屏点所形成的角度
+                    double tempRad = getRad(RockerCircleX, RockerCircleY, CosX, CosY);
+                    //保证内部小圆运动的长度限制
+                    getXY(RockerCircleX, RockerCircleY, RockerCircleR, tempRad);
+                } else {//如果小球中心点小于活动区域则随着用户触屏点移动即可
+                    SmallRockerCircleX = CosX;
+                    SmallRockerCircleY = CosY;
+                }
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                //当释放按键时摇杆要恢复摇杆的位置为初始位置
+                SmallRockerCircleX = RockerCircleX;
+                SmallRockerCircleY = RockerCircleY;
+            }
+
+            if (Math.abs(event.getX()) < 0.1 && Math.abs(event.getY()) < 0.1) {
+                SmallRockerCircleX = RockerCircleX;
+                SmallRockerCircleY = RockerCircleY;
+            }
+            this.draw();
+            return true;//super.dispatchGenericMotionEvent(event);
+        }
+
+        /**
+         *
+         * @param R
+         *            圆周运动的旋转点
+         * @param centerX
+         *            旋转点X
+         * @param centerY
+         *            旋转点Y
+         * @param rad
+         *            旋转的弧度
+         */
+        public void getXY(float centerX, float centerY, float R, double rad) {
+            //获取圆周运动的X坐标
+            SmallRockerCircleX = (float) (R * Math.cos(rad)) + centerX;
+            //获取圆周运动的Y坐标
+            SmallRockerCircleY = (float) (R * Math.sin(rad)) + centerY;
+        }
+        public void draw() {
+            try {
+                canvas = sfh.lockCanvas();
+                canvas.drawColor(Color.WHITE);
+                //设置透明度
+                paint.setColor(0x70000000);
+                //绘制摇杆背景
+                canvas.drawCircle(RockerCircleX, RockerCircleY, RockerCircleR, paint);
+                paint.setColor(0x70ff0000);
+                //绘制摇杆
+                canvas.drawCircle(SmallRockerCircleX, SmallRockerCircleY,
+                        SmallRockerCircleR, paint);
+            } catch (Exception e) {
+                // TODO: handle exception
+            } finally {
+                try {
+                    if (canvas != null)
+                        sfh.unlockCanvasAndPost(canvas);
+                } catch (Exception e2) {
+                }
+            }
+        }
+        public void run() {
+            // TODO Auto-generated method stub
+            while (flag) {
+                draw();
+                try {
+                    Thread.sleep(50);
+                } catch (Exception ex) {
+                }
+            }
+        }
+        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            Log.v("Himi", "surfaceChanged");
+        }
+        public void surfaceDestroyed(SurfaceHolder holder) {
+            flag = false;
+            Log.v("Himi", "surfaceDestroyed");
+        }
     }
 }
