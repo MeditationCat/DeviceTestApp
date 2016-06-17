@@ -38,15 +38,19 @@ public class GSensor extends Activity implements View.OnClickListener {
     private ImageView ivimg;
     private Button mBtOk;
     private Button mBtFailed;
-    private Button mSmtTest;
+    //private Button mSmtTest;
 
-    private int mX;
-    private int mY;
-    private int mZ;
+    private float mX;
+    private float mY;
+    private float mZ;
 
     SharedPreferences mSp;
     boolean mCheckDataSuccess;
     private final static int OFFSET = 2;
+    private final static int Accl_Sensitivity = 16384; // LSB/g
+    private final static float Gravity = (float) 9.8; // m/s²
+    private final static int FullScale_Range = 3; // g
+
     private final String TAG = "GSensor";
 
     private DeviceTestAppService dtaService = null;
@@ -79,15 +83,29 @@ public class GSensor extends Activity implements View.OnClickListener {
                 values[0] = object.accelerometerSensor.getX();
                 values[1] = object.accelerometerSensor.getY();
                 values[2] = object.accelerometerSensor.getZ();
-                tvdata.setText(String.format("X:%+f%nY:%+f%nZ:%+f%n",values[SensorManager.DATA_X],values[SensorManager.DATA_Y],values[SensorManager.DATA_Z]));
+                //tvdata.setText(String.format("X:%+f%nY:%+f%nZ:%+f%n",values[0],values[1],values[2]));
 
-                int x = (int) values[SensorManager.DATA_X];
-                int y = (int) values[SensorManager.DATA_Y];
-                int z = (int) values[SensorManager.DATA_Z];
+                float x = values[0] * Gravity / Accl_Sensitivity;
+                float y = values[1] * Gravity  / Accl_Sensitivity;
+                float z = values[2] * Gravity  / Accl_Sensitivity;
 
                 mX = x;
                 mY = y;
                 mZ = z;
+                tvdata.setText(String.format("X: %+f%nY: %+f%nZ: %+f%n",mX,mY,mZ));
+
+                if (Math.abs(values[0]) > Accl_Sensitivity
+                        || Math.abs(values[1]) > Accl_Sensitivity || Math.abs(values[2]) > Accl_Sensitivity) {
+                }
+                if (Math.abs(mX) > FullScale_Range || Math.abs(mY) > FullScale_Range || Math.abs(mZ) > FullScale_Range) {
+                    //Log.d(TAG,String.format("X: %+f Y: %+f Z: %+f ",values[0],values[1],values[2]));
+                    Log.d(TAG,String.format("X: %+f Y: %+f Z: %+f%n",mX,mY,mZ));
+                    tvdata.setTextColor(Color.RED);
+                    mBtFailed.setBackgroundColor(Color.RED);
+                    mBtOk.setClickable(false);
+                    mBtOk.setBackgroundColor(Color.GRAY);
+                }
+
                 if (Math.abs(x) > Math.abs(y) && Math.abs(x) - OFFSET > Math.abs(z)) {
                     ivimg.setBackgroundResource(x > 0? R.drawable.gsensor_x : R.drawable.gsensor_x_2);
                 } else if (Math.abs(y) - OFFSET > Math.abs(x) && Math.abs(y) - OFFSET > Math.abs(z)) {
@@ -114,9 +132,9 @@ public class GSensor extends Activity implements View.OnClickListener {
         tvdata = (TextView) findViewById(R.id.gsensor_tv_data);
         ivimg = (ImageView) findViewById(R.id.gsensor_iv_img);
         mBtOk = (Button) findViewById(R.id.gsensor_bt_ok);
-        mSmtTest = (Button)findViewById(R.id.smt_test);
-        mSmtTest.setOnClickListener(this);
-        mSmtTest.setVisibility(View.INVISIBLE);
+        //mSmtTest = (Button)findViewById(R.id.smt_test);
+        //mSmtTest.setOnClickListener(this);
+        //mSmtTest.setVisibility(View.INVISIBLE);
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.gsensor_bt_failed);
         mBtFailed.setOnClickListener(this);
@@ -150,6 +168,7 @@ public class GSensor extends Activity implements View.OnClickListener {
             }
             return;
         }
+        /*
         if(v.getId()== mSmtTest.getId()){
             boolean flag = IsCheckDataCorrect();
             if(mCheckDataSuccess)
@@ -165,6 +184,7 @@ public class GSensor extends Activity implements View.OnClickListener {
             }
             return;
         }
+        */
         Utils.SetPreferences(this, mSp, R.string.gsensor_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();

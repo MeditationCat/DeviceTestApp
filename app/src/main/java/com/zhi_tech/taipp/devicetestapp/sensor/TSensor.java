@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -30,7 +31,14 @@ public class TSensor extends Activity implements View.OnClickListener {
     private Button mBtFailed;
     SharedPreferences mSp;
     private final String TAG = "TSensor";
-
+    public static final float Temp_Sensitivity = (float) 326.8; //LSB/ºC
+    public static final int RoomTemp_Offset = 25; //ºC
+    /*
+    TEMP_degC = (TEMP_OUT[15:0]/Temp_Sensitivity)
+            + RoomTemp_Offset
+    where Temp_Sensitivity = 326.8
+    LSB/ºC and RoomTemp_Offset = 25ºC
+    */
     private DeviceTestAppService dtaService = null;
     private ServiceConnection conn = new ServiceConnection() {
         @Override
@@ -57,7 +65,15 @@ public class TSensor extends Activity implements View.OnClickListener {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                tvdata.setText(getString(R.string.tsensor_value) + "\n" + object.temperatureSensor.getTemperature());
+                float TEMP_degC = (object.temperatureSensor.getTemperature() / Temp_Sensitivity) + RoomTemp_Offset;
+                tvdata.setText(String.format("%.02f",TEMP_degC));
+                //Log.d(TAG, String.format("TEMP_degC = %.02f",TEMP_degC));
+                if (TEMP_degC < -40 || TEMP_degC > 85) {
+                    tvdata.setTextColor(Color.RED);
+                    mBtFailed.setBackgroundColor(Color.RED);
+                    mBtOk.setClickable(false);
+                    mBtOk.setBackgroundColor(Color.GRAY);
+                }
             }
         });
     }
@@ -72,7 +88,7 @@ public class TSensor extends Activity implements View.OnClickListener {
         bindService(intent, conn, Context.BIND_AUTO_CREATE);
 
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
-        tvdata = (TextView) findViewById(R.id.tsensor);
+        tvdata = (TextView) findViewById(R.id.textView_tsensor_data);
         mBtOk = (Button) findViewById(R.id.tsensor_bt_ok);
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.tsensor_bt_failed);

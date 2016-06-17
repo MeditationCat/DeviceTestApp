@@ -15,6 +15,7 @@ import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbRequest;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -82,7 +83,7 @@ public class DeviceTestAppService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + intent.getAction());
-        return dtaBinder;
+        return new DtaBinder();//dtaBinder;
     }
 
     public class DtaBinder extends Binder {
@@ -367,7 +368,7 @@ public class DeviceTestAppService extends Service {
         private short[] packageDataTemperature = new short[1];
         private short[] packageDataLight = new short[1];
         private short[] packageDataProximity = new short[1];
-        private int[] packageDataTimestamp = new int[1];
+        private long[] packageDataTimestamp = new long[1];
         //private byte[] packageDataKeyCode = new byte[3];
 
         InterruptTransferThread(String name) {
@@ -391,6 +392,9 @@ public class DeviceTestAppService extends Service {
                         long timeStamp = System.currentTimeMillis();
                         long timeStamp2;
                         Log.d(TAG, Thread.currentThread().getName() + "InterruptTransfer->Start receive package data!");
+                        int count = 0;
+                        byte[] bytes = new byte[2];
+                        int offset = 0;
                         while (true) {
                             synchronized (this) {
                                 try {
@@ -404,33 +408,46 @@ public class DeviceTestAppService extends Service {
                                             }
                                             timeStamp = timeStamp2;
 
-                                            receiveBuffer.rewind();
                                             //package header: char: 'M','5'
+                                            offset = 0;
                                             for (int i = 0; i < packageHeader.length; i++) {
-                                                packageHeader[i] = (char)receiveBuffer.get(i);
+                                                packageHeader[i] = (char)receiveBuffer.get(offset + i);
                                             }
                                             //package data: gryo: short: x, y, z
+                                            offset = 2;
                                             for (int i = 0; i < packageDataGyroscope.length; i++) {
-                                                packageDataGyroscope[i] = receiveBuffer.getShort(i);
+                                                packageDataGyroscope[i] =
+                                                        (short) ((receiveBuffer.get(offset + i * 2) & 0xFF) << 8 | (receiveBuffer.get(offset + i * 2 + 1) & 0xFF));
                                             }
                                             //package data: accelerometer: short: x, y, z
+                                            offset = 8;
                                             for (int i = 0; i < packageDataAccelerometer.length; i++) {
-                                                packageDataAccelerometer[i] = receiveBuffer.getShort(i);
+                                                packageDataAccelerometer[i] =
+                                                        (short) ((receiveBuffer.get(offset + i * 2) & 0xFF) << 8 | (receiveBuffer.get(offset + i * 2 + 1) & 0xFF));
                                             }
                                             //package data: magnetic: short: x, y, z
+                                            offset = 14;
                                             for (int i = 0; i < packageDataMagnetic.length; i++) {
-                                                packageDataMagnetic[i] = receiveBuffer.getShort(i);
+                                                packageDataMagnetic[i] =
+                                                        (short) ((receiveBuffer.get(offset + i * 2) & 0xFF) << 8 | (receiveBuffer.get(offset + i * 2 + 1) & 0xFF));
                                             }
                                             //package data: temperature: short
-                                            packageDataTemperature[0] = receiveBuffer.getShort(0);
+                                            offset = 20;
+                                            packageDataTemperature[0] =
+                                                    (short) ((receiveBuffer.get(offset) & 0xFF) << 8 | (receiveBuffer.get(offset + 1) & 0xFF));
                                             //package data: light: short
-                                            packageDataLight[0] = receiveBuffer.getShort(0);
+                                            offset = 22;
+                                            packageDataLight[0] =
+                                                    (short) ((receiveBuffer.get(offset) & 0xFF) << 8 | (receiveBuffer.get(offset + 1) & 0xFF));
                                             //package data: proximity: short
-                                            packageDataProximity[0] = receiveBuffer.getShort(0);
+                                            offset = 24;
+                                            packageDataProximity[0] =
+                                                    (short) ((receiveBuffer.get(offset) & 0xFF) << 8 | (receiveBuffer.get(offset + 1) & 0xFF));
                                             //package data: timestamp: int
-                                            packageDataTimestamp[0] = receiveBuffer.getInt(0);
-                                            //package data: keycode: byte 3
-                                            //receiveBuffer.get(packageDataKeyCode);
+                                            offset = 26;
+                                            packageDataTimestamp[0] =
+                                                    (long) ((receiveBuffer.get(offset) & 0xFF) | (receiveBuffer.get(offset + 1) & 0xFF) << 8
+                                                            | (receiveBuffer.get(offset + 2) & 0xFF) << 16 | (receiveBuffer.get(offset + 3) & 0xFF) << 24);
 
                                             sensorPackageObject.setHeader(packageHeader);
                                             sensorPackageObject.gyroscopeSensor.setValues(packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]);
@@ -440,7 +457,6 @@ public class DeviceTestAppService extends Service {
                                             sensorPackageObject.lightSensor.setLightSensorValue(packageDataLight[0]);
                                             sensorPackageObject.proximitySensor.setProximitySensorValue(packageDataProximity[0]);
                                             sensorPackageObject.setTimestampValue(packageDataTimestamp[0]);
-                                            //sensorPackageObject.setKeyCode(packageDataKeyCode);
                                             /*
                                             Log.d(TAG, String.format("Header:%c%c", (char)packageHeader[0], (char)packageHeader[1]));
                                             Log.d(TAG, String.format("Gyroscope:%d,%d,%d", packageDataGyroscope[0], packageDataGyroscope[1], packageDataGyroscope[2]));
@@ -450,7 +466,14 @@ public class DeviceTestAppService extends Service {
                                             Log.d(TAG, String.format("Light:%d", packageDataLight[0]));
                                             Log.d(TAG, String.format("Proximity:%d", packageDataProximity[0]));
                                             Log.d(TAG, String.format("Timestamp:%d", packageDataTimestamp[0]));
-                                            */
+
+                                            for (int i = 0; i < 30; i++) {
+                                                Log.d(TAG, String.format("receiveBuffer[%d] = 0x%02x", i, receiveBuffer.get(i)));
+                                            }
+                                            if (count++ > 5) {
+                                                break;
+                                            }
+                                            //*/
                                             onDataChangedListener.sensorDataChanged(sensorPackageObject);
                                         } else {
                                             Log.d(TAG, Thread.currentThread().getName() + "->usbDeviceConnection.requestWait() failed!");
@@ -573,78 +596,6 @@ public class DeviceTestAppService extends Service {
                 e.printStackTrace();
             }
         }
-    }
-
-    //encrypt code
-    final int L01 = 1;
-    final int L02 = 2;
-    final int L03 = 3;
-    final int L04 = 4;
-    final int L05 = 5;
-    final int L06 = 6;
-    final int L07 = 7;
-    final int L08 = 8;
-    final int L09 = 9;
-    final int L10 = 10;
-    final int L11 = 11;
-    final int L12 = 12;
-    final int L13 = 13;
-    final int L14 = 14;
-    final int L15 = 15;
-
-    final int B0 = 0;
-    final int B1 = 1;
-    final int B2 = 2;
-    final int B3 = 3;
-    final int B4 = 4;
-    final int B5 = 5;
-    final int B6 = 6;
-    final int B7 = 7;
-
-    final int[][] jiami_data_tab = { { L13, B7 }, { L12, B6 }, { L11, B5 },
-            { L02, B1 }, { L02, B0 }, { L10, B7 }, { L09, B6 }, { L08, B5 },
-            { L13, B6 }, { L12, B5 }, { L11, B4 }, { L03, B1 }, { L03, B0 },
-            { L10, B6 }, { L09, B5 }, { L08, B4 }, { L13, B5 }, { L12, B4 },
-            { L11, B3 }, { L04, B1 }, { L04, B0 }, { L10, B5 }, { L09, B4 },
-            { L08, B3 }, { L13, B4 }, { L12, B3 }, { L11, B2 }, { L05, B1 },
-            { L05, B0 }, { L10, B4 }, { L09, B3 }, { L08, B2 }, { L13, B3 },
-            { L12, B2 }, { L11, B1 }, { L06, B1 }, { L06, B0 }, { L10, B3 },
-            { L09, B2 }, { L08, B1 }, { L13, B2 }, { L12, B1 }, { L11, B0 },
-            { L07, B1 }, { L07, B0 }, { L10, B2 }, { L09, B1 }, { L08, B0 },
-            { L07, B7 }, { L05, B6 }, { L06, B5 }, { L04, B4 }, { L02, B3 },
-            { L08, B7 }, { L08, B6 }, { L03, B5 }, { L07, B6 }, { L05, B5 },
-            { L06, B4 }, { L04, B3 }, { L02, B2 }, { L09, B7 }, { L09, B0 },
-            { L03, B4 }, { L07, B5 }, { L05, B4 }, { L06, B3 }, { L04, B2 },
-            { L02, B4 }, { L10, B1 }, { L10, B0 }, { L03, B3 }, { L07, B4 },
-            { L05, B3 }, { L06, B2 }, { L04, B5 }, { L02, B5 }, { L11, B7 },
-            { L11, B6 }, { L03, B2 }, { L07, B3 }, { L05, B2 }, { L06, B6 },
-            { L04, B6 }, { L02, B6 }, { L12, B7 }, { L12, B0 }, { L03, B6 },
-            { L07, B2 }, { L05, B7 }, { L06, B7 }, { L04, B7 }, { L02, B7 },
-            { L13, B1 }, { L13, B0 }, { L03, B7 } };
-
-    public int[] check_sum(int[] in)
-    {
-        int[] out = new int[16];
-        // int i=0;
-
-        int i, j, n, m;
-        for (i = 0; i < 12; i++)
-        {
-            for (j = 0; j < 8; j++)
-            {
-                n = jiami_data_tab[i * 8 + j][1];
-                m = in[i + 2] & (1 << (7 - j));
-                if (m != 0)
-                {
-                    out[jiami_data_tab[i * 8 + j][0]] |= (1 << n);
-                }
-            }
-        }
-        out[0] = in[0];
-        out[0] = in[0];
-        out[14] = in[14];
-        out[15] = in[15];
-        return out;
     }
 
     public void StartUpgrade() {
@@ -818,6 +769,14 @@ public class DeviceTestAppService extends Service {
     }
 }
 
+    public String getDeviceInformation() {
+        if (usbDevice != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                return String.format("Manufacturer: %s%n ProductName: %s%n", usbDevice.getManufacturerName(), usbDevice.getProductName());
+            }
+        }
+        return String.format("Manufacturer: %s%n ProductName: %s%n", "Unknown", "Unknown");
+    }
     private void startCommunication2() {
         StartUpgrade();
     }
@@ -874,11 +833,11 @@ public class DeviceTestAppService extends Service {
                     short dataLength = receiveBuffer.getShort();
                     int[] encryptData = new int[dataLength/4], decryptData;
                     receiveBuffer.asIntBuffer().get(encryptData);
-                    decryptData = check_sum(encryptData);
+                    //decryptData = check_sum(encryptData);
 
                     sendBuffer.put((byte) 0x03);
                     sendBuffer.putShort((short) (encryptData.length * 4));
-                    sendBuffer.asIntBuffer().put(decryptData);
+                    //sendBuffer.asIntBuffer().put(decryptData);
                     break;
 
                 case 0x04:
@@ -932,7 +891,7 @@ public class DeviceTestAppService extends Service {
                                 connectToDevice(usbInterface);
                                 if (deviceIsConnected()) {
                                     Log.d(TAG, "startCommunication()!");
-                                    //startCommunication();
+                                    startCommunication();
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();

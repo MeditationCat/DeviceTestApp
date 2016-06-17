@@ -48,7 +48,6 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
     String mKeycode = "";
     private GridView mGrid;
     private MySurfaceView joyStickView;
-    private ArrayList<String> mListData;
 
     final static int itemString[] = {
             R.string.keycode_back,
@@ -74,13 +73,14 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.keycode_bt_failed);
         mBtFailed.setOnClickListener(this);
-        mListData = new ArrayList<String>();
+        ArrayList<String> mListData = new ArrayList<String>();
+        HashMap<String, Integer> keyMap = new HashMap<String, Integer>();
         for (int item : itemString) {
             mListData.add(getString(item));
         }
 
         mGrid = (GridView) findViewById(R.id.keycode_grid);
-        mGrid.setAdapter(new MyAdapter(this, mListData));
+        mGrid.setAdapter(new MyAdapter(this, mListData, keyMap));
         //
         //获取布局文件中LinearLayout容器
         LinearLayout root = (LinearLayout)findViewById(R.id.paint_root);
@@ -90,44 +90,48 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyDown keyCode->" + String.valueOf(keyCode));
+        MyAdapter myAdapter = (MyAdapter) mGrid.getAdapter();
         switch (keyCode) {
 
             case KeyEvent.KEYCODE_BACK:
             case KeyEvent.KEYCODE_BUTTON_B:
-                mListData.remove(getString(R.string.keycode_back));
+                myAdapter.setKeyMap(getString(R.string.keycode_back), 1);
                 break;
             case KeyEvent.KEYCODE_VOLUME_UP:
-                mListData.remove(getString(R.string.keycode_vol_up));
+                myAdapter.setKeyMap(getString(R.string.keycode_vol_up), 1);
                 break;
             case KeyEvent.KEYCODE_VOLUME_DOWN:
-                mListData.remove(getString(R.string.keycode_vol_down));
+                myAdapter.setKeyMap(getString(R.string.keycode_vol_down), 1);
                 break;
             case 0x15: //single click
-                //mListData.remove(0);
                 break;
             case 0x25: //double click
-                //mListData.remove(0);
                 break;
             case 0x35: //up -> down
-                mListData.remove(getString(R.string.keycode_arrow_up));
+                myAdapter.setKeyMap(getString(R.string.keycode_arrow_up), 1);
                 break;
             case 0x45: //down -> up
-                mListData.remove(getString(R.string.keycode_arrow_down));
+                myAdapter.setKeyMap(getString(R.string.keycode_arrow_down), 1);
                 break;
             case 0x55: //right -> left
-                mListData.remove(getString(R.string.keycode_arrow_left));
+                myAdapter.setKeyMap(getString(R.string.keycode_arrow_left), 1);
                 break;
             case 0x65: // left -> right
-                mListData.remove(getString(R.string.keycode_arrow_right));
+                myAdapter.setKeyMap(getString(R.string.keycode_arrow_right), 1);
                 break;
-
             default:
                 break;
         }
-        mGrid.setAdapter(mGrid.getAdapter());
-        if (mListData.isEmpty()) {
+        mGrid.setAdapter(myAdapter);
+        if (myAdapter.getKeyMaSize() == myAdapter.getCount()) {
+            // test key OK
         }
         return true;
     }
@@ -162,10 +166,12 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
     public class MyAdapter extends BaseAdapter {
         private Context context;
         private ArrayList<String> mDataList;
+        private HashMap<String, Integer> keyMap;
 
-        public MyAdapter(Context context, ArrayList<String> mDataList) {
+        public MyAdapter(Context context, ArrayList<String> mDataList, HashMap<String, Integer> keyMap) {
             this.context = context;
             this.mDataList = mDataList;
+            this.keyMap = keyMap;
         }
 
         @Override
@@ -175,7 +181,7 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
 
         @Override
         public Object getItem(int position) {
-            return (mDataList == null) ? null : mListData.get(position);
+            return (mDataList == null) ? null : mDataList.get(position);
         }
 
         @Override
@@ -189,10 +195,25 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
                 convertView = LayoutInflater.from(this.context).inflate(R.layout.keycode_grid,parent, false);
             }
             TextView textView = Utils.ViewHolder.get(convertView, R.id.factor_button);
-            //textView.setBackgroundResource(R.drawable.btn_default_normal);
-            textView.setText(mListData.get(position));
+
+            if (keyMap.containsKey(mDataList.get(position)) && keyMap.get(mDataList.get(position)) == 1) {
+                textView.setBackgroundResource(R.drawable.btn_default_pressed);
+            }
+            textView.setText(mDataList.get(position));
 
             return convertView;
+        }
+
+        public void setKeyMap(String key, int value) {
+            if (keyMap != null)
+            this.keyMap.put(key, value);
+        }
+
+        public int getKeyMaSize() {
+            if (keyMap != null) {
+                return 0;
+            }
+            return keyMap.size();
         }
     }
 
@@ -253,6 +274,17 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
             paint.setAntiAlias(true);
             setFocusable(true);
             setFocusableInTouchMode(true);
+        }
+
+        public void setMySurfaceView(float circleX, float circleY, float circleR) {
+            this.RockerCircleX = circleX;
+            this.RockerCircleY = circleY;
+            this.RockerCircleR = circleR;
+            this.SmallRockerCircleX = this.RockerCircleX;
+            this.SmallRockerCircleY = this.RockerCircleY;
+            this.SmallRockerCircleR = this.RockerCircleR  * 2 / 5;
+
+            this.draw();
         }
 
         public void surfaceCreated(SurfaceHolder holder) {

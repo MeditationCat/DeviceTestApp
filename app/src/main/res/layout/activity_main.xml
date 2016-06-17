@@ -4,50 +4,68 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <LinearLayout
-        android:orientation="horizontal"
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/main_bt_autotest"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/AutoTest"
-            android:textSize="30dip"
-            android:gravity="center_vertical|center|center_horizontal" />
+            android:id="@+id/linearLayout3">
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="DATE &amp; TIME"
+                android:id="@+id/textView"
+                android:layout_below="@+id/main_grid"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:gravity="left|center"
+                android:textSize="25sp" />
 
-    <Button
-        android:id="@+id/main_bt_start"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/StartTest"
-        android:textSize="30dip"
-        android:gravity="center_vertical|center|center_horizontal" />
+            <Button
+                android:id="@+id/main_bt_autotest"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/AutoTest"
+                android:textSize="50sp"
+                android:gravity="center_vertical|center|center_horizontal" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="DATE &amp; TIME"
-        android:id="@+id/textView"
-        android:gravity="center_vertical|center_horizontal" />
+            <Button
+                android:id="@+id/main_bt_start"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/StartTest"
+                android:textSize="50sp"
+                android:gravity="center_vertical|center|center_horizontal" />
 
-    <GridView
-        android:id="@+id/main_grid"
-        android:layout_width="match_parent"
-        android:layout_height="201dp"
-        android:padding="1dip"
-        android:verticalSpacing="1dip"
-        android:horizontalSpacing="1dip"
-        android:stretchMode="columnWidth"
-        android:gravity="center"
-        android:numColumns="auto_fit" />
+        </LinearLayout>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start To Upgrade"
-        android:id="@+id/main_bt_upgrade"
-        android:layout_gravity="center_horizontal" />
+        <GridView
+            android:id="@+id/main_grid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="1dip"
+            android:verticalSpacing="1dip"
+            android:horizontalSpacing="1dip"
+            android:stretchMode="columnWidth"
+            android:gravity="center"
+            android:numColumns="auto_fit"
+            android:layout_below="@+id/linearLayout3"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start To Upgrade"
+            android:id="@+id/main_bt_upgrade"
+            android:layout_gravity="center_horizontal"
+            android:layout_alignBottom="@+id/main_grid"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+
 </LinearLayout>

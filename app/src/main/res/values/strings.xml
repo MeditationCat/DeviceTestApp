@@ -35,8 +35,8 @@
         <string name="LSensor_accuracy">Accuracy:</string>
         <string name="LSensor_value">Value:</string>
         <string name="LSensor_tips">Observe the changing of values in strong light and darkness</string>
-        <string name="Success">Succeeded</string>
-        <string name="Failed">Failed</string>
+        <string name="Success">Pass</string>
+        <string name="Failed">Fail</string>
         <string name="Retest">Retest</string>
         <string name="Exit">Exit</string>
         <string name="psensor_hello">P-Sensor</string>
@@ -68,9 +68,9 @@
         <string name="keycode_back">Back</string>
         <string name="keycode_vol_up">Volume Up</string>
         <string name="keycode_vol_down">Volume Down</string>
-        <string name="keycode_arrow_up">Up</string>
-        <string name="keycode_arrow_down">Down</string>
-        <string name="keycode_arrow_left">Left</string>
-        <string name="keycode_arrow_right">Right</string>
-            <string name="keycode_joystick_info">Joystick Key Test</string>
+        <string name="keycode_arrow_up">↑</string>
+        <string name="keycode_arrow_down">↓</string>
+        <string name="keycode_arrow_left">←</string>
+        <string name="keycode_arrow_right">→</string>
+        <string name="keycode_joystick_info">Joystick Key Test</string>
     </resources>

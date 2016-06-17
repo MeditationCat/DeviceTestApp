@@ -73,11 +73,30 @@ public class MSensor extends Activity {
                     if (null == mOrientText || null == mOrientValue || null == mImgCompass) {
                         return;
                     }
+                    float Mx = object.magneticSensor.getX() / 1.0f;
+                    float My = object.magneticSensor.getY() / 1.0f;
+                    float Mz = object.magneticSensor.getZ() / 1.0f;
+                    mOrientValue.setText(String.format("Magnetic Sensor Data:%nX: %f%nY: %f%nZ: %f%n", Mx, My, Mz));
+                    float azimuth = (float) Math.atan2(Mx, My);
+                    if (azimuth < 0) {
+                        azimuth = (float) (360 - Math.abs(azimuth * 180 / Math.PI));
+                    } else {
+                        azimuth = (float) (azimuth * 180 / Math.PI);
+                    }
+                    azimuth = 360 - azimuth;
+
+                    float pitch = (float) (Math.atan2(My, Mz) * 180 / Math.PI);
+                    float roll = (float) (Math.atan2(Mx, Mz) * 180 / Math.PI);
+                    if (roll > 90) {
+                        roll = -(180 - roll);
+                    } else if (roll < -90) {
+                        roll = 180 + roll;
+                    }
                     float[] values = new float[3];
-                    values[0] = object.magneticSensor.getX();
-                    values[1] = object.magneticSensor.getY();
-                    values[2] = object.magneticSensor.getZ();
-                    mOrientText.setText(String.format("Msensor data:\nX:%f\nY:%f\nZ:%f", values[0], values[1], values[2]));
+                    values[0] = azimuth;
+                    values[1] = pitch;
+                    values[2] = roll;
+
                     if (Math.abs(values[0] - mDegressQuondam) < 1) {
                         return;
                     }
@@ -116,12 +135,9 @@ public class MSensor extends Activity {
                             }
                         }
                     }
-
-                    mOrientValue.setText(String.valueOf(values[0]));
-
+                    //mOrientText.setText(String.valueOf(values[0]));
                     if (mDegressQuondam != -values[0])
                         AniRotateImage(-values[0]);
-
                 }
             }
         });
@@ -140,6 +156,7 @@ public class MSensor extends Activity {
         mOrientText = (TextView) findViewById(R.id.OrientText);
         mImgCompass = (ImageView) findViewById(R.id.ivCompass);
         mOrientValue = (TextView) findViewById(R.id.OrientValue);
+        mOrientValue.setText(String.format("Magnetic Sensor Data:%nX: %+f%nY: %+f%nZ: %+f%n", 0.0f, 0.0f, 0.0f));
         mBtOk = (Button) findViewById(R.id.msensor_bt_ok);
         mBtOk.setOnClickListener(cl);
         mBtFailed = (Button) findViewById(R.id.msensor_bt_failed);

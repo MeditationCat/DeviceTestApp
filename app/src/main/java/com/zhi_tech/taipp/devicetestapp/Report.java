@@ -30,7 +30,8 @@ public class Report extends Activity {
             R.string.lsensor_name,
             R.string.psensor_name,
             R.string.gyroscopesensor_name,
-            R.string.bluetooth_name
+            R.string.tsensor_name,
+            //R.string.bluetooth_name,
     };
 
     @Override

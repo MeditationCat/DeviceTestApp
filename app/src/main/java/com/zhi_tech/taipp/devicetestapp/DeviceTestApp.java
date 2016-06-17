@@ -79,7 +79,8 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                textView.setText(String.valueOf(object.getHeader()) + ":" + object.getTimestamp());
+                textView.setText(String.format("USB device information:%n%sDataHeader: %s%nTimestamp: %s%n",
+                        dtaService.getDeviceInformation(), String.valueOf(object.getHeader()), object.getTimestamp()));
                 }
         });
     }
@@ -101,8 +102,11 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         mBtStart.setOnClickListener(cl);
         mBtUpgrade = (Button) findViewById(R.id.main_bt_upgrade);
         mBtUpgrade.setOnClickListener(cl);
+        mBtUpgrade.setVisibility(View.GONE);
         textView = (TextView) findViewById(R.id.textView);
         //textView.setVisibility(View.GONE);
+        textView.setText(String.format("USB device information:%n%sDataHeader: %s%nTimestamp: %s",
+                String.format("Manufacturer: %s%n ProductName: %s%n", "Unknown", "Unknown"), "Unknown","Unknown"));
         mGrid = (GridView) findViewById(R.id.main_grid);
         mListData = getData();
         mAdapter = new MyAdapter(this);
@@ -114,6 +118,17 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         super.onResume();
         mGrid.setAdapter(mAdapter);
         mGrid.setOnItemClickListener(this);
+
+        if (dtaService != null) {
+            dtaService.setOnDataChangedListener(new OnDataChangedListener() {
+                @Override
+                public void sensorDataChanged(SensorPackageObject object) {
+                    //to get the data from the object.
+                    postUpdateHandlerMsg(object);
+                }
+            });
+
+        }
     }
 
     public View.OnClickListener cl = new View.OnClickListener() {

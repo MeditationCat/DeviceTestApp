@@ -72,7 +72,7 @@ public class PSensor extends Activity implements View.OnClickListener {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                mPsensor.setText(getResources().getString(R.string.proximity) + " " + object.proximitySensor.getProximitySensorValue());
+                mPsensor.setText(getResources().getString(R.string.proximity) + ": " + object.proximitySensor.getProximitySensorValue());
             }
         });
     }

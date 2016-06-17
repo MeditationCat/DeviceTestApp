@@ -4,6 +4,7 @@
     android:id="@+id/factor_button"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:textSize="19dip"
-    android:background="@drawable/btn_default">
+    android:textSize="20sp"
+    android:background="@drawable/btn_default"
+    android:gravity="left|center_vertical">
 </TextView>
