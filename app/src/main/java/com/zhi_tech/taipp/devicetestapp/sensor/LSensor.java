@@ -50,6 +50,11 @@ public class LSensor extends Activity {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
                 }
+
+                @Override
+                public void sendsorCommandReturnValue(int cmd, int value) {
+
+                }
             });
         }
         @Override

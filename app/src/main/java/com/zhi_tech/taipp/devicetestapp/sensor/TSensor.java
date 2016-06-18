@@ -22,6 +22,9 @@ import com.zhi_tech.taipp.devicetestapp.R;
 import com.zhi_tech.taipp.devicetestapp.SensorPackageObject;
 import com.zhi_tech.taipp.devicetestapp.Utils;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * Created by Tiger on 6/5/2016.
  */
@@ -30,6 +33,11 @@ public class TSensor extends Activity implements View.OnClickListener {
     private Button mBtOk;
     private Button mBtFailed;
     SharedPreferences mSp;
+    boolean mCheckDataSuccess;
+    private Timer mTimer;
+    private TimerTask mTimerTask;
+    private byte okFlag = 0x00;
+
     private final String TAG = "TSensor";
     public static final float Temp_Sensitivity = (float) 326.8; //LSB/ºC
     public static final int RoomTemp_Offset = 25; //ºC
@@ -49,6 +57,11 @@ public class TSensor extends Activity implements View.OnClickListener {
                 public void sensorDataChanged(SensorPackageObject object) {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
+                }
+
+                @Override
+                public void sendsorCommandReturnValue(int cmd, int value) {
+
                 }
             });
         }
@@ -73,6 +86,43 @@ public class TSensor extends Activity implements View.OnClickListener {
                     mBtFailed.setBackgroundColor(Color.RED);
                     mBtOk.setClickable(false);
                     mBtOk.setBackgroundColor(Color.GRAY);
+                    okFlag |= 0x80;
+                } else {
+                    okFlag |= 0x01;
+                }
+
+                if (mTimer == null) {
+                    mTimer = new Timer();
+                    TimerTask timerTask = new TimerTask() {
+                        @Override
+                        public void run() {
+                            if ((okFlag & 0x80) != 0) {
+                                mCheckDataSuccess = false;
+                            } else {
+                                mCheckDataSuccess = true;
+                            }
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (mCheckDataSuccess) {
+                                        tvdata.setTextColor(Color.GREEN);
+                                        mBtFailed.setBackgroundColor(Color.GRAY);
+                                        mBtFailed.setClickable(false);
+                                        mBtOk.setBackgroundColor(Color.GREEN);
+                                    } else {
+                                        tvdata.setTextColor(Color.RED);
+                                        mBtFailed.setBackgroundColor(Color.RED);
+                                        mBtOk.setClickable(false);
+                                        mBtOk.setBackgroundColor(Color.GRAY);
+                                    }
+                                }
+                            });
+
+                            Timer timer = new Timer();
+                            timer.schedule(mTimerTask, 3 * 1000);
+                        }
+                    };
+                    mTimer.schedule(timerTask, 10 * 1000);
                 }
             }
         });
@@ -93,6 +143,14 @@ public class TSensor extends Activity implements View.OnClickListener {
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.tsensor_bt_failed);
         mBtFailed.setOnClickListener(this);
+        mCheckDataSuccess = false;
+        mTimer = null;
+        mTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        };
     }
 
     @Override
@@ -107,6 +165,12 @@ public class TSensor extends Activity implements View.OnClickListener {
 
         Utils.SetPreferences(this, mSp, R.string.tsensor_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
+        finish();
+    }
+
+    public void SaveToReport() {
+        Utils.SetPreferences(this, mSp, R.string.tsensor_name,
+                mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
     }
 }

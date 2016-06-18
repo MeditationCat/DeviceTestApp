@@ -16,7 +16,7 @@
         <string name="Bluetooth_mac">MAC address...</string>
         <string name="Bluetooth_scan_success">Scanning completed</string>
         <string name="GSensor">G-sensor</string>
-        <string name="GSensor_info">Put the phone vertically, horizontally  on its side and then observe the changing of gravity</string>
+        <string name="GSensor_info">Put the device vertically, horizontally  on its side and then observe the changing of gravity</string>
         <string name="GSensor_calibrate">G-sensor calibration</string>
         <string name="PSensor_calibrate" translatable="false">PSensor_calibrate</string>
         <!--MSensor part -->

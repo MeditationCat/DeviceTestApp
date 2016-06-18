@@ -24,6 +24,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -48,7 +49,8 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
     String mKeycode = "";
     private GridView mGrid;
     private MySurfaceView joyStickView;
-
+    private LinearLayout root;
+    boolean isMeasured = false;
     final static int itemString[] = {
             R.string.keycode_back,
             R.string.keycode_vol_up,
@@ -83,10 +85,24 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
         mGrid.setAdapter(new MyAdapter(this, mListData, keyMap));
         //
         //获取布局文件中LinearLayout容器
-        LinearLayout root = (LinearLayout)findViewById(R.id.paint_root);
-        ViewGroup.LayoutParams lp = root.getLayoutParams();
-        joyStickView = new MySurfaceView(this, lp.width / 2, lp.height / 2, lp.height * 5/ 14);
+        root = (LinearLayout)findViewById(R.id.paint_root);
+        joyStickView = new MySurfaceView(this, 0, 0, 0 * 5/ 14);
         root.addView(joyStickView);
+
+        ViewTreeObserver vto = root.getViewTreeObserver();
+        vto.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (!isMeasured) {
+                    float circleX = root.getMeasuredWidth() / 2;
+                    float circleY = root.getMeasuredHeight() / 2;
+                    float circleR = (circleX > circleY ? circleY : circleX) * 5 / 7;
+                    joyStickView.setMySurfaceView(circleX, circleY, circleR);
+                    isMeasured = true;
+                }
+                return true;
+            }
+        });
     }
 
     @Override

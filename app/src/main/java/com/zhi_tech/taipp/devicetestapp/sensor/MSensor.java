@@ -8,6 +8,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.hardware.SensorListener;
 import android.hardware.SensorManager;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -54,6 +55,11 @@ public class MSensor extends Activity {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
                 }
+
+                @Override
+                public void sendsorCommandReturnValue(int cmd, int value) {
+
+                }
             });
         }
         @Override
@@ -73,18 +79,24 @@ public class MSensor extends Activity {
                     if (null == mOrientText || null == mOrientValue || null == mImgCompass) {
                         return;
                     }
-                    float Mx = object.magneticSensor.getX() / 1.0f;
-                    float My = object.magneticSensor.getY() / 1.0f;
-                    float Mz = object.magneticSensor.getZ() / 1.0f;
-                    mOrientValue.setText(String.format("Magnetic Sensor Data:%nX: %f%nY: %f%nZ: %f%n", Mx, My, Mz));
-                    float azimuth = (float) Math.atan2(Mx, My);
+                    float Mx = object.magneticSensor.getX() / 100.0f * 100.0f;
+                    float My = object.magneticSensor.getY() / 100.0f * 100.0f;
+                    float Mz = object.magneticSensor.getZ() / 100.0f * 100.0f;
+                    mOrientValue.setText(String.format("Magnetic Sensor Data:%nX: %+f%nY: %+f%nZ: %+f%n", Mx, My, Mz));
+                    //Log.d(TAG,String.format(" Magnetic Sensor Data:X: %+f Y: %+f Z: %+f ", Mx, My, Mz));
+                    float azimuth = (float) (Math.atan2(Mx, My) * (180 / Math.PI));
+                    if (azimuth < 0) {
+                        azimuth = 360 - Math.abs(azimuth);
+                    }
+                    /*
+                    float azimuth = (float) Math.atan2(My, Mx);
                     if (azimuth < 0) {
                         azimuth = (float) (360 - Math.abs(azimuth * 180 / Math.PI));
                     } else {
                         azimuth = (float) (azimuth * 180 / Math.PI);
                     }
                     azimuth = 360 - azimuth;
-
+                    */
                     float pitch = (float) (Math.atan2(My, Mz) * 180 / Math.PI);
                     float roll = (float) (Math.atan2(Mx, Mz) * 180 / Math.PI);
                     if (roll > 90) {
@@ -117,25 +129,25 @@ public class MSensor extends Activity {
                         default: {
                             int v = (int) values[0];
                             if (v > 0 && v < 90) {
-                                mOrientText.setText(getString(R.string.MSensor_north_east) + v);
+                                mOrientText.setText(getString(R.string.MSensor_north_east) + String.format(" %02d °", v));
                             }
 
                             if (v > 90 && v < 180) {
                                 v = 180 - v;
-                                mOrientText.setText(getString(R.string.MSensor_south_east) + v);
+                                mOrientText.setText(getString(R.string.MSensor_south_east) + String.format(" %02d °", v));
                             }
 
                             if (v > 180 && v < 270) {
                                 v = v - 180;
-                                mOrientText.setText(getString(R.string.MSensor_south_west) + v);
+                                mOrientText.setText(getString(R.string.MSensor_south_west) + String.format(" %02d °", v));
                             }
                             if (v > 270 && v < 360) {
                                 v = 360 - v;
-                                mOrientText.setText(getString(R.string.MSensor_north_west) + v);
+                                mOrientText.setText(getString(R.string.MSensor_north_west) + String.format(" %02d °", v));
                             }
                         }
                     }
-                    //mOrientText.setText(String.valueOf(values[0]));
+
                     if (mDegressQuondam != -values[0])
                         AniRotateImage(-values[0]);
                 }

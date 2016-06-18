@@ -7,10 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +24,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +36,11 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     private GridView mGrid;
     private MyAdapter mAdapter;
     final static int itemString[] = {
-            R.string.KeyCode_name,
+            //R.string.KeyCode_name,
             R.string.gsensor_name,
             R.string.msensor_name,
-            R.string.lsensor_name,
-            R.string.psensor_name,
+            //R.string.lsensor_name,
+            //R.string.psensor_name,
             R.string.gyroscopesensor_name,
             R.string.tsensor_name,
             //R.string.bluetooth_name,
@@ -46,6 +49,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     private Button mBtAuto;
     private Button mBtStart;
     private Button mBtUpgrade;
+    private Button mBtCalibration;
     private TextView textView;
 
     public static byte result[] = new byte[AppDefine.DVT_NV_ARRAR_LEN]; //0 default; 1,success; 2,fail; 3,notest
@@ -63,6 +67,28 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                 public void sensorDataChanged(SensorPackageObject object) {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
+                }
+
+                @Override
+                public void sendsorCommandReturnValue(final int cmd, final int value) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (cmd == 0x3B) {
+                                String str = "Calibration is OK!";
+                                if (value == 0) {
+                                    str = "Calibration failed!";
+                                } else {
+                                    mBtCalibration.setTextColor(Color.GREEN);
+                                    mBtCalibration.setClickable(false);
+                                }
+                                Toast toast=Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG);
+                                toast.setGravity(Gravity.CENTER, 0, 0);
+                                toast.show();
+                            }
+                        }
+                    });
+
                 }
             });
         }
@@ -98,14 +124,18 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         init();
         mBtAuto = (Button) findViewById(R.id.main_bt_autotest);
         mBtAuto.setOnClickListener(cl);
+        mBtAuto.setVisibility(View.GONE);
         mBtStart = (Button) findViewById(R.id.main_bt_start);
         mBtStart.setOnClickListener(cl);
         mBtUpgrade = (Button) findViewById(R.id.main_bt_upgrade);
         mBtUpgrade.setOnClickListener(cl);
         mBtUpgrade.setVisibility(View.GONE);
+        mBtCalibration = (Button) findViewById(R.id.main_bt_calibration);
+        mBtCalibration.setOnClickListener(cl);
+
         textView = (TextView) findViewById(R.id.textView);
         //textView.setVisibility(View.GONE);
-        textView.setText(String.format("USB device information:%n%sDataHeader: %s%nTimestamp: %s",
+        textView.setText(String.format("USB device information:%n%sDataHeader: %s%nTimestamp: %s%n",
                 String.format("Manufacturer: %s%n ProductName: %s%n", "Unknown", "Unknown"), "Unknown","Unknown"));
         mGrid = (GridView) findViewById(R.id.main_grid);
         mListData = getData();
@@ -126,6 +156,11 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
                 }
+
+                @Override
+                public void sendsorCommandReturnValue(int cmd, int value) {
+
+                }
             });
 
         }
@@ -142,15 +177,20 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                 startActivityForResult(intent, reqId);
             } else if (v.getId() == mBtStart.getId()) {
                 if (dtaService != null) {
-                    dtaService.startToConnectDevice();
+                    dtaService.startToReceiveData();
                 }
             } else if (v.getId() == mBtUpgrade.getId()) {
                 //start upgrade request
                 if (dtaService != null) {
                     dtaService.StartUpgrade();
                 }
+            } else if (v.getId() == mBtCalibration.getId()) {
+            //start calibration request
+            if (dtaService != null) {
+                dtaService.StartToCalibration();
             }
         }
+    }
     };
 
     public class MyAdapter extends BaseAdapter {

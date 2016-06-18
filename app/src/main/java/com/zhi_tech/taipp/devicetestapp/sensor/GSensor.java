@@ -28,6 +28,9 @@ import com.zhi_tech.taipp.devicetestapp.R;
 import com.zhi_tech.taipp.devicetestapp.SensorPackageObject;
 import com.zhi_tech.taipp.devicetestapp.Utils;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * Created by taipp on 5/20/2016.
  */
@@ -50,6 +53,9 @@ public class GSensor extends Activity implements View.OnClickListener {
     private final static int Accl_Sensitivity = 16384; // LSB/g
     private final static float Gravity = (float) 9.8; // m/s²
     private final static int FullScale_Range = 3; // g
+    private byte okFlag = 0x00;
+    private Timer mTimer;
+    private TimerTask mTimerTask;
 
     private final String TAG = "GSensor";
 
@@ -63,6 +69,11 @@ public class GSensor extends Activity implements View.OnClickListener {
                 public void sensorDataChanged(SensorPackageObject object) {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
+                }
+
+                @Override
+                public void sendsorCommandReturnValue(int cmd, int value) {
+
                 }
             });
         }
@@ -80,10 +91,9 @@ public class GSensor extends Activity implements View.OnClickListener {
             @Override
             public void run() {
                 float[] values = new float[3];
-                values[0] = object.accelerometerSensor.getX();
-                values[1] = object.accelerometerSensor.getY();
-                values[2] = object.accelerometerSensor.getZ();
-                //tvdata.setText(String.format("X:%+f%nY:%+f%nZ:%+f%n",values[0],values[1],values[2]));
+                values[0] = object.accelerometerSensor.getX() / 1.0f;
+                values[1] = object.accelerometerSensor.getY() / 1.0f;
+                values[2] = object.accelerometerSensor.getZ() / 1.0f;
 
                 float x = values[0] * Gravity / Accl_Sensitivity;
                 float y = values[1] * Gravity  / Accl_Sensitivity;
@@ -94,16 +104,47 @@ public class GSensor extends Activity implements View.OnClickListener {
                 mZ = z;
                 tvdata.setText(String.format("X: %+f%nY: %+f%nZ: %+f%n",mX,mY,mZ));
 
-                if (Math.abs(values[0]) > Accl_Sensitivity
-                        || Math.abs(values[1]) > Accl_Sensitivity || Math.abs(values[2]) > Accl_Sensitivity) {
+                if (Math.abs(mX) < FullScale_Range && Math.abs(mY) < FullScale_Range
+                        && Math.abs(Math.abs(mZ) - Gravity) < FullScale_Range) {
+                    okFlag |= 0x01;
                 }
-                if (Math.abs(mX) > FullScale_Range || Math.abs(mY) > FullScale_Range || Math.abs(mZ) > FullScale_Range) {
+                if (Math.abs(mX) < FullScale_Range && Math.abs(mZ) < FullScale_Range
+                        && Math.abs(Math.abs(mY) - Gravity) < FullScale_Range) {
+                    okFlag |= 0x02;
+                }
+                if (Math.abs(mZ) < FullScale_Range && Math.abs(mY) < FullScale_Range
+                        && Math.abs(Math.abs(mX) - Gravity) < FullScale_Range) {
+                    okFlag |= 0x04;
+                }
+
+                if (okFlag == 0x07) {
+                    tvdata.setTextColor(Color.GREEN);
+                    mBtFailed.setBackgroundColor(Color.GRAY);
+                    mBtFailed.setClickable(false);
+                    mBtOk.setBackgroundColor(Color.GREEN);
+                    mCheckDataSuccess = true;
+                    //
+                }
+                /*
+                if (Math.abs(mX) > Gravity + FullScale_Range
+                        || Math.abs(mY) > Gravity + FullScale_Range || Math.abs(mZ) > Gravity + FullScale_Range) {
                     //Log.d(TAG,String.format("X: %+f Y: %+f Z: %+f ",values[0],values[1],values[2]));
                     Log.d(TAG,String.format("X: %+f Y: %+f Z: %+f%n",mX,mY,mZ));
                     tvdata.setTextColor(Color.RED);
                     mBtFailed.setBackgroundColor(Color.RED);
                     mBtOk.setClickable(false);
                     mBtOk.setBackgroundColor(Color.GRAY);
+                    mCheckDataSuccess = false;
+                    okFlag |= 0x80;
+                }
+                */
+
+                if (((okFlag & 0x01) != 0 && (okFlag & 0x02) != 0 && (okFlag & 0x04) != 0)
+                        || (okFlag & 0x80) != 0) {
+                    if (mTimer == null) {
+                        mTimer = new Timer();
+                        mTimer.schedule(mTimerTask, 3 * 1000);
+                    }
                 }
 
                 if (Math.abs(x) > Math.abs(y) && Math.abs(x) - OFFSET > Math.abs(z)) {
@@ -138,6 +179,13 @@ public class GSensor extends Activity implements View.OnClickListener {
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.gsensor_bt_failed);
         mBtFailed.setOnClickListener(this);
+        mTimer = null;
+        mTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        };
     }
 
     @Override
@@ -187,6 +235,12 @@ public class GSensor extends Activity implements View.OnClickListener {
         */
         Utils.SetPreferences(this, mSp, R.string.gsensor_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
+        finish();
+    }
+
+    public void SaveToReport() {
+        Utils.SetPreferences(this, mSp, R.string.gsensor_name,
+                mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
     }
 }

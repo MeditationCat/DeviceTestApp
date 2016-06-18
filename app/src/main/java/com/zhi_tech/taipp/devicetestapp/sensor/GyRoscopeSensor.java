@@ -59,6 +59,11 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
                 }
+
+                @Override
+                public void sendsorCommandReturnValue(int cmd, int value) {
+
+                }
             });
         }
         @Override

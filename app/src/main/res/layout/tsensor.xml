@@ -9,11 +9,10 @@
 
         <TextView
             android:id="@+id/tsensor"
-            android:layout_width="fill_parent"
-            android:layout_height="60dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="@string/tsensor_value"
-            android:textColor="@color/blue"
-            android:textSize="28sp"
+            android:textSize="30sp"
             android:layout_alignParentTop="true"
             android:gravity="center_vertical" />
 
@@ -47,7 +46,6 @@
                 android:layout_weight="0.5"
                 android:textSize="50sp"
                 android:gravity="left|center"
-                android:textColor="@color/blue"
                 android:layout_margin="5dp" />
         </LinearLayout>
 

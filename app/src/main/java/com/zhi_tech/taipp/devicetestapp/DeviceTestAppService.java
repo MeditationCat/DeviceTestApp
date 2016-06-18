@@ -156,7 +156,7 @@ public class DeviceTestAppService extends Service {
 
             if (checkDevicePermission(usbDevice)) {
                 if (connectToDevice(usbInterface)) {
-                    startCommunication();
+                    //startCommunication();
                 }
             }
         } catch (Exception e) {
@@ -475,6 +475,7 @@ public class DeviceTestAppService extends Service {
                                             }
                                             //*/
                                             onDataChangedListener.sensorDataChanged(sensorPackageObject);
+                                            Thread.sleep(100);
                                         } else {
                                             Log.d(TAG, Thread.currentThread().getName() + "->usbDeviceConnection.requestWait() failed!");
                                         }
@@ -769,6 +770,129 @@ public class DeviceTestAppService extends Service {
     }
 }
 
+    public void Disconnect() {
+        if (deviceIsConnected()) {
+            Log.d(TAG, "device has been already connected!");
+            if (usbDevice != null) {
+                Log.d(TAG, "close the device connection!");
+                // call your method that cleans up and closes communication with the device
+                try {
+                    if (usbDeviceConnection != null) {
+                        usbDeviceConnection.releaseInterface(usbInterface);
+                        usbDeviceConnection.close();
+                    }
+                    if (usbRequestEpIntIn2 != null) {
+                        usbRequestEpIntIn2.close();
+                    }
+                    initConnection();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    public void StartToCalibration() {
+        if (deviceIsConnected()) {
+            Log.d(TAG, "device has been already connected!");
+            Disconnect();
+        }
+        startToConnectDevice();
+        StartCalibration();
+    }
+    public void StartCalibration() {
+        //set up to send cmd to the device or receive data from the device.
+        //send request command to the device.
+        UsbEndpoint epIn, epOut, epOut2;
+        if (epIntOut != null && epIntIn != null) {
+            epIn = epIntIn;
+            epOut = epIntOut;
+            epOut2 = epIntOut2;
+            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("epIn = %x,epIntOut = %x,epIntOut2 = %x", epIn.getAddress(), epIntOut.getAddress(), epIntOut2.getAddress()));
+        } else if (epBulkOut != null && epBulkIn != null && epBulkOut2 != null) {
+            epIn = epBulkIn;
+            epOut = epBulkOut;
+            epOut2 = epBulkOut2;
+        } else {
+            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->epIn and epOut are null!");
+            return;
+        }
+
+        UsbRequest sendRequest = new UsbRequest();
+        UsbRequest receiveRequest= new UsbRequest();
+        //UsbRequest sendDataRequest = new UsbRequest();
+
+        if (!sendRequest.initialize(usbDeviceConnection, epOut)) {
+            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->sendRequest.initialize() failed!");
+            return;
+        }
+        if (!receiveRequest.initialize(usbDeviceConnection, epIn)) {
+            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->receiveRequest.initialize() failed!");
+            return;
+        }
+        //if (!sendDataRequest.initialize(usbDeviceConnection, epOut2)) {
+        //    Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->sendDataRequest.initialize() failed!");
+        //    return;
+        //}
+
+        int sendBufferLength = epOut.getMaxPacketSize();
+        ByteBuffer sendBuffer = ByteBuffer.allocate(sendBufferLength);
+        int receiveBufferLength = epIn.getMaxPacketSize();
+        ByteBuffer receiveBuffer = ByteBuffer.allocate(receiveBufferLength);
+
+        int cmd = 0x2B;
+        if (true) {
+            sendBuffer.rewind();
+            sendBuffer.clear();
+            receiveBuffer.rewind();
+
+            switch (cmd) {
+                case 0x2B:
+                    Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + String.format("%#x", cmd));
+                    sendBuffer.put((byte) 0x2B);
+                    sendBuffer.put((byte) 0x00);
+
+                    if (sendRequest.queue(sendBuffer, sendBuffer.position() + 1)) {
+                        cmd = 0x00;
+                        int count = 0;
+                        while(count < 5) {
+                            if (receiveRequest.queue(receiveBuffer, receiveBuffer.array().length)) {
+                                if (receiveRequest.equals(usbDeviceConnection.requestWait())) {
+                                    cmd = receiveBuffer.get(0);
+                                    cmd = cmd&0xff;
+                                    Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->0x2B : " + String.format("%#x", cmd));
+                                    if (cmd == 0x3B) {
+                                        onDataChangedListener.sendsorCommandReturnValue(cmd, 1);
+                                        return;
+                                    }
+                                }
+                            }
+                            count++;
+                        }
+                        onDataChangedListener.sendsorCommandReturnValue(cmd, 0);
+                        return;
+                    }
+                    break;
+                case 0x3B:
+                    Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->0x3B : " + String.format("%#x", cmd));
+                    startCommunication();
+                    return;
+                default:
+                    break;
+            }
+        }
+    }
+
+    public void startToReceiveData() {
+        if (deviceIsConnected()) {
+            Log.d(TAG, "device has been already connected!");
+            Disconnect();
+        }
+        startToConnectDevice();
+        startCommunication();
+    }
+
+
+
     public String getDeviceInformation() {
         if (usbDevice != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -777,10 +901,12 @@ public class DeviceTestAppService extends Service {
         }
         return String.format("Manufacturer: %s%n ProductName: %s%n", "Unknown", "Unknown");
     }
-    private void startCommunication2() {
-        StartUpgrade();
+
+    private void startCommunication1() {
+        //StartUpgrade();
+        //StartCalibration();
     }
-    private void startCommunication() {
+    public void startCommunication() {
         //set up to send cmd to the device or receive data from the device.
         //send request command to the device.
         UsbEndpoint epIn, epOut;
@@ -821,7 +947,7 @@ public class DeviceTestAppService extends Service {
                 case 0x01:
                     Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->send cmd 0xAA!");
                     //send  EP1 to device
-                    sendBuffer.put((byte) 0xAA);
+                    sendBuffer.put((byte) 0x0B);
                     sendBuffer.put((byte) 0x00);
                     break;
 
@@ -905,12 +1031,13 @@ public class DeviceTestAppService extends Service {
             }
 
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+                /*
                 if (!deviceIsConnected()) {
                     Log.d(TAG, "startToConnectDevice()!");
                     startToConnectDevice();
                 } else {
-                    //startCommunication();
-                }
+                    startCommunication();
+                } */
             }
 
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
