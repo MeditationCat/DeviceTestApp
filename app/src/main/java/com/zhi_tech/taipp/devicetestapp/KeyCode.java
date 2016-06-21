@@ -16,6 +16,7 @@ import android.os.IBinder;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.InputDevice;
+import android.view.InputEvent;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -37,11 +38,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by taipp on 5/20/2016.
  */
-public class KeyCode extends Activity implements OnClickListener, View.OnTouchListener {
+public class KeyCode extends Activity implements OnClickListener {
     SharedPreferences mSp;
     TextView mInfo;
     Button mBtOk;
@@ -52,14 +55,27 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
     private LinearLayout root;
     boolean isMeasured = false;
     final static int itemString[] = {
+            //normal key
             R.string.keycode_back,
             R.string.keycode_vol_up,
             R.string.keycode_vol_down,
-            R.string.keycode_arrow_up,
-            R.string.keycode_arrow_down,
-            R.string.keycode_arrow_left,
-            R.string.keycode_arrow_right
+            //touch pad
+            R.string.keycode_tp_singleclick,
+            R.string.keycode_tp_up,
+            R.string.keycode_tp_down,
+            R.string.keycode_tp_left,
+            R.string.keycode_tp_right,
+            //joystick
+            R.string.keycode_button_a,
+            R.string.keycode_button_b,
+            R.string.keycode_button_y,
     };
+
+    private Handler handler = new Handler();
+    private boolean mCheckDataSuccess;
+    private byte okFlag = 0x00;
+    private Timer mTimer;
+    private TimerTask mTimerTask;
 
     private final String TAG = "KeyCode";
 
@@ -103,6 +119,15 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
                 return true;
             }
         });
+
+        mCheckDataSuccess = false;
+        mTimer = null;
+        mTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        };
     }
 
     @Override
@@ -113,70 +138,100 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyDown keyCode->" + String.valueOf(keyCode));
-        MyAdapter myAdapter = (MyAdapter) mGrid.getAdapter();
-        switch (keyCode) {
-
-            case KeyEvent.KEYCODE_BACK:
-            case KeyEvent.KEYCODE_BUTTON_B:
-                myAdapter.setKeyMap(getString(R.string.keycode_back), 1);
-                break;
-            case KeyEvent.KEYCODE_VOLUME_UP:
-                myAdapter.setKeyMap(getString(R.string.keycode_vol_up), 1);
-                break;
-            case KeyEvent.KEYCODE_VOLUME_DOWN:
-                myAdapter.setKeyMap(getString(R.string.keycode_vol_down), 1);
-                break;
-            case 0x15: //single click
-                break;
-            case 0x25: //double click
-                break;
-            case 0x35: //up -> down
-                myAdapter.setKeyMap(getString(R.string.keycode_arrow_up), 1);
-                break;
-            case 0x45: //down -> up
-                myAdapter.setKeyMap(getString(R.string.keycode_arrow_down), 1);
-                break;
-            case 0x55: //right -> left
-                myAdapter.setKeyMap(getString(R.string.keycode_arrow_left), 1);
-                break;
-            case 0x65: // left -> right
-                myAdapter.setKeyMap(getString(R.string.keycode_arrow_right), 1);
-                break;
-            default:
-                break;
-        }
-        mGrid.setAdapter(myAdapter);
-        if (myAdapter.getKeyMaSize() == myAdapter.getCount()) {
-            // test key OK
-        }
         return true;
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyUp keyCode->" + String.valueOf(keyCode));
-        return super.onKeyUp(keyCode, event);
+        return true; //super.onKeyUp(keyCode, event);
     }
 
     @Override
     public boolean onKeyLongPress(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyLongPress keyCode->" + String.valueOf(keyCode));
-        return super.onKeyLongPress(keyCode, event);
+        return true;
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        Log.d(TAG, "dispatchKeyEvent keyCode->" + event.getKeyCode());
+        MyAdapter myAdapter = (MyAdapter) mGrid.getAdapter();
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            switch (event.getKeyCode()) {
+                //normal key
+                case KeyEvent.KEYCODE_ESCAPE:
+                    myAdapter.setKeyMap(getString(R.string.keycode_back), 1);
+                    break;
+                case KeyEvent.KEYCODE_VOLUME_UP:
+                    myAdapter.setKeyMap(getString(R.string.keycode_vol_up), 1);
+                    break;
+                case KeyEvent.KEYCODE_VOLUME_DOWN:
+                    myAdapter.setKeyMap(getString(R.string.keycode_vol_down), 1);
+                    break;
+                //touch pad
+                case KeyEvent.KEYCODE_ENTER: //single click
+                    myAdapter.setKeyMap(getString(R.string.keycode_tp_singleclick), 1);
+                    break;
+                case 0x25: //double click
+                    break;
+                case KeyEvent.KEYCODE_DPAD_UP: //up -> down
+                    myAdapter.setKeyMap(getString(R.string.keycode_tp_up), 1);
+                    break;
+                case KeyEvent.KEYCODE_DPAD_DOWN: //down -> up
+                    myAdapter.setKeyMap(getString(R.string.keycode_tp_down), 1);
+                    break;
+                case KeyEvent.KEYCODE_DPAD_LEFT: //right -> left
+                    myAdapter.setKeyMap(getString(R.string.keycode_tp_left), 1);
+                    break;
+                case KeyEvent.KEYCODE_DPAD_RIGHT: // left -> right
+                    myAdapter.setKeyMap(getString(R.string.keycode_tp_right), 1);
+                    break;
+                //joystick
+                case KeyEvent.KEYCODE_BUTTON_A:
+                    myAdapter.setKeyMap(getString(R.string.keycode_button_a), 1);
+                    break;
+                case KeyEvent.KEYCODE_BUTTON_B:
+                    myAdapter.setKeyMap(getString(R.string.keycode_button_b), 1);
+                    break;
+                case KeyEvent.KEYCODE_BUTTON_Y:
+                    myAdapter.setKeyMap(getString(R.string.keycode_button_y), 1);
+                    break;
+                default:
+                    break;
+            }
+            mGrid.setAdapter(myAdapter);
+            if (myAdapter.getKeyMaSize() == myAdapter.getCount()) {
+                okFlag |= 0x80;
+            }
+            checkDataSuccess();
+        }
+        return true; //super.dispatchKeyEvent(event);
     }
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent ev) {
         if ((ev.getDevice().getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
             Log.d(TAG, String.format("dispatchGenericMotionEvent ev->(%f, %f)", ev.getX(), ev.getY()));
+
+            if (ev.getX() > 0.5) {
+                okFlag |= 0x01;
+            }
+            if (ev.getX() < -0.5) {
+                okFlag |= 0x02;
+            }
+            if (ev.getY() > 0.5) {
+                okFlag |= 0x04;
+            }
+            if (ev.getY() < -0.5) {
+                okFlag |= 0x08;
+            }
+
+            checkDataSuccess();
+
             joyStickView.updateGenericMotionEvent(ev);
         }
         return true; //super.dispatchGenericMotionEvent(ev);
-    }
-
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        Log.d(TAG, "onTouch keyCode->");
-        return false;
     }
 
     public class MyAdapter extends BaseAdapter {
@@ -221,12 +276,13 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
         }
 
         public void setKeyMap(String key, int value) {
-            if (keyMap != null)
-            this.keyMap.put(key, value);
+            if (keyMap != null) {
+                this.keyMap.put(key, value);
+            }
         }
 
         public int getKeyMaSize() {
-            if (keyMap != null) {
+            if (keyMap == null) {
                 return 0;
             }
             return keyMap.size();
@@ -245,6 +301,33 @@ public class KeyCode extends Activity implements OnClickListener, View.OnTouchLi
         Utils.SetPreferences(this, mSp, R.string.KeyCode_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
+    }
+
+    public void SaveToReport() {
+        Utils.SetPreferences(this, mSp, R.string.KeyCode_name,
+                mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
+        finish();
+    }
+
+    public void checkDataSuccess() {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("->okFlag = %#x", okFlag));
+
+        if ((okFlag & 0x80) == 0x80 && (okFlag & 0x0F) == 0x0F) {
+            if (mTimer == null) {
+                mCheckDataSuccess = true;
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mBtFailed.setBackgroundColor(Color.GRAY);
+                        mBtFailed.setClickable(false);
+                        mBtOk.setBackgroundColor(Color.GREEN);
+                    }
+                });
+
+                mTimer = new Timer();
+                mTimer.schedule(mTimerTask, 3 * 1000);
+            }
+        }
     }
 
     //draw view for joystick

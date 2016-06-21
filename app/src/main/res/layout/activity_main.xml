@@ -18,12 +18,22 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="DATE &amp; TIME"
-                android:id="@+id/textView"
-                android:layout_below="@+id/main_grid"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:gravity="left|center"
+                android:text="DeviceInfo"
+                android:id="@+id/textViewDeviceInfo"
+                android:textSize="25sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Version"
+                android:id="@+id/textViewVersion"
+                android:textSize="25sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Packet"
+                android:id="@+id/textViewPacket"
                 android:textSize="25sp" />
 
             <Button
@@ -33,16 +43,6 @@
                 android:text="@string/AutoTest"
                 android:textSize="50sp"
                 android:gravity="center_vertical|center|center_horizontal" />
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="@string/GSensor_calibrate"
-                android:id="@+id/main_bt_calibration"
-                android:layout_above="@+id/main_bt_upgrade"
-                android:textSize="30sp"
-                android:gravity="center_vertical|center|center_horizontal"
-                android:layout_marginBottom="20dp" />
 
             <Button
                 android:id="@+id/main_bt_start"
@@ -68,14 +68,38 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Start To Upgrade"
-            android:id="@+id/main_bt_upgrade"
-            android:layout_gravity="center_horizontal"
-            android:layout_alignBottom="@+id/main_grid"
-            android:layout_centerHorizontal="true" />
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center|fill"
+            android:layout_below="@+id/main_grid">
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/GSensor_calibrate"
+                android:id="@+id/main_bt_calibration"
+                android:textSize="30sp"
+                android:gravity="center_vertical|center|center_horizontal" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/CheckVersion"
+                android:id="@+id/main_bt_checkversion"
+                android:textSize="30sp"
+                android:gravity="center_vertical|center|center_horizontal" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/Upgrade"
+                android:id="@+id/main_bt_upgrade"
+                android:textSize="30sp"
+                android:gravity="center_vertical|center|center_horizontal" />
+
+        </LinearLayout>
 
     </RelativeLayout>
 

@@ -24,14 +24,13 @@ public class Report extends Activity {
     private List<String> mDefaultList;
 
     final int itemString[] = {
-            //R.string.KeyCode_name,
+            R.string.KeyCode_name,
             R.string.gsensor_name,
             R.string.msensor_name,
-            //R.string.lsensor_name,
-            //R.string.psensor_name,
+            R.string.lsensor_name,
+            R.string.psensor_name,
             R.string.gyroscopesensor_name,
             R.string.tsensor_name,
-            //R.string.bluetooth_name,
     };
 
     @Override

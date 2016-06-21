@@ -6,6 +6,7 @@ package com.zhi_tech.taipp.devicetestapp;
 public interface OnDataChangedListener {
 
     void sensorDataChanged(SensorPackageObject object);
-    void sendsorCommandReturnValue(int cmd, int value);
+    void sendsorCommandReturnValue(int cmd, byte[] buffer);
 
 }
+

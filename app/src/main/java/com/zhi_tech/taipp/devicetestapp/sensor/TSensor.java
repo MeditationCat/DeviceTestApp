@@ -60,7 +60,7 @@ public class TSensor extends Activity implements View.OnClickListener {
                 }
 
                 @Override
-                public void sendsorCommandReturnValue(int cmd, int value) {
+                public void sendsorCommandReturnValue(int cmd, byte[] buffer) {
 
                 }
             });

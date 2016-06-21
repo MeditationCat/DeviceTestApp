@@ -52,7 +52,7 @@ public class LSensor extends Activity {
                 }
 
                 @Override
-                public void sendsorCommandReturnValue(int cmd, int value) {
+                public void sendsorCommandReturnValue(int cmd, byte[] buffer) {
 
                 }
             });
