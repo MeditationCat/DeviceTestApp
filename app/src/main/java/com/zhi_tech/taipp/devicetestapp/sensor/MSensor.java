@@ -55,11 +55,6 @@ public class MSensor extends Activity {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
                 }
-
-                @Override
-                public void sendsorCommandReturnValue(int cmd, byte[] buffer) {
-
-                }
             });
         }
         @Override

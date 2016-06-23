@@ -43,14 +43,13 @@
 
         <TextView
             android:id="@+id/gsensor_tv_info"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/GSensor_info"
-            android:textSize="20sp"
+            android:textSize="28sp"
             android:singleLine="false"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_margin="10dp"
+            android:layout_alignParentStart="false"
             android:gravity="left|center"
             android:layout_above="@+id/linearLayout" />
 

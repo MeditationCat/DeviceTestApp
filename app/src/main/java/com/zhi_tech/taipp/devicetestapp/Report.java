@@ -45,7 +45,7 @@ public class Report extends Activity {
         mFailedList = new ArrayList<String>();
         mDefaultList = new ArrayList<String>();
 
-        for (int itemId : itemString) {
+        for (int itemId : DeviceTestApp.itemIds) {
             if((mSp.getString(getString(itemId), null) == null)){
                 continue;
             }

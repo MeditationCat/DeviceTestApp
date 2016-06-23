@@ -2,18 +2,21 @@ package com.zhi_tech.taipp.devicetestapp;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +29,9 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +56,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
             R.string.gyroscopesensor_name,
             R.string.tsensor_name,
     };
-    public static ArrayList<Integer> excludeIds = new ArrayList<Integer>();
+    public static ArrayList<Integer> itemIds = new ArrayList<Integer>();
     private Button mBtAuto;
     private Button mBtStart;
     private Button mBtUpgrade;
@@ -75,30 +81,6 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
                 }
-
-                @Override
-                public void sendsorCommandReturnValue(final int cmd, final byte[] buffer) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (cmd == 0x2C) {
-                                String str = "Calibration is OK!";
-                                if (buffer[2] == 0) {
-                                    str = "Calibration failed!";
-                                } else {
-                                    mBtCalibration.setTextColor(Color.GREEN);
-                                    //mBtCalibration.setClickable(false);
-                                }
-                                Toast toast=Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG);
-                                toast.setGravity(Gravity.CENTER, 0, 0);
-                                toast.show();
-                            }
-                            if ((cmd) == 0xB2) {
-                                textViewVersion.setText(String.format("Version: %#02x/%#02x", buffer[2], buffer[3]));
-                            }
-                        }
-                    });
-                }
             });
             dtaService.setOnDeviceStatusListener(new OnDeviceStatusListener() {
                 @Override
@@ -107,6 +89,51 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                         @Override
                         public void run() {
                             textViewDeviceInfo.setText((String) object);
+                        }
+                    });
+                }
+            });
+            dtaService.setOnCommandResultListener(new OnCommandResultListener() {
+                @Override
+                public void commandResultChanged(final int cmd, final byte[] buffer) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            switch (cmd) {
+                                case 0x2C: //G sensor calibration result send 0x2B feedback
+                                    if (buffer[2] == 0x0A) {
+                                        mBtCalibration.setTextColor(Color.BLACK);
+                                    } else {
+                                        String str = "Calibration is OK!";
+                                        if (buffer[2] == 0) {
+                                            str = "Calibration failed!";
+                                        } else {
+                                            mBtCalibration.setTextColor(Color.GREEN);
+                                            //mBtCalibration.setClickable(false);
+                                        }
+                                        Toast toast=Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG);
+                                        toast.setGravity(Gravity.CENTER, 0, 0);
+                                        toast.show();
+                                    }
+                                    break;
+
+                                case 0xB2: //check version result send 0xB1 feedback
+                                    textViewVersion.setText(String.format("Version: %#04x / %#04x", buffer[2], buffer[3]));
+                                    break;
+
+                                case 0xA5:
+                                    String str = "DFU upgrade is OK!";
+                                    if (buffer[2] == 1) {
+                                        str = "DFU upgrade failed!";
+                                    }
+                                    Toast toast=Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG);
+                                    toast.setGravity(Gravity.CENTER, 0, 0);
+                                    toast.show();
+                                    break;
+
+                                default:
+                                    break;
+                            }
                         }
                     });
                 }
@@ -154,18 +181,26 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         mBtCheckVersion.setOnClickListener(cl);
 
         textViewDeviceInfo = (TextView) findViewById(R.id.textViewDeviceInfo);
-        textViewDeviceInfo.setText(String.format("Manufacturer: %s%n ProductName: %s", "Unknown", "Unknown"));
+        textViewDeviceInfo.setText(String.format("Manufacturer: %s%nProductName: %s", "Unknown", "Unknown"));
         textViewPacket = (TextView) findViewById(R.id.textViewPacket);
         textViewPacket.setText(String.format("PacketHeader: %s%nTimestamp: %s", "xx", String.valueOf(0)));
         textViewVersion = (TextView) findViewById(R.id.textViewVersion);
-        textViewVersion.setText(String.format("Version: %#02x / %#02x", 0x00, 0x00));
+        textViewVersion.setText(String.format("Version: %#04x / %#04x", 0x00, 0x00));
         if (TEST_MODE == State.FACTORY_MODE) {
             mBtAuto.setVisibility(View.GONE);
+            mBtUpgrade.setVisibility(View.GONE);
+        } else if (TEST_MODE == State.AUTO_TEST_MODE) {
+            mBtCalibration.setVisibility(View.GONE);
             mBtUpgrade.setVisibility(View.GONE);
         }
         mGrid = (GridView) findViewById(R.id.main_grid);
         mListData = getData();
         mAdapter = new MyAdapter(this);
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        registerReceiver(mUsbReceiver, filter);
     }
 
     @Override
@@ -182,9 +217,6 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
                 }
-                @Override
-                public void sendsorCommandReturnValue(int cmd, byte[] buffer) {
-                }
             });
         }
     }
@@ -200,12 +232,12 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                 startActivityForResult(intent, reqId);
             } else if (v.getId() == mBtStart.getId()) {
                 if (dtaService != null) {
-                    dtaService.startToReceiveData();
+                    dtaService.StartSensorSwitch();
                 }
             } else if (v.getId() == mBtUpgrade.getId()) {
                 //start upgrade request
                 if (dtaService != null) {
-                    dtaService.StartUpgrade();
+                    dtaService.StartToUpgrade();
                 }
             } else if (v.getId() == mBtCalibration.getId()) {
                 //start calibration request
@@ -215,7 +247,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
             } else if (v.getId() == mBtCheckVersion.getId()) {
                 //check version request
                 if (dtaService != null) {
-                    dtaService.StartToGetVersion();
+                    dtaService.StartToCheckVersion();
                 }
             }
         }
@@ -262,12 +294,21 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     }
 
     private void init() {
-        //first exclude some features
-        excludeItems();
+        itemIds.clear();
+        if (TEST_MODE == State.AUTO_TEST_MODE) {
+            itemIds.add(R.string.KeyCode_name);
+            itemIds.add(R.string.lsensor_name);
+            itemIds.add(R.string.psensor_name);
+        }
+
+        itemIds.add(R.string.gsensor_name);
+        itemIds.add(R.string.msensor_name);
+        itemIds.add(R.string.gyroscopesensor_name);
+        itemIds.add(R.string.tsensor_name);
 
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = mSp.edit();
-        for (int item:itemString) {
+        for (int item:itemIds) {
             editor.putString(getString(item), AppDefine.DT_DEFAULT);
         }
         editor.apply();
@@ -275,7 +316,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
 
     private void SetColor(TextView s) {
         try {
-            for (int item:itemString) {
+            for (int item:itemIds) {
                 if (getResources().getString(item).equals(s.getText().toString())) {
                     String name = mSp.getString(getString(item), null);
                     if (name != null) {
@@ -298,7 +339,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
 
     private List<String> getData() {
         List<String> items = new ArrayList<String>();
-        for (int item:itemString) {
+        for (int item:itemIds) {
             if (mSp.getString(getString(item), null) != null) {
                 items.add(getString(item));
             }
@@ -343,41 +384,12 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         super.onActivityResult(requestCode, resultCode, data);
         System.gc();
         Intent intent = new Intent(DeviceTestApp.this, Report.class);
         startActivity(intent);
 
-    }
-
-    private boolean isMsensorEnable(){
-        return getResources().getBoolean(R.bool.config_Msensor_available);
-    }
-    private boolean isGsensorEnable(){
-        return getResources().getBoolean(R.bool.config_Gsensor_available);
-    }
-    private boolean isLightsensorEnable(){
-        return getResources().getBoolean(R.bool.config_LSensor_available);
-    }
-    private boolean isProximityEnable(){
-        return getResources().getBoolean(R.bool.config_PSensor_available);
-    }
-    private boolean isGyroscopesensorEnable() {
-        return getResources().getBoolean(R.bool.config_gyroscopesensor_available);
-    }
-
-    private void excludeItems(){
-        excludeIds.clear();
-        if (TEST_MODE == State.AUTO_TEST_MODE) {
-            excludeIds.add(new Integer(R.string.KeyCode_name));
-            excludeIds.add(new Integer(R.string.lsensor_name));
-            excludeIds.add(new Integer(R.string.psensor_name));
-        }
-
-        excludeIds.add(new Integer(R.string.gsensor_name));
-        excludeIds.add(new Integer(R.string.msensor_name));
-        excludeIds.add(new Integer(R.string.gyroscopesensor_name));
-        excludeIds.add(new Integer(R.string.tsensor_name));
     }
 
     @Override
@@ -399,5 +411,28 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         android.os.Process.killProcess(android.os.Process.myPid());
         super.onDestroy();
     }
+
+    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+            }
+
+            if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+                SharedPreferences.Editor editor = mSp.edit();
+                for (int item:itemIds) {
+                    editor.putString(getString(item), AppDefine.DT_DEFAULT);
+                }
+                editor.apply();
+                //
+                for (int i = 0; i < result.length; i++) {
+                    DeviceTestApp.result[i] = AppDefine.DVT_DEFAULT;
+                }
+                mGrid.setAdapter(mGrid.getAdapter());
+            }
+        }
+    };
 }
 

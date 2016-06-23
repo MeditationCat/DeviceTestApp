@@ -37,6 +37,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class DeviceTestAppService extends Service {
 
@@ -45,6 +47,8 @@ public class DeviceTestAppService extends Service {
     private OnDataChangedListener onDataChangedListener;
 
     private OnDeviceStatusListener onDeviceStatusListener;
+
+    private OnCommandResultListener onCommandResultListener;
 
     private DtaBinder dtaBinder;
 
@@ -124,6 +128,10 @@ public class DeviceTestAppService extends Service {
         this.onDeviceStatusListener = onDeviceStatusListener;
     }
 
+    public void setOnCommandResultListener(OnCommandResultListener onCommandResultListener) {
+        this.onCommandResultListener = onCommandResultListener;
+    }
+
     /* usb device operation methods */
     private  void initConnection() {
         usbManager = null;
@@ -134,32 +142,6 @@ public class DeviceTestAppService extends Service {
         EPCTRL = null;
         usbDeviceConnection = null;
         receiveDataThread = null;
-    }
-
-    public void connectToDevice() {
-        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        if (deviceIsOpened()) {
-            Log.d(TAG, "device has been already connected!");
-            return;
-        }
-        try {
-            initConnection();
-            usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-            enumerateDevice();
-            getDeviceInterface();
-
-            if (!usbInterfaceList.isEmpty()) {
-                setDeviceInterface(usbInterfaceList);
-            }
-
-            assignEndpoint(usbInterfaceList);
-
-            if (checkDevicePermission(usbDevice)) {
-                openTargetDevice(usbInterface);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void enumerateDevice() {
@@ -177,8 +159,9 @@ public class DeviceTestAppService extends Service {
 
             for (UsbDevice device : devices) {
                 usbDevice = device;
-                Log.d(TAG, "Matched device->{vid, pid} ->{" + device.getVendorId() + ", " + device.getProductId() + "}");
-                Log.d(TAG, "Matched device->" + device.getDeviceName());
+                Log.d(TAG, String.format("Device matched:{pid=%d, vid=%d} name:%s",
+                        device.getProductId(), device.getVendorId(), device.getDeviceName()));
+                onDeviceStatusListener.deviceStatusChanged(getDeviceInformation());
             }
 
             /* try {
@@ -231,10 +214,8 @@ public class DeviceTestAppService extends Service {
                 if (interfaceList.get(i).getId() == 0) {
                     usbInterface = interfaceList.get(i);
                 } else {
-                    //
-                    Log.d(TAG, "interface[" + i + "]->" + interfaceList.get(i).getId());
+                    Log.d(TAG, String.format("interface[%d]: %d", interfaceList.get(i).getId()));
                 }
-
             }
         }
     }
@@ -322,6 +303,32 @@ public class DeviceTestAppService extends Service {
         return openResult;
     }
 
+    public void connectToDevice() {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        if (deviceIsOpened()) {
+            Log.d(TAG, "device has been already connected!");
+            return;
+        }
+        try {
+            initConnection();
+            usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+            enumerateDevice();
+            getDeviceInterface();
+
+            if (!usbInterfaceList.isEmpty()) {
+                setDeviceInterface(usbInterfaceList);
+            }
+
+            assignEndpoint(usbInterfaceList);
+
+            if (checkDevicePermission(usbDevice)) {
+                openTargetDevice(usbInterface);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private boolean deviceIsOpened() {
         return (usbDeviceConnection != null && usbDeviceConnection.getSerial() != null);
     }
@@ -369,7 +376,7 @@ public class DeviceTestAppService extends Service {
             long timeStamp = System.currentTimeMillis();
             long timeStamp2;
 
-            while (true) {
+            while (checkingSensorStatus) {
                 synchronized (this) {
                     try {
                         retVal = usbDeviceConnection.bulkTransfer(EPIN[2], dataBuffer, dataBuffer.length, DATA_RECV_TIMEOUT);
@@ -381,11 +388,12 @@ public class DeviceTestAppService extends Service {
                         sensorPackageObject.setTimestampValue(0);
                         onDataChangedListener.sensorDataChanged(sensorPackageObject);
                         Log.d(TAG, Thread.currentThread().getName() + String.format("->usbDeviceConnection.bulkTransfer(EPIN[2]) failed!"));
-                        break;
+                        checkingSensorStatus = false;
+                        receiveDataThread = null;
                     }
                     if (retVal > 0) {
                         timeStamp2 = System.currentTimeMillis();
-                        if (timeStamp2 - timeStamp > 8) {
+                        if (timeStamp2 - timeStamp > THREAD_SLEEP_TIME + 8) {
                             Log.d(TAG, Thread.currentThread().getName() + String.format("->%d ms", +timeStamp2 - timeStamp));
                         }
                         timeStamp = timeStamp2;
@@ -441,6 +449,11 @@ public class DeviceTestAppService extends Service {
                         sensorPackageObject.setTimestampValue(packetDataTimestamp[0]);
 
                         onDataChangedListener.sensorDataChanged(sensorPackageObject);
+                        if ((dataBuffer[0]&0xFF) == 0x45) {
+                            checkingSensorStatus = false;
+                            receiveDataThread = null;
+                            Log.d(TAG, Thread.currentThread().getName() + String.format("->stop sensor command 0x07 effected!"));
+                        }
                         try {
                             Thread.sleep(THREAD_SLEEP_TIME);
                         } catch (InterruptedException e) {
@@ -451,7 +464,8 @@ public class DeviceTestAppService extends Service {
                             sensorPackageObject.setTimestampValue(0);
                             onDataChangedListener.sensorDataChanged(sensorPackageObject);
                             Log.d(TAG, Thread.currentThread().getName() + String.format("->InterruptedException!"));
-                            break;
+                            checkingSensorStatus = false;
+                            receiveDataThread = null;
                         }
                         /*
                         Log.d(TAG, String.format("Header:%c%c", (char)packetHeader[0], (char)packetHeader[1]));
@@ -464,7 +478,7 @@ public class DeviceTestAppService extends Service {
                         Log.d(TAG, String.format("Timestamp:%d", packetDataTimestamp[0]));
 
                         for (int i = 0; i < 30; i++) {
-                            Log.d(TAG, String.format("receiveBuffer[%d] = 0x%02x", i, dataBuffer[i]));
+                            Log.d(TAG, String.format("receiveBuffer[%d] = %#04x", i, dataBuffer[i]));
                         }
                         if (count++ > 5) {
                             break;
@@ -473,11 +487,6 @@ public class DeviceTestAppService extends Service {
                     }
                 }
             }
-            packetHeader[0] = 'x';
-            packetHeader[1] = 'x';
-            sensorPackageObject.setHeader(packetHeader);
-            sensorPackageObject.setTimestampValue(0);
-            onDataChangedListener.sensorDataChanged(sensorPackageObject);
         }
     }
 
@@ -519,9 +528,12 @@ public class DeviceTestAppService extends Service {
 
         try {
             retVal = usbDeviceConnection.bulkTransfer(EPOUT[1], cmdBuffer, cmdBuffer.length, DATA_RECV_TIMEOUT);
+            if (retVal > 0) {
+                Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("->send cmd %#04x OK!", cmdBuffer[0] & 0xFF));
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.d(TAG, Thread.currentThread().getName() + String.format("->usbDeviceConnection.bulkTransfer(EPIN[2]) failed!"));
+            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("->usbDeviceConnection.bulkTransfer(EPIN[2]) failed!"));
         }
 
         startCommandDaemonThread();
@@ -545,7 +557,6 @@ public class DeviceTestAppService extends Service {
             int MaxPacketSize = EPIN[1].getMaxPacketSize();
             int retVal = 0;
             byte[] dataBuffer = new byte[MaxPacketSize];
-            SensorPackageObject sensorPackageObject = new SensorPackageObject();
 
             while (true) {
                 synchronized (this) {
@@ -571,15 +582,15 @@ public class DeviceTestAppService extends Service {
         }
     }
 
-    private void ProcessingCommandFeedback(byte[] buffer, int length) {
+    private void ProcessingCommandFeedback(byte[] buffer, int retVal) {
         int cmd = buffer[0] & 0xFF;
-        Log.d(TAG, Thread.currentThread().getName() + String.format("->%#x, %#x, %#x", cmd, buffer[2], buffer[3]));
+        Log.d(TAG, Thread.currentThread().getName() + String.format("->%#04x, %#04x, %#04x", cmd, buffer[2], buffer[3]));
         switch (cmd) {
             case 0x2C: //G sensor calibration return value;
-                onDataChangedListener.sendsorCommandReturnValue(cmd , buffer);
+                onCommandResultListener.commandResultChanged(cmd, buffer);
                 break;
             case 0xB2: //version number for BLE and CY7C63813
-                onDataChangedListener.sendsorCommandReturnValue(cmd, buffer);
+                onCommandResultListener.commandResultChanged(cmd, buffer);
                 break;
             // dfu upgrade return value;
             case 0xA0:
@@ -587,19 +598,22 @@ public class DeviceTestAppService extends Service {
             case 0xA2:
             case 0xA3:
             case 0xA4:
+                DfuUpgradeCase(cmd, buffer);
+                break;
             case 0xA5:
-                DfuUpgradeCase(cmd, buffer, length);
+                onCommandResultListener.commandResultChanged(cmd, buffer);
                 break;
         }
     }
 
-    private void DfuUpgradeCase(int cmd, byte[] buffer, int length) {
+    private void DfuUpgradeCase(int cmd, byte[] buffer) {
         String path;
         File binFile;
         FileInputStream inputStream = null;
         int fileSize = 0;
         try {
-            path = Environment.getExternalStorageDirectory() + "/USBIAP.bin";
+            path = Environment.getExternalStorageDirectory().getPath() + "/USBIAP.bin";
+            Log.d(TAG, Thread.currentThread().getName() + String.format("->%s", path));
             binFile = new File(path);
             if (!binFile.exists()) {
                 Log.d(TAG, Thread.currentThread().getName() + String.format("->Failed to open file!"));
@@ -613,54 +627,63 @@ public class DeviceTestAppService extends Service {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
 
-        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + String.format("cmd = 0x%x", cmd));
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + String.format("cmd = %#04x", cmd));
         switch (cmd) {
             case 0xA1:
-                byte[] cmdbuffer = new byte[6];
-                cmdbuffer[0] = (byte) 0xA2;
-                cmdbuffer[1] = 0x04;
-                cmdbuffer[2] = (byte) ((fileSize >> 3) & 0xFF);
-                cmdbuffer[3] = (byte) ((fileSize >> 2) & 0xFF);
-                cmdbuffer[4] = (byte) ((fileSize >> 1) & 0xFF);
-                cmdbuffer[5] = (byte) (fileSize & 0xFF);
-                SendCommandToDevice(cmdbuffer);
+                byte[] cmdBuffer = new byte[6];
+                cmdBuffer[0] = (byte) 0xA2;
+                cmdBuffer[1] = 0x04;
+                cmdBuffer[2] = (byte) ((fileSize >> 24) & 0xFF);
+                cmdBuffer[3] = (byte) ((fileSize >> 16) & 0xFF);
+                cmdBuffer[4] = (byte) ((fileSize >> 8) & 0xFF);
+                cmdBuffer[5] = (byte) (fileSize & 0xFF);
+                SendCommandToDevice(cmdBuffer);
+                Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + String.format("fileSize:%d", fileSize));
                 break;
             case 0xA3:
-                int readBytes = 0;
-                byte[] readBuffer = new byte[60];
-                ByteBuffer sendBuffer = ByteBuffer.allocate(1 + 1 + readBuffer.length);
-                try {
-                    if (inputStream != null) {
-                        while ((readBytes = inputStream.read(readBuffer)) != -1) {
-                            sendBuffer.rewind();
-                            sendBuffer.clear();
-                            sendBuffer.put((byte) 0xA4);
-                            sendBuffer.put((byte) readBytes);
-                            sendBuffer.put(readBuffer);
-                            SendCommandToDevice(sendBuffer.array());
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case 0xA5:
-                if (buffer[2] == 0x00) {
-                    //succeed
-                } else if (buffer[2] == 0x01) {
-                    //failed
-                } else {
-                    //error
-                }
+                DfuUpgradeSendFile(inputStream);
+
                 break;
             default:
                 break;
         }
     }
 
-    public void StartUpgrade() {
+    private void DfuUpgradeSendFile(InputStream inputStream) {
+        int readBytes = 0;
+        byte[] readBuffer = new byte[60];
+        ByteBuffer sendBuffer = ByteBuffer.allocate(EPOUT[1].getMaxPacketSize());
+        UsbRequest usbRequest = new UsbRequest();
+        usbRequest.initialize(usbDeviceConnection, EPOUT[1]);
+
+        try {
+            if (inputStream.available() > 0) {
+                int count = 0;
+                while ((readBytes = inputStream.read(readBuffer)) != -1) {
+                    sendBuffer.rewind();
+                    sendBuffer.clear();
+                    sendBuffer.put((byte) 0xA4);
+                    sendBuffer.put((byte) readBytes);
+                    sendBuffer.put(readBuffer);
+                    if (usbRequest.queue(sendBuffer, sendBuffer.position() + 1)) {
+                        count++;
+                        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + String.format("bytes:%d, count:%d", readBytes, count));
+                    } else {
+                        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + String.format("##LOST:bytes:%d, count:%d", readBytes, count));
+                    }
+                }
+                usbRequest.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void StartToUpgrade() {
         SendCommandToDevice((byte) 0xA0);
 }
 
@@ -668,22 +691,31 @@ public class DeviceTestAppService extends Service {
         SendCommandToDevice((byte) 0x2B);
     }
 
+    public void StartToCheckVersion() {
+        SendCommandToDevice((byte) 0xB1);
+    }
+
     public void startToReceiveData() {
         SendCommandToDevice((byte) 0x0B);
+    }
 
+    public void stopToReceiveData() {
+        SendCommandToDevice((byte) 0x07);
+    }
+
+    public void StartSensorSwitch() {
         if (!deviceIsOpened()) {
             Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("deviceIsOpened == false!"));
             return;
         }
         if (receiveDataThread == null) {
+            startToReceiveData();
+            checkingSensorStatus = true;
             receiveDataThread = new Thread(new ReceiveDataRunnable(), "ReceiveDataThread");
             receiveDataThread.start();
         } else {
-            receiveDataThread.interrupt();
-            receiveDataThread = null;
-            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("Thread error!"));
+            stopToReceiveData();
         }
-        onDeviceStatusListener.deviceStatusChanged(getDeviceInformation());
     }
 
     public void startCommandDaemonThread() {
@@ -692,6 +724,7 @@ public class DeviceTestAppService extends Service {
             commandDaemonThread.start();
         }
     }
+
     public void stopCommandDaemonThread() {
         if (commandDaemonThread != null) {
             commandDaemonThread.interrupt();
@@ -702,21 +735,43 @@ public class DeviceTestAppService extends Service {
     public String getDeviceInformation() {
         if (usbDevice != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                return String.format("Manufacturer: %s%n ProductName: %s", usbDevice.getManufacturerName(), usbDevice.getProductName());
+                return String.format("Manufacturer: %s%nProductName: %s", usbDevice.getManufacturerName(), usbDevice.getProductName());
             }
         }
-        return String.format("Manufacturer: %s%n ProductName: %s", "Unknown", "Unknown");
+        return String.format("Manufacturer: %s%nProductName: %s", "Unknown", "Unknown");
     }
 
-    public void StartToGetVersion() {
-        SendCommandToDevice((byte) 0xB1);
+    public void resetVersionInformation() {
+        int cmd = 0;
+        byte[] buffer = new byte[6];
+        cmd = 0x2C;
+        buffer[0] = (byte) (cmd & 0xFF);
+        buffer[1] = 0x01;
+        buffer[2] = 0x0A;
+        buffer[3] = 0x00;
+        onCommandResultListener.commandResultChanged(cmd, buffer);
     }
 
+    public void resetCalibrationState() {
+        int cmd = 0;
+        byte[] buffer = new byte[6];
+
+        cmd = 0xB2;
+        buffer[0] = (byte) (cmd & 0xFF);
+        buffer[1] = 0x02;
+        buffer[2] = 0x00;
+        buffer[3] = 0x00;
+        onCommandResultListener.commandResultChanged(cmd, buffer);
+    }
+
+    private boolean checkingSensorStatus = true;
+    private Thread checkDeviceStatusThread = null;
+    private boolean checkingDeviceStatus = false;
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+            final UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
             Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "->" + action);
 
             if (ACTION_USB_PERMISSION.equals(action)) {
@@ -726,9 +781,9 @@ public class DeviceTestAppService extends Service {
                         if(device != null){
                             //call method to set up device communication
                             try {
-                                openTargetDevice(usbInterface);
-                                if (deviceIsOpened()) {
-                                    Log.d(TAG, "startToReceiveData()!");
+                                if (!deviceIsOpened()) {
+                                    openTargetDevice(usbInterface);
+                                    //Log.d(TAG, "startToReceiveData()!");
                                     //startToReceiveData();
                                 }
                             } catch (Exception e) {
@@ -743,13 +798,33 @@ public class DeviceTestAppService extends Service {
             }
 
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-                if (!deviceIsOpened()) {
-                    Log.d(TAG, "connectToDevice()!");
-                    connectToDevice();
-                } else {
-                    //startToReceiveData();
+                if (checkDeviceStatusThread == null) {
+                    checkingDeviceStatus = true;
+                    checkDeviceStatusThread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            while (checkingDeviceStatus) {
+                                connectToDevice();
+                                if (deviceIsOpened()) {
+                                    checkingDeviceStatus = false;
+                                    Log.d(TAG, "deviceIsOpened!");
+                                }
+                                try {
+                                    Thread.sleep(THREAD_SLEEP_TIME);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    });
+                    checkDeviceStatusThread.start();
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            checkingDeviceStatus = false;
+                        }
+                    }, 10 * 1000);
                 }
-                onDeviceStatusListener.deviceStatusChanged(getDeviceInformation());
             }
 
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
@@ -768,10 +843,17 @@ public class DeviceTestAppService extends Service {
                         }
                     }
                 }
+
+                checkDeviceStatusThread = null;
+                checkingDeviceStatus = false;
+                checkingSensorStatus = false;
+                receiveDataThread = null;
+
                 stopCommandDaemonThread();
+                resetVersionInformation();
+                resetCalibrationState();
                 onDeviceStatusListener.deviceStatusChanged(getDeviceInformation());
             }
         }
     };
-
 }

@@ -58,11 +58,6 @@ public class TSensor extends Activity implements View.OnClickListener {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
                 }
-
-                @Override
-                public void sendsorCommandReturnValue(int cmd, byte[] buffer) {
-
-                }
             });
         }
         @Override

@@ -61,6 +61,7 @@ public class KeyCode extends Activity implements OnClickListener {
             R.string.keycode_vol_down,
             //touch pad
             R.string.keycode_tp_singleclick,
+            R.string.keycode_tp_doubleclick,
             R.string.keycode_tp_up,
             R.string.keycode_tp_down,
             R.string.keycode_tp_left,
@@ -155,12 +156,12 @@ public class KeyCode extends Activity implements OnClickListener {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        Log.d(TAG, "dispatchKeyEvent keyCode->" + event.getKeyCode());
+        Log.d(TAG, "dispatchKeyEvent keyCode->" + event.getKeyCode() + "-->" + event.getSource());
         MyAdapter myAdapter = (MyAdapter) mGrid.getAdapter();
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (event.getKeyCode()) {
                 //normal key
-                case KeyEvent.KEYCODE_ESCAPE:
+                case KeyEvent.KEYCODE_BACK:
                     myAdapter.setKeyMap(getString(R.string.keycode_back), 1);
                     break;
                 case KeyEvent.KEYCODE_VOLUME_UP:
@@ -173,7 +174,8 @@ public class KeyCode extends Activity implements OnClickListener {
                 case KeyEvent.KEYCODE_ENTER: //single click
                     myAdapter.setKeyMap(getString(R.string.keycode_tp_singleclick), 1);
                     break;
-                case 0x25: //double click
+                case KeyEvent.KEYCODE_MENU: //double click menu
+                    myAdapter.setKeyMap(getString(R.string.keycode_tp_doubleclick), 1);
                     break;
                 case KeyEvent.KEYCODE_DPAD_UP: //up -> down
                     myAdapter.setKeyMap(getString(R.string.keycode_tp_up), 1);
@@ -188,10 +190,10 @@ public class KeyCode extends Activity implements OnClickListener {
                     myAdapter.setKeyMap(getString(R.string.keycode_tp_right), 1);
                     break;
                 //joystick
-                case KeyEvent.KEYCODE_BUTTON_A:
+                case KeyEvent.KEYCODE_BUTTON_L2:
                     myAdapter.setKeyMap(getString(R.string.keycode_button_a), 1);
                     break;
-                case KeyEvent.KEYCODE_BUTTON_B:
+                case KeyEvent.KEYCODE_BUTTON_L1:
                     myAdapter.setKeyMap(getString(R.string.keycode_button_b), 1);
                     break;
                 case KeyEvent.KEYCODE_BUTTON_Y:

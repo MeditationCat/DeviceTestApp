@@ -73,10 +73,11 @@
         <string name="keycode_button_a">ButtonA(Ok)</string>
         <string name="keycode_button_b">ButtonB(Back)</string>
         <string name="keycode_button_y">ButtonY(Menu/Power)</string>
-        <string name="keycode_tp_singleclick">(TouchPad)SingleClick</string>
-        <string name="keycode_tp_up">(TouchPad)↑</string>
-        <string name="keycode_tp_down">(TouchPad)↓</string>
-        <string name="keycode_tp_left">(TouchPad)←</string>
-        <string name="keycode_tp_right">(TouchPad)→</string>
+        <string name="keycode_tp_singleclick">(TP)SingleClick</string>
+        <string name="keycode_tp_doubleclick">(TP)DoubleClick</string>
+        <string name="keycode_tp_up">(TP)↑</string>
+        <string name="keycode_tp_down">(TP)↓</string>
+        <string name="keycode_tp_left">(TP)←</string>
+        <string name="keycode_tp_right">(TP)→</string>
         <string name="keycode_joystick_info">Joystick Key Test</string>
     </resources>

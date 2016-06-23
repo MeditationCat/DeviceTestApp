@@ -22,6 +22,9 @@ import com.zhi_tech.taipp.devicetestapp.R;
 import com.zhi_tech.taipp.devicetestapp.SensorPackageObject;
 import com.zhi_tech.taipp.devicetestapp.Utils;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * Created by taipp on 5/20/2016.
  */
@@ -40,13 +43,17 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
 
     SharedPreferences mSp;
 
-    private static final float NS2S = 1.0f / 1000000000.0f;
+    private static final float NS2S = 1.0f / 1000.0f; //000000.0f;
     private float timestamp;
-    private static final int Gyro_Sensitivity = 131; // LSB/(º/s)
-    private final static int FullScale_Range = 300; // º/s
+    private static final float Gyro_Sensitivity = 131.0f; // LSB/(º/s)
+    private final static float FullScale_Range = 300.0f; // º/s
 
     private float[] angle= new float[3];
     private final String TAG = "GyRoscopeSensor";
+    boolean mCheckDataSuccess;
+    private Timer mTimer;
+    private TimerTask mTimerTask;
+    private byte okFlag = 0x00;
 
     private DeviceTestAppService dtaService = null;
     private ServiceConnection conn = new ServiceConnection() {
@@ -58,11 +65,6 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                 public void sensorDataChanged(SensorPackageObject object) {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
-                }
-
-                @Override
-                public void sendsorCommandReturnValue(int cmd, byte[] buffer) {
-
                 }
             });
         }
@@ -82,18 +84,18 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                 /*
                 if (timestamp != 0) {
                     final float dT = (object.getTimestamp() - timestamp) * NS2S;
-                    angle[0] += object.gyroscopeSensor.getX() * dT;
-                    angle[1] += object.gyroscopeSensor.getY() * dT;
-                    angle[2] += object.gyroscopeSensor.getZ() * dT;
+                    angle[0] += object.gyroscopeSensor.getX() / Gyro_Sensitivity * dT;
+                    angle[1] += object.gyroscopeSensor.getY() / Gyro_Sensitivity * dT;
+                    angle[2] += object.gyroscopeSensor.getZ() / Gyro_Sensitivity * dT;
 
-                    tvdata.setText(String.format("X:%+f%nY:%+f%nZ:%+f%n", angle[0], angle[1], angle[2]));
+                    tvdata.setText(String.format("Gyroscope Sensor Data:%nX:%+f%nY:%+f%nZ:%+f%n", angle[0], angle[1], angle[2]));
                 }
                 timestamp = object.getTimestamp();*/
+                ///*
                 angle[0] = (float) object.gyroscopeSensor.getX() / Gyro_Sensitivity;
                 angle[1] = (float) object.gyroscopeSensor.getY() / Gyro_Sensitivity;
                 angle[2] = (float) object.gyroscopeSensor.getZ() / Gyro_Sensitivity;
 
-                //Log.d(TAG, String.format("Gyro: %d, %d, %d", object.gyroscopeSensor.getX(), object.gyroscopeSensor.getY(), object.gyroscopeSensor.getZ()));
                 if (Math.abs(angle[0]) > FullScale_Range
                         || Math.abs(angle[1]) > FullScale_Range || Math.abs(angle[2]) > FullScale_Range) {
                     //Log.d(TAG,String.format("X: %+f Y: %+f Z: %+f ",angle[0],angle[1],angle[2]));
@@ -104,6 +106,48 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                 }
 
                 tvdata.setText(String.format("Gyroscope Sensor Data:%nX: %+f%nY: %+f%nZ: %+f%n", angle[0], angle[1], angle[2]));
+                //*/
+                if (Math.abs(angle[0]) < 1.0f && Math.abs(angle[1]) < 1.0f && Math.abs(angle[2]) < 1.0f) {
+                    okFlag |= 0x08;
+                } else {
+                    okFlag |= 0x80;
+                }
+
+                if (mTimer == null) {
+                    mTimer = new Timer();
+                    TimerTask timerTask = new TimerTask() {
+                        @Override
+                        public void run() {
+                            if ((okFlag & 0x80) != 0) {
+                                mCheckDataSuccess = false;
+                            } else {
+                                mCheckDataSuccess = true;
+                            }
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (mCheckDataSuccess) {
+                                        tvdata.setTextColor(Color.GREEN);
+                                        mBtFailed.setBackgroundColor(Color.GRAY);
+                                        mBtFailed.setClickable(false);
+                                        mBtOk.setBackgroundColor(Color.GREEN);
+                                    } else {
+                                        tvdata.setTextColor(Color.RED);
+                                        mBtFailed.setBackgroundColor(Color.RED);
+                                        mBtOk.setClickable(false);
+                                        mBtOk.setBackgroundColor(Color.GRAY);
+                                    }
+                                }
+                            });
+
+                            Timer timer = new Timer();
+                            timer.schedule(mTimerTask, 3 * 1000);
+                        }
+                    };
+                    mTimer.schedule(timerTask, 10 * 1000);
+                }
+
+
             }
         });
     }
@@ -124,6 +168,14 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.gyroscopesensor_bt_failed);
         mBtFailed.setOnClickListener(this);
+        mCheckDataSuccess = false;
+        mTimer = null;
+        mTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        };
     }
 
     @Override
@@ -141,4 +193,11 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                 : AppDefine.DT_FAILED);
         finish();
     }
+
+    public void SaveToReport() {
+        Utils.SetPreferences(this, mSp, R.string.gyroscopesensor_name,
+                mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
+        finish();
+    }
+
 }

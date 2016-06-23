@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -26,6 +27,8 @@ import com.zhi_tech.taipp.devicetestapp.SensorPackageObject;
 import com.zhi_tech.taipp.devicetestapp.Utils;
 
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by taipp on 5/20/2016.
@@ -38,6 +41,10 @@ public class LSensor extends Activity {
     Button mBtFailed;
     SharedPreferences mSp;
     private final String TAG = "LSensor";
+    private byte okFlag = 0x00;
+    private Timer mTimer;
+    private TimerTask mTimerTask;
+    boolean mCheckDataSuccess;
 
     private DeviceTestAppService dtaService = null;
     private ServiceConnection conn = new ServiceConnection() {
@@ -49,11 +56,6 @@ public class LSensor extends Activity {
                 public void sensorDataChanged(SensorPackageObject object) {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
-                }
-
-                @Override
-                public void sendsorCommandReturnValue(int cmd, byte[] buffer) {
-
                 }
             });
         }
@@ -72,6 +74,27 @@ public class LSensor extends Activity {
             public void run() {
                 mAccuracyView.setText(getString(R.string.LSensor_accuracy));
                 mValueX.setText(getString(R.string.LSensor_value) + object.lightSensor.getLightSensorValue());
+                if (object.lightSensor.getLightSensorValue() < 10) {
+                    okFlag |= 0x01;
+                } else if (object.lightSensor.getLightSensorValue() < 100) {
+                    okFlag |= 0x02;
+                } else if (object.lightSensor.getLightSensorValue() < 1000) {
+                    okFlag |= 0x04;
+                } else if (object.lightSensor.getLightSensorValue() < 2000) {
+                    okFlag |= 0x08;
+                }
+                if ((okFlag & 0xFF) == 0x0F) {
+                    mCheckDataSuccess = true;
+                    if (mTimer == null) {
+                        mTimer = new Timer();
+                        mTimer.schedule(mTimerTask, 3 * 1000);
+
+                        mValueX.setTextColor(Color.GREEN);
+                        mBtFailed.setBackgroundColor(Color.GRAY);
+                        mBtFailed.setClickable(false);
+                        mBtOk.setBackgroundColor(Color.GREEN);
+                    }
+                }
             }
         });
     }
@@ -90,6 +113,14 @@ public class LSensor extends Activity {
         mBtOk.setOnClickListener(cl);
         mBtFailed = (Button) findViewById(R.id.lsensor_bt_failed);
         mBtFailed.setOnClickListener(cl);
+        mTimer = null;
+        mCheckDataSuccess = false;
+        mTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        };
     }
 
     @Override
@@ -118,4 +149,11 @@ public class LSensor extends Activity {
             finish();
         }
     };
+
+    public void SaveToReport() {
+        Utils.SetPreferences(this, mSp, R.string.lsensor_name,
+                mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
+        finish();
+    }
+
 }

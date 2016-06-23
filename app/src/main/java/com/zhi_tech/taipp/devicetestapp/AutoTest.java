@@ -86,11 +86,4 @@ public class AutoTest extends Activity {
         super.onDestroy();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
     }
-
-    private boolean isMsensorEnable(){
-        return getResources().getBoolean(R.bool.config_Msensor_available);
-    }
-    private boolean isLightsensorEnable(){
-        return getResources().getBoolean(R.bool.config_LSensor_available);
-    }
 }

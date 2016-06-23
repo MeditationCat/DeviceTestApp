@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -31,6 +32,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by taipp on 5/20/2016.
@@ -38,13 +41,16 @@ import java.util.List;
 public class PSensor extends Activity implements View.OnClickListener {
 
     private Button mBtOk;
-    private Button mFailed;
+    private Button mBtFailed;
     private TextView mPsensor;
     public final String TAG = "PSensor";
+    private byte okFlag = 0x00;
+    private Timer mTimer;
+    private TimerTask mTimerTask;
+    boolean mCheckDataSuccess;
 
     CountDownTimer mCountDownTimer;
     SharedPreferences mSp;
-    private Button mBtCalibrate;
 
     private DeviceTestAppService dtaService = null;
     private ServiceConnection conn = new ServiceConnection() {
@@ -56,11 +62,6 @@ public class PSensor extends Activity implements View.OnClickListener {
                 public void sensorDataChanged(SensorPackageObject object) {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
-                }
-
-                @Override
-                public void sendsorCommandReturnValue(int cmd, byte[] buffer) {
-
                 }
             });
         }
@@ -77,7 +78,29 @@ public class PSensor extends Activity implements View.OnClickListener {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                mPsensor.setText(getResources().getString(R.string.proximity) + ": " + object.proximitySensor.getProximitySensorValue());
+                mPsensor.setText(String.format("proximity Sensor Data:%n%s: %d",
+                        getString(R.string.proximity), object.proximitySensor.getProximitySensorValue()));
+                if (object.proximitySensor.getProximitySensorValue() < 20) {
+                    okFlag |= 0x01;
+                } else if (object.proximitySensor.getProximitySensorValue() < 100) {
+                    okFlag |= 0x02;
+                } else if (object.proximitySensor.getProximitySensorValue() < 1000) {
+                    okFlag |= 0x04;
+                } else if (object.proximitySensor.getProximitySensorValue() < 2000) {
+                    okFlag |= 0x08;
+                }
+                if ((okFlag & 0xFF) == 0x0F) {
+                    mCheckDataSuccess = true;
+                    if (mTimer == null) {
+                        mTimer = new Timer();
+                        mTimer.schedule(mTimerTask, 3 * 1000);
+
+                        mPsensor.setTextColor(Color.GREEN);
+                        mBtFailed.setBackgroundColor(Color.GRAY);
+                        mBtFailed.setClickable(false);
+                        mBtOk.setBackgroundColor(Color.GREEN);
+                    }
+                }
             }
         });
     }
@@ -94,11 +117,18 @@ public class PSensor extends Activity implements View.OnClickListener {
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mBtOk = (Button) findViewById(R.id.psensor_bt_ok);
         mBtOk.setOnClickListener(this);
-        mFailed = (Button) findViewById(R.id.psensor_bt_failed);
-        mFailed.setOnClickListener(this);
+        mBtFailed = (Button) findViewById(R.id.psensor_bt_failed);
+        mBtFailed.setOnClickListener(this);
         mPsensor = (TextView) findViewById(R.id.proximity);
-        mBtCalibrate = (Button) findViewById(R.id.psensor_calibrate);
-        mBtCalibrate.setOnClickListener(this);
+        mPsensor.setText(String.format("proximity Sensor Data:%n%s: %d", getString(R.string.proximity), 0));
+        mTimer = null;
+        mCheckDataSuccess = false;
+        mTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        };
         if(mSp.getString(getString(R.string.psensor_name), null) == null){
             finish();
         }
@@ -127,26 +157,14 @@ public class PSensor extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if(v.getId() == mBtCalibrate.getId()){
-            try{
-                //Intent intent = new Intent("android.intent.action.PSENSOR_CALIBRATE");
-                //intent.addCategory(Intent.CATEGORY_DEFAULT);
-                //intent.putExtra("fromWhere", "DeviceTestApp");
-                //startActivity(intent);
-                Intent i = new Intent(Intent.ACTION_MAIN);
-                i.setComponent(new ComponentName(
-                        "com.zhi_tech.taipp.devicetestapp.sensor",
-                        "com.zhi_tech.taipp.devicetestapp.sensor.PSensorCalibration"));
-                i.addCategory(Intent.CATEGORY_DEFAULT);
-                i.putExtra("fromWhere", "DeviceTestApp");
-                startActivity(i);
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-            return;
-        }
         Utils.SetPreferences(this, mSp, R.string.psensor_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
+        finish();
+    }
+
+    public void SaveToReport() {
+        Utils.SetPreferences(this, mSp, R.string.psensor_name,
+                mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
     }
 }

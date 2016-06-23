@@ -70,11 +70,6 @@ public class GSensor extends Activity implements View.OnClickListener {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
                 }
-
-                @Override
-                public void sendsorCommandReturnValue(int cmd, byte[] buffer) {
-
-                }
             });
         }
         @Override
@@ -125,19 +120,6 @@ public class GSensor extends Activity implements View.OnClickListener {
                     mCheckDataSuccess = true;
                     //
                 }
-                /*
-                if (Math.abs(mX) > Gravity + FullScale_Range
-                        || Math.abs(mY) > Gravity + FullScale_Range || Math.abs(mZ) > Gravity + FullScale_Range) {
-                    //Log.d(TAG,String.format("X: %+f Y: %+f Z: %+f ",values[0],values[1],values[2]));
-                    Log.d(TAG,String.format("X: %+f Y: %+f Z: %+f%n",mX,mY,mZ));
-                    tvdata.setTextColor(Color.RED);
-                    mBtFailed.setBackgroundColor(Color.RED);
-                    mBtOk.setClickable(false);
-                    mBtOk.setBackgroundColor(Color.GRAY);
-                    mCheckDataSuccess = false;
-                    okFlag |= 0x80;
-                }
-                */
 
                 if (((okFlag & 0x01) != 0 && (okFlag & 0x02) != 0 && (okFlag & 0x04) != 0)
                         || (okFlag & 0x80) != 0) {
@@ -170,12 +152,10 @@ public class GSensor extends Activity implements View.OnClickListener {
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mBtCalibrate = (Button) findViewById(R.id.gsensor_calibrate);
         mBtCalibrate.setOnClickListener(this);
+        mBtCalibrate.setVisibility(View.GONE);
         tvdata = (TextView) findViewById(R.id.gsensor_tv_data);
         ivimg = (ImageView) findViewById(R.id.gsensor_iv_img);
         mBtOk = (Button) findViewById(R.id.gsensor_bt_ok);
-        //mSmtTest = (Button)findViewById(R.id.smt_test);
-        //mSmtTest.setOnClickListener(this);
-        //mSmtTest.setVisibility(View.INVISIBLE);
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.gsensor_bt_failed);
         mBtFailed.setOnClickListener(this);
@@ -196,13 +176,6 @@ public class GSensor extends Activity implements View.OnClickListener {
         mCheckDataSuccess = false;
     }
 
-    private boolean IsCheckDataCorrect(){
-
-        if( ((mX<= 4.8) && (mX>= -4.8)) && ((mY<= 4.8) && (mY>= -4.8))&&((mZ<= 14.6) && (mZ>=5)))
-            return true;
-
-        return false;
-    }
     @Override
     public void onClick(View v) {
         if(v.getId() == mBtCalibrate.getId()){
@@ -216,23 +189,7 @@ public class GSensor extends Activity implements View.OnClickListener {
             }
             return;
         }
-        /*
-        if(v.getId()== mSmtTest.getId()){
-            boolean flag = IsCheckDataCorrect();
-            if(mCheckDataSuccess)
-                return;
-            if(flag){
-                mCheckDataSuccess = true;
-                mSmtTest.setTextColor(Color.GREEN);
-                mSmtTest.setText("Pass");
-            }else{
-                mCheckDataSuccess = true;
-                mSmtTest.setTextColor(Color.RED);
-                mSmtTest.setText("Fail");
-            }
-            return;
-        }
-        */
+
         Utils.SetPreferences(this, mSp, R.string.gsensor_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
