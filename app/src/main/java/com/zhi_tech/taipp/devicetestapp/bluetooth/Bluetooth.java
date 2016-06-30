@@ -152,9 +152,9 @@ public class Bluetooth extends Activity implements OnClickListener {
     };
 
     @Override
-    public void onClick(View v) {
+    public void onClick(View v) {/*
         Utils.SetPreferences(this, mSp, R.string.bluetooth_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
-    }
+    */}
 }

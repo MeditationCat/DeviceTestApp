@@ -54,6 +54,7 @@ public class KeyCode extends Activity implements OnClickListener {
     private MySurfaceView joyStickView;
     private LinearLayout root;
     boolean isMeasured = false;
+    public static ArrayList<Integer> itemIds = new ArrayList<Integer>();
     final static int itemString[] = {
             //normal key
             R.string.keycode_back,
@@ -67,8 +68,8 @@ public class KeyCode extends Activity implements OnClickListener {
             R.string.keycode_tp_left,
             R.string.keycode_tp_right,
             //joystick
-            R.string.keycode_button_a,
-            R.string.keycode_button_b,
+            R.string.keycode_button_l2,
+            R.string.keycode_button_l1,
             R.string.keycode_button_y,
     };
 
@@ -94,7 +95,8 @@ public class KeyCode extends Activity implements OnClickListener {
         mBtFailed.setOnClickListener(this);
         ArrayList<String> mListData = new ArrayList<String>();
         HashMap<String, Integer> keyMap = new HashMap<String, Integer>();
-        for (int item : itemString) {
+        initTestItems();
+        for (int item : itemIds) {
             mListData.add(getString(item));
         }
 
@@ -129,6 +131,27 @@ public class KeyCode extends Activity implements OnClickListener {
                 SaveToReport();
             }
         };
+    }
+
+    private void initTestItems() {
+        itemIds.clear();
+        if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.AUTO_TEST_MODE) {
+            //normal key
+            itemIds.add(R.string.keycode_back);
+            itemIds.add(R.string.keycode_vol_up);
+            itemIds.add(R.string.keycode_vol_down);
+            //touch pad
+            itemIds.add(R.string.keycode_tp_singleclick);
+            itemIds.add(R.string.keycode_tp_doubleclick);
+            itemIds.add(R.string.keycode_tp_up);
+            itemIds.add(R.string.keycode_tp_down);
+            itemIds.add(R.string.keycode_tp_left);
+            itemIds.add(R.string.keycode_tp_right);
+        }
+        //joystick
+        itemIds.add(R.string.keycode_button_l2);
+        itemIds.add(R.string.keycode_button_l1);
+        itemIds.add(R.string.keycode_button_y);
     }
 
     @Override
@@ -174,9 +197,9 @@ public class KeyCode extends Activity implements OnClickListener {
                 case KeyEvent.KEYCODE_ENTER: //single click
                     myAdapter.setKeyMap(getString(R.string.keycode_tp_singleclick), 1);
                     break;
-                case KeyEvent.KEYCODE_MENU: //double click menu
-                    myAdapter.setKeyMap(getString(R.string.keycode_tp_doubleclick), 1);
-                    break;
+                //case KeyEvent.KEYCODE_MENU: //double click menu
+                //    myAdapter.setKeyMap(getString(R.string.keycode_tp_doubleclick), 1);
+                //    break;
                 case KeyEvent.KEYCODE_DPAD_UP: //up -> down
                     myAdapter.setKeyMap(getString(R.string.keycode_tp_up), 1);
                     break;
@@ -191,13 +214,17 @@ public class KeyCode extends Activity implements OnClickListener {
                     break;
                 //joystick
                 case KeyEvent.KEYCODE_BUTTON_L2:
-                    myAdapter.setKeyMap(getString(R.string.keycode_button_a), 1);
+                    myAdapter.setKeyMap(getString(R.string.keycode_button_l2), 1);
                     break;
                 case KeyEvent.KEYCODE_BUTTON_L1:
-                    myAdapter.setKeyMap(getString(R.string.keycode_button_b), 1);
+                    myAdapter.setKeyMap(getString(R.string.keycode_button_l1), 1);
                     break;
                 case KeyEvent.KEYCODE_BUTTON_Y:
-                    myAdapter.setKeyMap(getString(R.string.keycode_button_y), 1);
+                    if (!myAdapter.keyMapContainsKey(getString(R.string.keycode_tp_doubleclick))) {
+                        myAdapter.setKeyMap(getString(R.string.keycode_tp_doubleclick), 1);
+                    } else {
+                        myAdapter.setKeyMap(getString(R.string.keycode_button_y), 1);
+                    }
                     break;
                 default:
                     break;
@@ -289,6 +316,13 @@ public class KeyCode extends Activity implements OnClickListener {
             }
             return keyMap.size();
         }
+
+        public boolean keyMapContainsKey(Object key) {
+            if (keyMap == null) {
+                return false;
+            }
+            return keyMap.containsKey(key);
+        }
     }
 
     @Override
@@ -314,20 +348,39 @@ public class KeyCode extends Activity implements OnClickListener {
     public void checkDataSuccess() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("->okFlag = %#x", okFlag));
 
-        if ((okFlag & 0x80) == 0x80 && (okFlag & 0x0F) == 0x0F) {
-            if (mTimer == null) {
-                mCheckDataSuccess = true;
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mBtFailed.setBackgroundColor(Color.GRAY);
-                        mBtFailed.setClickable(false);
-                        mBtOk.setBackgroundColor(Color.GREEN);
-                    }
-                });
+        if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.FACTORY_MODE) {
+            if (okFlag != 0) {
+                if (mTimer == null) {
+                    mCheckDataSuccess = true;
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mBtFailed.setBackgroundColor(Color.GRAY);
+                            mBtFailed.setClickable(false);
+                            mBtOk.setBackgroundColor(Color.GREEN);
+                        }
+                    });
 
-                mTimer = new Timer();
-                mTimer.schedule(mTimerTask, 3 * 1000);
+                    mTimer = new Timer();
+                    mTimer.schedule(mTimerTask, 3 * 1000);
+                }
+            }
+        } else {
+            if ((okFlag & 0x80) == 0x80 && (okFlag & 0x0F) == 0x0F) {
+                if (mTimer == null) {
+                    mCheckDataSuccess = true;
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mBtFailed.setBackgroundColor(Color.GRAY);
+                            mBtFailed.setClickable(false);
+                            mBtOk.setBackgroundColor(Color.GREEN);
+                        }
+                    });
+
+                    mTimer = new Timer();
+                    mTimer.schedule(mTimerTask, 3 * 1000);
+                }
             }
         }
     }

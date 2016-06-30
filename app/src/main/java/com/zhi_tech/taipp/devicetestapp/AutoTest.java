@@ -29,8 +29,13 @@ public class AutoTest extends Activity {
         setContentView(R.layout.autotest);
 
         Intent intent = new Intent();
-        intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.KeyCode");
-        this.startActivityForResult(intent, AppDefine.DT_KEYCODEID);
+        if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.FACTORY_MODE) {
+            intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.GSensor");
+            this.startActivityForResult(intent, AppDefine.DT_GSENSORID);
+        } else {
+            intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.KeyCode");
+            this.startActivityForResult(intent, AppDefine.DT_KEYCODEID);
+        }
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -38,21 +43,37 @@ public class AutoTest extends Activity {
         Intent intent = new Intent();
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         int requestid = -1;
-        if (requestCode == AppDefine.DT_KEYCODEID) {
-            if (resultCode == RESULT_FIRST_USER) {
-                finish();
-                return;
+        if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.FACTORY_MODE) {
+            if (requestCode == AppDefine.DT_GSENSORID) {
+                if (resultCode == RESULT_FIRST_USER) {
+                    finish();
+                    return;
+                }
+                intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.MSensor");
+                requestid = AppDefine.DT_MSENSORID;
             }
-            intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.GSensor");
-            requestid = AppDefine.DT_GSENSORID;
-        }
-        if (requestCode == AppDefine.DT_GSENSORID) {
-            intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.MSensor");
-            requestid = AppDefine.DT_MSENSORID;
+        } else {
+            if (requestCode == AppDefine.DT_KEYCODEID) {
+                if (resultCode == RESULT_FIRST_USER) {
+                    finish();
+                    return;
+                }
+                intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.GSensor");
+                requestid = AppDefine.DT_GSENSORID;
+            }
+            if (requestCode == AppDefine.DT_GSENSORID) {
+                intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.MSensor");
+                requestid = AppDefine.DT_MSENSORID;
+            }
         }
         if (requestCode == AppDefine.DT_MSENSORID) {
-            intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.LSensor");
-            requestid = AppDefine.DT_LSENSORID;
+            if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.FACTORY_MODE) {
+                requestid = AppDefine.DT_GYROSCOPESENSORID;
+                intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.GyRoscopeSensor");
+            } else {
+                intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.LSensor");
+                requestid = AppDefine.DT_LSENSORID;
+            }
         }
         if (requestCode == AppDefine.DT_LSENSORID) {
             intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.PSensor");

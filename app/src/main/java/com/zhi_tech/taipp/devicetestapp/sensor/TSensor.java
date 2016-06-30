@@ -114,10 +114,10 @@ public class TSensor extends Activity implements View.OnClickListener {
                             });
 
                             Timer timer = new Timer();
-                            timer.schedule(mTimerTask, 3 * 1000);
+                            timer.schedule(mTimerTask, 1 * 1000);
                         }
                     };
-                    mTimer.schedule(timerTask, 10 * 1000);
+                    mTimer.schedule(timerTask, 6 * 1000);
                 }
             }
         });
@@ -156,12 +156,12 @@ public class TSensor extends Activity implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(View v) {/*
 
         Utils.SetPreferences(this, mSp, R.string.tsensor_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
-    }
+    */}
 
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.tsensor_name,

@@ -20,21 +20,24 @@
                 android:layout_height="wrap_content"
                 android:text="DeviceInfo"
                 android:id="@+id/textViewDeviceInfo"
-                android:textSize="25sp" />
+                android:textSize="25sp"
+                android:textColor="@color/black" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Version"
                 android:id="@+id/textViewVersion"
-                android:textSize="25sp" />
+                android:textSize="25sp"
+                android:textColor="@color/black" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Packet"
                 android:id="@+id/textViewPacket"
-                android:textSize="25sp" />
+                android:textSize="25sp"
+                android:textColor="@color/black" />
 
             <Button
                 android:id="@+id/main_bt_autotest"
@@ -96,6 +99,14 @@
                 android:layout_height="wrap_content"
                 android:text="@string/Upgrade"
                 android:id="@+id/main_bt_upgrade"
+                android:textSize="30sp"
+                android:gravity="center_vertical|center|center_horizontal" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ble_test"
+                android:id="@+id/main_bt_ble_cy7c63813"
                 android:textSize="30sp"
                 android:gravity="center_vertical|center|center_horizontal" />
 

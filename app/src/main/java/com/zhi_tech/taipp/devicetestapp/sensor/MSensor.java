@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.nfc.Tag;
@@ -32,7 +35,7 @@ import com.zhi_tech.taipp.devicetestapp.Utils;
  * Created by taipp on 5/20/2016.
  */
 
-public class MSensor extends Activity {
+public class MSensor extends Activity{
 
     private ImageView mImgCompass = null;
     private TextView mOrientText = null;
@@ -43,6 +46,12 @@ public class MSensor extends Activity {
     private Button mBtOk;
     private Button mBtFailed;
     private final String TAG = "MSensor";
+    private float[] mGData = new float[3];
+    private float[] mMData = new float[3];
+    private float[] mR = new float[16];
+    private float[] mI = new float[16];
+    private float[] mOrientation = new float[3];
+    private int[] values = new int[3];
 
     private DeviceTestAppService dtaService = null;
     private ServiceConnection conn = new ServiceConnection() {
@@ -51,7 +60,7 @@ public class MSensor extends Activity {
             dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
                 @Override
-                public void sensorDataChanged(SensorPackageObject object) {
+                public void sensorDataChanged(final SensorPackageObject object) {
                     //to get the data from the object.
                     postUpdateHandlerMsg(object);
                 }
@@ -74,24 +83,16 @@ public class MSensor extends Activity {
                     if (null == mOrientText || null == mOrientValue || null == mImgCompass) {
                         return;
                     }
-                    float Mx = object.magneticSensor.getX() / 100.0f * 100.0f;
-                    float My = object.magneticSensor.getY() / 100.0f * 100.0f;
-                    float Mz = object.magneticSensor.getZ() / 100.0f * 100.0f;
-                    mOrientValue.setText(String.format("Magnetic Sensor Data:%nX: %+f%nY: %+f%nZ: %+f%n", Mx, My, Mz));
-                    //Log.d(TAG,String.format(" Magnetic Sensor Data:X: %+f Y: %+f Z: %+f ", Mx, My, Mz));
+                    float Mx = object.magneticSensor.getX();
+                    float My = object.magneticSensor.getY();
+                    float Mz = object.magneticSensor.getZ();
+                    mOrientValue.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.MSensor), Mx, My, Mz));
+                    //Log.d(TAG,String.format(" %s%n:X: %+f Y: %+f Z: %+f ", getString(R.string.MSensor), Mx, My, Mz));
                     float azimuth = (float) (Math.atan2(Mx, My) * (180 / Math.PI));
                     if (azimuth < 0) {
                         azimuth = 360 - Math.abs(azimuth);
                     }
-                    /*
-                    float azimuth = (float) Math.atan2(My, Mx);
-                    if (azimuth < 0) {
-                        azimuth = (float) (360 - Math.abs(azimuth * 180 / Math.PI));
-                    } else {
-                        azimuth = (float) (azimuth * 180 / Math.PI);
-                    }
-                    azimuth = 360 - azimuth;
-                    */
+
                     float pitch = (float) (Math.atan2(My, Mz) * 180 / Math.PI);
                     float roll = (float) (Math.atan2(Mx, Mz) * 180 / Math.PI);
                     if (roll > 90) {
@@ -104,7 +105,7 @@ public class MSensor extends Activity {
                     values[1] = pitch;
                     values[2] = roll;
 
-                    if (Math.abs(values[0] - mDegressQuondam) < 1) {
+                    if (Math.abs(values[0] - mDegressQuondam) < 360 / 72) {
                         return;
                     }
 
@@ -150,6 +151,84 @@ public class MSensor extends Activity {
         });
     }
 
+    private void postUpdateHandlerMsg2(final SensorPackageObject object) {
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (null == mOrientText || null == mOrientValue || null == mImgCompass) {
+                    return;
+                }
+                mMData[0] = object.magneticSensor.getX();
+                mMData[1] = object.magneticSensor.getY();
+                mMData[2] = object.magneticSensor.getZ();
+                mGData[0] = object.accelerometerSensor.getX();
+                mGData[1] = object.accelerometerSensor.getY();
+                mGData[2] = object.accelerometerSensor.getZ();
+
+                SensorManager.getRotationMatrix(mR, mI, mGData, mMData);
+                SensorManager.getOrientation(mR, mOrientation);
+                float incl = SensorManager.getInclination(mI);
+
+                mOrientValue.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.MSensor), mMData[0], mMData[1], mMData[2]));
+
+                final float rad2deg = (float)(180.0f/Math.PI);
+
+                values[0] = (int)(mOrientation[0]*rad2deg);
+                values[1] = (int)(mOrientation[1]*rad2deg);
+                values[2] = (int)(mOrientation[2]*rad2deg);
+
+                Log.d(TAG,String.format("Compass: Yaw:%d, Pitch:%d, Roll:%d, Incl:%f", values[0], values[1], values[2], incl));
+
+                if (values[0] < 0) {
+                    values[0] = 360 - values[0];
+                }
+
+                if (Math.abs(values[0] - mDegressQuondam) < 360 / 72) {
+                    return;
+                }
+
+                switch ((int) values[0]) {
+                    case 0: // North
+                        mOrientText.setText(R.string.MSensor_North);
+                        break;
+                    case 90: // East
+                        mOrientText.setText(R.string.MSensor_East);
+                        break;
+                    case 180: // South
+                        mOrientText.setText(R.string.MSensor_South);
+                        break;
+                    case 270: // West
+                        mOrientText.setText(R.string.MSensor_West);
+                        break;
+                    default: {
+                        int v = (int) values[0];
+                        if (v > 0 && v < 90) {
+                            mOrientText.setText(getString(R.string.MSensor_north_east) + String.format(" %02d °", v));
+                        }
+
+                        if (v > 90 && v < 180) {
+                            v = 180 - v;
+                            mOrientText.setText(getString(R.string.MSensor_south_east) + String.format(" %02d °", v));
+                        }
+
+                        if (v > 180 && v < 270) {
+                            v = v - 180;
+                            mOrientText.setText(getString(R.string.MSensor_south_west) + String.format(" %02d °", v));
+                        }
+                        if (v > 270 && v < 360) {
+                            v = 360 - v;
+                            mOrientText.setText(getString(R.string.MSensor_north_west) + String.format(" %02d °", v));
+                        }
+                    }
+                }
+                if (mDegressQuondam != -values[0]) {
+                    AniRotateImage(-values[0]);
+                }
+            }
+        });
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -163,7 +242,7 @@ public class MSensor extends Activity {
         mOrientText = (TextView) findViewById(R.id.OrientText);
         mImgCompass = (ImageView) findViewById(R.id.ivCompass);
         mOrientValue = (TextView) findViewById(R.id.OrientValue);
-        mOrientValue.setText(String.format("Magnetic Sensor Data:%nX: %+f%nY: %+f%nZ: %+f%n", 0.0f, 0.0f, 0.0f));
+        mOrientValue.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.MSensor), 0.0f, 0.0f, 0.0f));
         mBtOk = (Button) findViewById(R.id.msensor_bt_ok);
         mBtOk.setOnClickListener(cl);
         mBtFailed = (Button) findViewById(R.id.msensor_bt_failed);
@@ -212,11 +291,11 @@ public class MSensor extends Activity {
 
     private View.OnClickListener cl = new View.OnClickListener() {
         @Override
-        public void onClick(View v) {
+        public void onClick(View v) {/*
             Utils.SetPreferences(getApplicationContext(), mSp, R.string.msensor_name,
                     (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
             finish();
-        }
+        */}
     };
 
 }

@@ -91,13 +91,13 @@ public class GSensor extends Activity implements View.OnClickListener {
                 values[2] = object.accelerometerSensor.getZ() / 1.0f;
 
                 float x = values[0] * Gravity / Accl_Sensitivity;
-                float y = values[1] * Gravity  / Accl_Sensitivity;
-                float z = values[2] * Gravity  / Accl_Sensitivity;
+                float y = values[1] * Gravity / Accl_Sensitivity;
+                float z = values[2] * Gravity / Accl_Sensitivity;
 
                 mX = x;
                 mY = y;
                 mZ = z;
-                tvdata.setText(String.format("X: %+f%nY: %+f%nZ: %+f%n",mX,mY,mZ));
+                tvdata.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n",getString(R.string.GSensor), mX, mY, mZ));
 
                 if (Math.abs(mX) < FullScale_Range && Math.abs(mY) < FullScale_Range
                         && Math.abs(Math.abs(mZ) - Gravity) < FullScale_Range) {
@@ -125,7 +125,7 @@ public class GSensor extends Activity implements View.OnClickListener {
                         || (okFlag & 0x80) != 0) {
                     if (mTimer == null) {
                         mTimer = new Timer();
-                        mTimer.schedule(mTimerTask, 3 * 1000);
+                        mTimer.schedule(mTimerTask, 1 * 1000);
                     }
                 }
 
@@ -154,6 +154,7 @@ public class GSensor extends Activity implements View.OnClickListener {
         mBtCalibrate.setOnClickListener(this);
         mBtCalibrate.setVisibility(View.GONE);
         tvdata = (TextView) findViewById(R.id.gsensor_tv_data);
+        tvdata.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n",getString(R.string.GSensor), 0.0f, 0.0f, 0.0f));
         ivimg = (ImageView) findViewById(R.id.gsensor_iv_img);
         mBtOk = (Button) findViewById(R.id.gsensor_bt_ok);
         mBtOk.setOnClickListener(this);
@@ -177,7 +178,7 @@ public class GSensor extends Activity implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(View v) {/*
         if(v.getId() == mBtCalibrate.getId()){
             try{
                 Intent intent = new Intent("android.intent.action.GSENSOR_CALIBRATE");
@@ -193,7 +194,7 @@ public class GSensor extends Activity implements View.OnClickListener {
         Utils.SetPreferences(this, mSp, R.string.gsensor_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
-    }
+    */}
 
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.gsensor_name,

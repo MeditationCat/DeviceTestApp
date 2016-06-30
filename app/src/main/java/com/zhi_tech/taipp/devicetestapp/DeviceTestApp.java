@@ -12,12 +12,14 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.InputDevice;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -29,9 +31,6 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,32 +39,27 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         FACTORY_MODE,
         AUTO_TEST_MODE,
     }
-    //public State TEST_MODE = State.FACTORY_MODE;
-    public State TEST_MODE = State.AUTO_TEST_MODE;
+    public static State TEST_MODE = State.FACTORY_MODE;
+    //public static State TEST_MODE = State.AUTO_TEST_MODE;
 
-    private List<String> mListData;
     private SharedPreferences mSp = null;
     private GridView mGrid;
     private MyAdapter mAdapter;
-    final static int itemString[] = {
-            R.string.KeyCode_name,
-            R.string.gsensor_name,
-            R.string.msensor_name,
-            R.string.lsensor_name,
-            R.string.psensor_name,
-            R.string.gyroscopesensor_name,
-            R.string.tsensor_name,
-    };
-    public static ArrayList<Integer> itemIds = new ArrayList<Integer>();
+    public static ArrayList<Integer> itemIds;
+    private ArrayList<String> mListData;
     private Button mBtAuto;
     private Button mBtStart;
     private Button mBtUpgrade;
     private Button mBtCalibration;
     private Button mBtCheckVersion;
+    private Button mBleCy7c63813;
 
     private TextView textViewDeviceInfo, textViewPacket, textViewVersion;
 
     public static byte result[] = new byte[AppDefine.DVT_NV_ARRAR_LEN]; //0 default; 1,success; 2,fail; 3,notest
+    private boolean mCheckDataSuccess;
+    private byte okFlag = 0x00;
+    private boolean mBleCy7c63813IsConnected = false;
 
     private final String TAG = "DeviceTestApp";
 
@@ -101,32 +95,57 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                         public void run() {
                             switch (cmd) {
                                 case 0x2C: //G sensor calibration result send 0x2B feedback
+                                    int calibrationTip = 0;
                                     if (buffer[2] == 0x0A) {
                                         mBtCalibration.setTextColor(Color.BLACK);
                                     } else {
-                                        String str = "Calibration is OK!";
                                         if (buffer[2] == 0) {
-                                            str = "Calibration failed!";
-                                        } else {
+                                            calibrationTip = R.string.calibration_complete;
                                             mBtCalibration.setTextColor(Color.GREEN);
                                             //mBtCalibration.setClickable(false);
+                                        } else {
+                                            calibrationTip = R.string.calibration_failed;
+                                            mBtCalibration.setTextColor(Color.RED);
                                         }
-                                        Toast toast=Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG);
+                                        Toast toast=Toast.makeText(getApplicationContext(), getString(calibrationTip), Toast.LENGTH_LONG);
                                         toast.setGravity(Gravity.CENTER, 0, 0);
                                         toast.show();
                                     }
                                     break;
 
                                 case 0xB2: //check version result send 0xB1 feedback
-                                    textViewVersion.setText(String.format("Version: %#04x / %#04x", buffer[2], buffer[3]));
+                                    if (buffer[1] == 0x00) {
+                                        textViewVersion.setText(String.format("%s: %s",
+                                                getString(R.string.device_version), getString(R.string.device_unknown)));
+                                        mCheckDataSuccess = false;
+                                    } else if (buffer[2] == 0 ||buffer[2] == 1 || buffer[3] == 0) {
+                                        if (buffer[2] == 1) {
+                                            textViewVersion.setText(String.format("%s: %#04x/%#04x",
+                                                    getString(R.string.device_version), 0x00, buffer[3]));
+                                        } else {
+                                            textViewVersion.setText(String.format("%s: %#04x/%#04x",
+                                                    getString(R.string.device_version), buffer[2], buffer[3]));
+                                        }
+                                        mCheckDataSuccess = false;
+                                        textViewVersion.setTextColor(Color.RED);
+                                    } else {
+                                        textViewVersion.setText(String.format("%s: %#04x/%#04x",
+                                                getString(R.string.device_version), buffer[2], buffer[3]));
+                                        mCheckDataSuccess = true;
+                                        textViewVersion.setTextColor(Color.GREEN);
+                                    }
+                                    //CheckVersionSaveToReport();
+                                    //mGrid.setAdapter(mAdapter);
                                     break;
 
                                 case 0xA5:
-                                    String str = "DFU upgrade is OK!";
+                                    int upgradeTip = 0;
                                     if (buffer[2] == 1) {
-                                        str = "DFU upgrade failed!";
+                                        upgradeTip = R.string.upgrade_failed;
+                                    } else {
+                                        upgradeTip = R.string.upgrade_complete;
                                     }
-                                    Toast toast=Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG);
+                                    Toast toast=Toast.makeText(getApplicationContext(), getString(upgradeTip), Toast.LENGTH_LONG);
                                     toast.setGravity(Gravity.CENTER, 0, 0);
                                     toast.show();
                                     break;
@@ -152,8 +171,9 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                textViewPacket.setText(String.format("PacketHeader: %s%nTimestamp: %s",
-                        String.valueOf(object.getHeader()), String.valueOf(object.getTimestamp())));
+                textViewPacket.setText(String.format("%s: %s%n%s: %s",
+                        getString(R.string.packetdata_header), String.valueOf(object.getHeader()),
+                        getString(R.string.packetdata_timestamp),String.valueOf(object.getTimestamp())));
                 }
         });
     }
@@ -165,10 +185,6 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
-        Intent intent = new Intent(DeviceTestApp.this,DeviceTestAppService.class);
-        bindService(intent, conn, Context.BIND_AUTO_CREATE);
-
-        init();
         mBtAuto = (Button) findViewById(R.id.main_bt_autotest);
         mBtAuto.setOnClickListener(cl);
         mBtStart = (Button) findViewById(R.id.main_bt_start);
@@ -179,36 +195,57 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         mBtCalibration.setOnClickListener(cl);
         mBtCheckVersion = (Button) findViewById(R.id.main_bt_checkversion);
         mBtCheckVersion.setOnClickListener(cl);
+        mBleCy7c63813 = (Button) findViewById(R.id.main_bt_ble_cy7c63813);
 
         textViewDeviceInfo = (TextView) findViewById(R.id.textViewDeviceInfo);
-        textViewDeviceInfo.setText(String.format("Manufacturer: %s%nProductName: %s", "Unknown", "Unknown"));
         textViewPacket = (TextView) findViewById(R.id.textViewPacket);
-        textViewPacket.setText(String.format("PacketHeader: %s%nTimestamp: %s", "xx", String.valueOf(0)));
         textViewVersion = (TextView) findViewById(R.id.textViewVersion);
-        textViewVersion.setText(String.format("Version: %#04x / %#04x", 0x00, 0x00));
+
         if (TEST_MODE == State.FACTORY_MODE) {
-            mBtAuto.setVisibility(View.GONE);
+            //mBtAuto.setVisibility(View.GONE);
             mBtUpgrade.setVisibility(View.GONE);
+            //mBtCheckVersion.setVisibility(View.GONE);
         } else if (TEST_MODE == State.AUTO_TEST_MODE) {
             mBtCalibration.setVisibility(View.GONE);
             mBtUpgrade.setVisibility(View.GONE);
+            //mBtAuto.setVisibility(View.GONE);
         }
-        mGrid = (GridView) findViewById(R.id.main_grid);
-        mListData = getData();
-        mAdapter = new MyAdapter(this);
+        // init grid view data
+        initTestItems();
+        setDefaultValues();
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        registerReceiver(mUsbReceiver, filter);
+        mGrid = (GridView) findViewById(R.id.main_grid);
+        mAdapter = new MyAdapter(this, mListData);
+        mGrid.setAdapter(mAdapter);
+        mGrid.setOnItemClickListener(this);
+
+        mCheckDataSuccess = false;
+
+        Intent intent = new Intent(DeviceTestApp.this,DeviceTestAppService.class);
+        bindService(intent, conn, Context.BIND_AUTO_CREATE);
+
+        //post a runnable to handler
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (dtaService != null)
+                    dtaService.connectToDevice();
+            }
+        }, 3 * 1000);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        setDefaultValues();
+
+        super.onNewIntent(intent);
     }
 
     @Override
     protected void onResume() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         super.onResume();
-        mGrid.setAdapter(mAdapter);
-        mGrid.setOnItemClickListener(this);
 
         if (dtaService != null) {
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
@@ -219,6 +256,43 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                 }
             });
         }
+    }
+
+    private void initTestItems() {
+        //add test items
+        itemIds = new ArrayList<Integer>();
+        itemIds.clear();
+        if (TEST_MODE == State.AUTO_TEST_MODE) {
+            itemIds.add(R.string.lsensor_name);
+            itemIds.add(R.string.psensor_name);
+            itemIds.add(R.string.KeyCode_name);
+        }
+
+        itemIds.add(R.string.gsensor_name);
+        itemIds.add(R.string.msensor_name);
+        itemIds.add(R.string.gyroscopesensor_name);
+        itemIds.add(R.string.tsensor_name);
+        //set default value
+        mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = mSp.edit();
+        for (int item:itemIds) {
+            editor.putString(getString(item), AppDefine.DT_DEFAULT);
+        }
+        editor.apply();
+        //add test items string to mListData
+        mListData = new ArrayList<String>();
+        for (int item:itemIds) {
+            mListData.add(getString(item));
+        }
+    }
+
+    private void setDefaultValues() {
+        textViewDeviceInfo.setText(String.format("%s: %s%n%s: %s", getString(R.string.device_manufacturer), getString(R.string.device_unknown),
+                getString(R.string.device_productname), getString(R.string.device_unknown)));
+        textViewPacket.setText(String.format("%s: %s%n%s: %s",
+                getString(R.string.packetdata_header), getString(R.string.device_unknown),
+                getString(R.string.packetdata_timestamp),getString(R.string.device_unknown)));
+        textViewVersion.setText(String.format("%s: %s", getString(R.string.device_version), getString(R.string.device_unknown)));
     }
 
     public View.OnClickListener cl = new View.OnClickListener() {
@@ -254,26 +328,22 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     };
 
     public class MyAdapter extends BaseAdapter {
-        private LayoutInflater mInflater;
+        private Context context;
+        private ArrayList<String> mDataList;
 
-        public MyAdapter(Context context) {
-            this.mInflater = LayoutInflater.from(context);
-        }
-
-        public MyAdapter(DeviceTestApp deviceTestApp, int deviceButton) {
+        public MyAdapter(Context context, ArrayList<String> mDataList) {
+            this.context = context;
+            this.mDataList = mDataList;
         }
 
         @Override
         public int getCount() {
-            if (mListData == null) {
-                return 0;
-            }
-            return mListData.size();
+            return (mDataList == null) ? 0 : mDataList.size();
         }
 
         @Override
         public Object getItem(int position) {
-            return mListData.get(position);
+            return (mDataList == null) ? null : mDataList.get(position);
         }
 
         @Override
@@ -284,67 +354,28 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.main_grid, parent, false);
+                convertView = LayoutInflater.from(this.context).inflate(R.layout.main_grid,parent, false);
             }
             TextView textView = Utils.ViewHolder.get(convertView, R.id.factor_button);
-            textView.setText(mListData.get(position));
-            SetColor(textView);
-            return convertView;
-        }
-    }
-
-    private void init() {
-        itemIds.clear();
-        if (TEST_MODE == State.AUTO_TEST_MODE) {
-            itemIds.add(R.string.KeyCode_name);
-            itemIds.add(R.string.lsensor_name);
-            itemIds.add(R.string.psensor_name);
-        }
-
-        itemIds.add(R.string.gsensor_name);
-        itemIds.add(R.string.msensor_name);
-        itemIds.add(R.string.gyroscopesensor_name);
-        itemIds.add(R.string.tsensor_name);
-
-        mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = mSp.edit();
-        for (int item:itemIds) {
-            editor.putString(getString(item), AppDefine.DT_DEFAULT);
-        }
-        editor.apply();
-    }
-
-    private void SetColor(TextView s) {
-        try {
-            for (int item:itemIds) {
-                if (getResources().getString(item).equals(s.getText().toString())) {
-                    String name = mSp.getString(getString(item), null);
-                    if (name != null) {
-                        if (name.equals(AppDefine.DT_SUCCESS)) {
-                            s.setTextColor(getApplicationContext().getResources().getColor(R.color.blue));
-                        } else if (name.equals(AppDefine.DT_DEFAULT)) {
-                            s.setTextColor(getApplicationContext().getResources().getColor(R.color.black));
-                        } else if (name.equals(AppDefine.DT_FAILED)) {
-                            s.setTextColor(getApplicationContext().getResources().getColor(R.color.red));
-                        }
+            textView.setText(mDataList.get(position));
+            try {
+                String name = mSp.getString(mDataList.get(position), null);
+                if (name != null) {
+                    if (name.equals(AppDefine.DT_SUCCESS)) {
+                        textView.setTextColor(Color.BLUE);
+                    } else if (name.equals(AppDefine.DT_DEFAULT)) {
+                        textView.setTextColor(Color.BLACK);
+                    } else if (name.equals(AppDefine.DT_FAILED)) {
+                        textView.setTextColor(Color.RED);
                     }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.d(TAG,"SetColor ExException");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.d(TAG,"SetColor ExException");
-        }
 
-    }
-
-    private List<String> getData() {
-        List<String> items = new ArrayList<String>();
-        for (int item:itemIds) {
-            if (mSp.getString(getString(item), null) != null) {
-                items.add(getString(item));
-            }
+            return convertView;
         }
-        return items;
     }
 
     @Override
@@ -408,15 +439,21 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     protected void onDestroy() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         unbindService(conn);
-        android.os.Process.killProcess(android.os.Process.myPid());
+        //unregisterReceiver(mUsbReceiver);
+        //android.os.Process.killProcess(android.os.Process.myPid());
         super.onDestroy();
+    }
+
+    public void CheckVersionSaveToReport() {
+        Utils.SetPreferences(this, mSp, R.string.CheckVersion,
+                mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
     }
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-
+            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + TAG + "->" + action);
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
             }
 
@@ -427,12 +464,79 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                 }
                 editor.apply();
                 //
-                for (int i = 0; i < result.length; i++) {
+                for (int i = 0; i < itemIds.size(); i++) {
                     DeviceTestApp.result[i] = AppDefine.DVT_DEFAULT;
                 }
-                mGrid.setAdapter(mGrid.getAdapter());
+
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mGrid.setAdapter(mAdapter);
+                        textViewVersion.setTextColor(Color.BLACK);
+                        mBleCy7c63813.setTextColor(Color.BLACK);
+
+
+                    }
+                });
             }
         }
     };
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        Log.d(TAG, "dispatchKeyEvent keyCode->" + event.getKeyCode() + "-->" + event.getSource());
+        MyAdapter myAdapter = (MyAdapter) mGrid.getAdapter();
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            switch (event.getKeyCode()) {
+                //joystick
+                case KeyEvent.KEYCODE_BUTTON_L2:
+                case KeyEvent.KEYCODE_BUTTON_L1:
+                case KeyEvent.KEYCODE_BUTTON_Y:
+                    okFlag |= 0x80;
+                    checkDataSuccess();
+                    break;
+                default:
+                    break;
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent ev) {
+        if ((ev.getDevice().getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
+            Log.d(TAG, String.format("dispatchGenericMotionEvent ev->(%f, %f)", ev.getX(), ev.getY()));
+
+            if (ev.getX() > 0.5) {
+                okFlag |= 0x01;
+            }
+            if (ev.getX() < -0.5) {
+                okFlag |= 0x02;
+            }
+            if (ev.getY() > 0.5) {
+                okFlag |= 0x04;
+            }
+            if (ev.getY() < -0.5) {
+                okFlag |= 0x08;
+            }
+            checkDataSuccess();
+        }
+        return true; //super.dispatchGenericMotionEvent(ev);
+    }
+
+    public void checkDataSuccess() {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("->okFlag = %#x", okFlag));
+
+        if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.FACTORY_MODE) {
+            if (okFlag != 0 && !mBleCy7c63813IsConnected) {
+                mBleCy7c63813IsConnected = true;
+                mBleCy7c63813.setTextColor(Color.GREEN);
+                Toast toast=Toast.makeText(getApplicationContext(), getString(R.string.ble_test_tip), Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            }
+        }
+    }
+
 }
 

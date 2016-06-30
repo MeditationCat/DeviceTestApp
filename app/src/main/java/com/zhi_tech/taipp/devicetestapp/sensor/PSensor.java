@@ -78,8 +78,8 @@ public class PSensor extends Activity implements View.OnClickListener {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                mPsensor.setText(String.format("proximity Sensor Data:%n%s: %d",
-                        getString(R.string.proximity), object.proximitySensor.getProximitySensorValue()));
+                mPsensor.setText(String.format("%s:%n%s %d", getString(R.string.psensor_hello), getString(R.string.proximity),
+                        object.proximitySensor.getProximitySensorValue()));
                 if (object.proximitySensor.getProximitySensorValue() < 20) {
                     okFlag |= 0x01;
                 } else if (object.proximitySensor.getProximitySensorValue() < 100) {
@@ -120,7 +120,7 @@ public class PSensor extends Activity implements View.OnClickListener {
         mBtFailed = (Button) findViewById(R.id.psensor_bt_failed);
         mBtFailed.setOnClickListener(this);
         mPsensor = (TextView) findViewById(R.id.proximity);
-        mPsensor.setText(String.format("proximity Sensor Data:%n%s: %d", getString(R.string.proximity), 0));
+        mPsensor.setText(String.format("%s:%n%s %d", getString(R.string.psensor_hello), getString(R.string.proximity), 0));
         mTimer = null;
         mCheckDataSuccess = false;
         mTimerTask = new TimerTask() {
@@ -156,11 +156,11 @@ public class PSensor extends Activity implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(View v) {/*
         Utils.SetPreferences(this, mSp, R.string.psensor_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
-    }
+    */}
 
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.psensor_name,

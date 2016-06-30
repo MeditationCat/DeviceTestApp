@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.zhi_tech.taipp.devicetestapp.AppDefine;
+import com.zhi_tech.taipp.devicetestapp.DeviceTestApp;
 import com.zhi_tech.taipp.devicetestapp.DeviceTestAppService;
 import com.zhi_tech.taipp.devicetestapp.OnDataChangedListener;
 import com.zhi_tech.taipp.devicetestapp.R;
@@ -43,7 +44,7 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
 
     SharedPreferences mSp;
 
-    private static final float NS2S = 1.0f / 1000.0f; //000000.0f;
+    private static final float MS2S = 1.0f / 1000.0f;
     private float timestamp;
     private static final float Gyro_Sensitivity = 131.0f; // LSB/(º/s)
     private final static float FullScale_Range = 300.0f; // º/s
@@ -76,19 +77,34 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
 
     private Handler handler = new Handler();
 
+    int count = 0;
+    static int[] checkSum = new int[3];
     private void postUpdateHandlerMsg(final SensorPackageObject object) {
 
         handler.post(new Runnable() {
             @Override
             public void run() {
-                /*
-                if (timestamp != 0) {
-                    final float dT = (object.getTimestamp() - timestamp) * NS2S;
-                    angle[0] += object.gyroscopeSensor.getX() / Gyro_Sensitivity * dT;
-                    angle[1] += object.gyroscopeSensor.getY() / Gyro_Sensitivity * dT;
-                    angle[2] += object.gyroscopeSensor.getZ() / Gyro_Sensitivity * dT;
+/*
+                final float EMAOFFSET = 0.04f;
+                final float gyroRawOffset = 0.0f;
+                float gOffset = 0;
+                float gyroSpeed = 0;
+                float[] gyroRaw = new float[3];
 
-                    tvdata.setText(String.format("Gyroscope Sensor Data:%nX:%+f%nY:%+f%nZ:%+f%n", angle[0], angle[1], angle[2]));
+                gyroRaw[0] = (object.gyroscopeSensor.getX() - gyroRawOffset) / Gyro_Sensitivity;
+                gyroRaw[1] = (object.gyroscopeSensor.getY() - gyroRawOffset) / Gyro_Sensitivity;
+                gyroRaw[2] = (object.gyroscopeSensor.getZ() - gyroRawOffset) / Gyro_Sensitivity;
+                //Log.d(TAG,String.format("X: % d Y: % d Z: % d ",object.gyroscopeSensor.getX(),object.gyroscopeSensor.getY(),object.gyroscopeSensor.getZ()));
+
+                if (timestamp != 0) {
+                    final float dT = (object.getTimestamp() - timestamp) * MS2S;
+                    for (int i = 0; i < gyroRaw.length; i++) {
+                        gOffset = EMAOFFSET * gyroRaw[i] + (1 - EMAOFFSET) * gOffset;
+                        gyroSpeed = gyroRaw[i] - gOffset;
+                        angle[i]  += gyroSpeed * dT;
+                    }
+                    //Log.d(TAG,String.format("X: %+f Y: %+f Z: %+f ",angle[0],angle[1],angle[2]));
+                    tvdata.setText(String.format("%s:%nX:%+f%nY:%+f%nZ:%+f%n", getString(R.string.gyroscopesensor_value), angle[0], angle[1], angle[2]));
                 }
                 timestamp = object.getTimestamp();*/
                 ///*
@@ -105,12 +121,14 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                     mBtOk.setBackgroundColor(Color.GRAY);
                 }
 
-                tvdata.setText(String.format("Gyroscope Sensor Data:%nX: %+f%nY: %+f%nZ: %+f%n", angle[0], angle[1], angle[2]));
-                //*/
-                if (Math.abs(angle[0]) < 1.0f && Math.abs(angle[1]) < 1.0f && Math.abs(angle[2]) < 1.0f) {
-                    okFlag |= 0x08;
-                } else {
-                    okFlag |= 0x80;
+                tvdata.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.gyroscopesensor_value), angle[0], angle[1], angle[2]));
+
+                if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.FACTORY_MODE) {
+                    if (Math.abs(angle[0]) < 1.0f && Math.abs(angle[1]) < 1.0f && Math.abs(angle[2]) < 1.0f) {
+                        okFlag |= 0x08;
+                    } else {
+                        okFlag |= 0x80;
+                    }
                 }
 
                 if (mTimer == null) {
@@ -145,9 +163,7 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                         }
                     };
                     mTimer.schedule(timerTask, 10 * 1000);
-                }
-
-
+                }//*/
             }
         });
     }
@@ -163,7 +179,7 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
 
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         tvdata = (TextView) findViewById(R.id.gyroscopesensor);
-        tvdata.setText(String.format("Gyroscope Sensor Data:%nX: %+f%nY: %+f%nZ: %+f%n", angle[0], angle[1], angle[2]));
+        tvdata.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.gyroscopesensor_value), angle[0], angle[1], angle[2]));
         mBtOk = (Button) findViewById(R.id.gyroscopesensor_bt_ok);
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.gyroscopesensor_bt_failed);
@@ -186,13 +202,13 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(View v) {/*
 
         Utils.SetPreferences(this, mSp, R.string.gyroscopesensor_name, (v
                 .getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS
                 : AppDefine.DT_FAILED);
         finish();
-    }
+    */}
 
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.gyroscopesensor_name,

@@ -322,7 +322,10 @@ public class DeviceTestAppService extends Service {
             assignEndpoint(usbInterfaceList);
 
             if (checkDevicePermission(usbDevice)) {
-                openTargetDevice(usbInterface);
+                if (openTargetDevice(usbInterface)) {
+                    startCommandDaemonThread();
+                    StartToCheckVersion();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -536,7 +539,6 @@ public class DeviceTestAppService extends Service {
             Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("->usbDeviceConnection.bulkTransfer(EPIN[2]) failed!"));
         }
 
-        startCommandDaemonThread();
         return retVal;
     }
 
@@ -562,20 +564,21 @@ public class DeviceTestAppService extends Service {
                 synchronized (this) {
                     try {
                         retVal = usbDeviceConnection.bulkTransfer(EPIN[1], dataBuffer, dataBuffer.length, DATA_RECV_TIMEOUT);
+                        if (retVal > 0) {
+                            ProcessingCommandFeedback(dataBuffer, retVal);
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        Log.d(TAG, Thread.currentThread().getName() + String.format("->usbDeviceConnection.bulkTransfer(EPIN[1]) failed!"));
+                        Log.d(TAG, Thread.currentThread().getName() + String.format("->Stop Receiving Command!"));
                         break;
                     }
-                    if (retVal > 0) {
-                        ProcessingCommandFeedback(dataBuffer, retVal);
-                        try {
-                            Thread.sleep(THREAD_SLEEP_TIME);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            Log.d(TAG, Thread.currentThread().getName() + String.format("->InterruptedException!"));
-                            break;
-                        }
+
+                    try {
+                        Thread.sleep(THREAD_SLEEP_TIME);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        Log.d(TAG, Thread.currentThread().getName() + String.format("->InterruptedException!"));
+                        break;
                     }
                 }
             }
@@ -645,7 +648,6 @@ public class DeviceTestAppService extends Service {
                 break;
             case 0xA3:
                 DfuUpgradeSendFile(inputStream);
-
                 break;
             default:
                 break;
@@ -705,6 +707,7 @@ public class DeviceTestAppService extends Service {
 
     public void StartSensorSwitch() {
         if (!deviceIsOpened()) {
+            connectToDevice();
             Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("deviceIsOpened == false!"));
             return;
         }
@@ -735,13 +738,15 @@ public class DeviceTestAppService extends Service {
     public String getDeviceInformation() {
         if (usbDevice != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                return String.format("Manufacturer: %s%nProductName: %s", usbDevice.getManufacturerName(), usbDevice.getProductName());
+                return String.format("%s: %s%n%s: %s", getString(R.string.device_manufacturer), usbDevice.getManufacturerName(),
+                        getString(R.string.device_productname), usbDevice.getProductName());
             }
         }
-        return String.format("Manufacturer: %s%nProductName: %s", "Unknown", "Unknown");
+        return String.format("%s: %s%n%s: %s", getString(R.string.device_manufacturer), getString(R.string.device_unknown),
+                getString(R.string.device_productname), getString(R.string.device_unknown));
     }
 
-    public void resetVersionInformation() {
+    public void resetCalibrationState() {
         int cmd = 0;
         byte[] buffer = new byte[6];
         cmd = 0x2C;
@@ -752,13 +757,13 @@ public class DeviceTestAppService extends Service {
         onCommandResultListener.commandResultChanged(cmd, buffer);
     }
 
-    public void resetCalibrationState() {
+    public void resetVersionInformation() {
         int cmd = 0;
         byte[] buffer = new byte[6];
 
         cmd = 0xB2;
         buffer[0] = (byte) (cmd & 0xFF);
-        buffer[1] = 0x02;
+        buffer[1] = 0x00;
         buffer[2] = 0x00;
         buffer[3] = 0x00;
         onCommandResultListener.commandResultChanged(cmd, buffer);
@@ -783,8 +788,8 @@ public class DeviceTestAppService extends Service {
                             try {
                                 if (!deviceIsOpened()) {
                                     openTargetDevice(usbInterface);
-                                    //Log.d(TAG, "startToReceiveData()!");
-                                    //startToReceiveData();
+                                    Log.d(TAG, "startToReceiveData()!");
+                                    startToReceiveData();
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -805,7 +810,7 @@ public class DeviceTestAppService extends Service {
                         public void run() {
                             while (checkingDeviceStatus) {
                                 connectToDevice();
-                                if (deviceIsOpened()) {
+                                if (usbDevice != null) {
                                     checkingDeviceStatus = false;
                                     Log.d(TAG, "deviceIsOpened!");
                                 }
@@ -823,7 +828,7 @@ public class DeviceTestAppService extends Service {
                         public void run() {
                             checkingDeviceStatus = false;
                         }
-                    }, 10 * 1000);
+                    }, 3 * 1000);
                 }
             }
 
