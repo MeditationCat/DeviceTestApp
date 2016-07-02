@@ -93,6 +93,8 @@ public class KeyCode extends Activity implements OnClickListener {
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.keycode_bt_failed);
         mBtFailed.setOnClickListener(this);
+        mBtOk.setClickable(false);
+        mBtFailed.setClickable(false);
         ArrayList<String> mListData = new ArrayList<String>();
         HashMap<String, Integer> keyMap = new HashMap<String, Integer>();
         initTestItems();
@@ -179,7 +181,7 @@ public class KeyCode extends Activity implements OnClickListener {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        Log.d(TAG, "dispatchKeyEvent keyCode->" + event.getKeyCode() + "-->" + event.getSource());
+        Log.d(TAG, "dispatchKeyEvent keyCode->" + event.getKeyCode() + "-->" + event.toString());
         MyAdapter myAdapter = (MyAdapter) mGrid.getAdapter();
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (event.getKeyCode()) {
@@ -466,7 +468,7 @@ public class KeyCode extends Activity implements OnClickListener {
             }
             return rad;
         }
-
+/*
         @Override
         public boolean onTouchEvent(MotionEvent event) {
             if (event.getAction() == MotionEvent.ACTION_DOWN ||
@@ -489,7 +491,7 @@ public class KeyCode extends Activity implements OnClickListener {
             }
             return true;
         }
-
+*/
 
         public boolean updateGenericMotionEvent(MotionEvent event) {
 

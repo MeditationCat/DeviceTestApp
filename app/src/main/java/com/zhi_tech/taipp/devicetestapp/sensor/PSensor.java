@@ -119,6 +119,9 @@ public class PSensor extends Activity implements View.OnClickListener {
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.psensor_bt_failed);
         mBtFailed.setOnClickListener(this);
+        mBtOk.setClickable(false);
+        mBtFailed.setClickable(false);
+
         mPsensor = (TextView) findViewById(R.id.proximity);
         mPsensor.setText(String.format("%s:%n%s %d", getString(R.string.psensor_hello), getString(R.string.proximity), 0));
         mTimer = null;
@@ -156,11 +159,11 @@ public class PSensor extends Activity implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {/*
+    public void onClick(View v) {
         Utils.SetPreferences(this, mSp, R.string.psensor_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
-    */}
+    }
 
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.psensor_name,

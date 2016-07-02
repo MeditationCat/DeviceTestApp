@@ -138,6 +138,9 @@ public class TSensor extends Activity implements View.OnClickListener {
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.tsensor_bt_failed);
         mBtFailed.setOnClickListener(this);
+        mBtOk.setClickable(false);
+        mBtFailed.setClickable(false);
+
         mCheckDataSuccess = false;
         mTimer = null;
         mTimerTask = new TimerTask() {
@@ -156,12 +159,12 @@ public class TSensor extends Activity implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {/*
+    public void onClick(View v) {
 
         Utils.SetPreferences(this, mSp, R.string.tsensor_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
-    */}
+    }
 
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.tsensor_name,

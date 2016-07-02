@@ -159,10 +159,10 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                             });
 
                             Timer timer = new Timer();
-                            timer.schedule(mTimerTask, 3 * 1000);
+                            timer.schedule(mTimerTask, 2 * 1000);
                         }
                     };
-                    mTimer.schedule(timerTask, 10 * 1000);
+                    mTimer.schedule(timerTask, 8 * 1000);
                 }//*/
             }
         });
@@ -184,6 +184,9 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.gyroscopesensor_bt_failed);
         mBtFailed.setOnClickListener(this);
+        mBtOk.setClickable(false);
+        mBtFailed.setClickable(false);
+
         mCheckDataSuccess = false;
         mTimer = null;
         mTimerTask = new TimerTask() {
@@ -202,13 +205,13 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {/*
+    public void onClick(View v) {
 
         Utils.SetPreferences(this, mSp, R.string.gyroscopesensor_name, (v
                 .getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS
                 : AppDefine.DT_FAILED);
         finish();
-    */}
+    }
 
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.gyroscopesensor_name,

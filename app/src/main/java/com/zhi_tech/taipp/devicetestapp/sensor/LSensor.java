@@ -113,6 +113,9 @@ public class LSensor extends Activity {
         mBtOk.setOnClickListener(cl);
         mBtFailed = (Button) findViewById(R.id.lsensor_bt_failed);
         mBtFailed.setOnClickListener(cl);
+        mBtOk.setClickable(false);
+        mBtFailed.setClickable(false);
+
         mTimer = null;
         mCheckDataSuccess = false;
         mTimerTask = new TimerTask() {
@@ -143,11 +146,11 @@ public class LSensor extends Activity {
 
     public View.OnClickListener cl = new View.OnClickListener() {
         @Override
-        public void onClick(View v) {/*
+        public void onClick(View v) {
             Utils.SetPreferences(getApplicationContext(), mSp, R.string.lsensor_name,
                     (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
             finish();
-        */}
+        }
     };
 
     public void SaveToReport() {

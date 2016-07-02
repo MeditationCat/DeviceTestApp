@@ -39,8 +39,8 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         FACTORY_MODE,
         AUTO_TEST_MODE,
     }
-    public static State TEST_MODE = State.FACTORY_MODE;
-    //public static State TEST_MODE = State.AUTO_TEST_MODE;
+    //public static State TEST_MODE = State.FACTORY_MODE;
+    public static State TEST_MODE = State.AUTO_TEST_MODE;
 
     private SharedPreferences mSp = null;
     private GridView mGrid;
@@ -111,6 +111,19 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                                         toast.setGravity(Gravity.CENTER, 0, 0);
                                         toast.show();
                                     }
+                                    if (TEST_MODE == State.FACTORY_MODE) {
+                                        if (dtaService != null) {
+                                            dtaService.StartSensorSwitch();
+                                        }
+                                        handler.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Intent intent = new Intent();
+                                                intent.setClassName("com.zhi_tech.taipp.devicetestapp", "com.zhi_tech.taipp.devicetestapp.AutoTest");
+                                                startActivityForResult(intent, AppDefine.DT_AUTOTESTID);
+                                            }
+                                        }, 2 * 1000);
+                                    }
                                     break;
 
                                 case 0xB2: //check version result send 0xB1 feedback
@@ -133,9 +146,15 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                                                 getString(R.string.device_version), buffer[2], buffer[3]));
                                         mCheckDataSuccess = true;
                                         textViewVersion.setTextColor(Color.GREEN);
+                                        mBtCheckVersion.setTextColor(Color.GREEN);
                                     }
                                     //CheckVersionSaveToReport();
                                     //mGrid.setAdapter(mAdapter);
+                                    if (TEST_MODE == State.FACTORY_MODE) {
+                                        if (dtaService != null) {
+                                            dtaService.StartToCalibration();
+                                        }
+                                    }
                                     break;
 
                                 case 0xA5:
@@ -202,13 +221,13 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         textViewVersion = (TextView) findViewById(R.id.textViewVersion);
 
         if (TEST_MODE == State.FACTORY_MODE) {
-            //mBtAuto.setVisibility(View.GONE);
+            mBtAuto.setVisibility(View.GONE);
             mBtUpgrade.setVisibility(View.GONE);
-            //mBtCheckVersion.setVisibility(View.GONE);
+            //mBtStart.setVisibility(View.GONE);
         } else if (TEST_MODE == State.AUTO_TEST_MODE) {
             mBtCalibration.setVisibility(View.GONE);
             mBtUpgrade.setVisibility(View.GONE);
-            //mBtAuto.setVisibility(View.GONE);
+            mBleCy7c63813.setVisibility(View.GONE);
         }
         // init grid view data
         initTestItems();
@@ -223,21 +242,22 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
 
         Intent intent = new Intent(DeviceTestApp.this,DeviceTestAppService.class);
         bindService(intent, conn, Context.BIND_AUTO_CREATE);
-
-        //post a runnable to handler
+        /*//post a runnable to handler
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (dtaService != null)
+                if (dtaService != null) {
+                    Log.d(TAG,"onCreate handler.postDelayed->dtaService.connectToDevice()");
                     dtaService.connectToDevice();
+                }
             }
-        }, 3 * 1000);
+        }, 2 * 1000);*/
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
-        setDefaultValues();
+        //setDefaultValues();
 
         super.onNewIntent(intent);
     }
@@ -246,6 +266,8 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
     protected void onResume() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         super.onResume();
+        mGrid.setAdapter(mAdapter);
+        mGrid.setOnItemClickListener(this);
 
         if (dtaService != null) {
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
@@ -263,9 +285,9 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         itemIds = new ArrayList<Integer>();
         itemIds.clear();
         if (TEST_MODE == State.AUTO_TEST_MODE) {
+            itemIds.add(R.string.KeyCode_name);
             itemIds.add(R.string.lsensor_name);
             itemIds.add(R.string.psensor_name);
-            itemIds.add(R.string.KeyCode_name);
         }
 
         itemIds.add(R.string.gsensor_name);
@@ -440,7 +462,7 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         unbindService(conn);
         //unregisterReceiver(mUsbReceiver);
-        //android.os.Process.killProcess(android.os.Process.myPid());
+        android.os. Process.killProcess(android.os.Process.myPid());
         super.onDestroy();
     }
 
@@ -534,6 +556,13 @@ public class DeviceTestApp extends Activity implements OnItemClickListener {
                 Toast toast=Toast.makeText(getApplicationContext(), getString(R.string.ble_test_tip), Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
+
+                if (TEST_MODE == State.FACTORY_MODE) {
+                    if (dtaService != null) {
+                        dtaService.connectToDevice();
+                        dtaService.StartToCheckVersion();
+                    }
+                }
             }
         }
     }

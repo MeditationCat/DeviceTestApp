@@ -160,6 +160,9 @@ public class GSensor extends Activity implements View.OnClickListener {
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.gsensor_bt_failed);
         mBtFailed.setOnClickListener(this);
+        mBtOk.setClickable(false);
+        mBtFailed.setClickable(false);
+
         mTimer = null;
         mTimerTask = new TimerTask() {
             @Override
@@ -178,7 +181,7 @@ public class GSensor extends Activity implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {/*
+    public void onClick(View v) {
         if(v.getId() == mBtCalibrate.getId()){
             try{
                 Intent intent = new Intent("android.intent.action.GSENSOR_CALIBRATE");
@@ -194,7 +197,7 @@ public class GSensor extends Activity implements View.OnClickListener {
         Utils.SetPreferences(this, mSp, R.string.gsensor_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
         finish();
-    */}
+    }
 
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.gsensor_name,

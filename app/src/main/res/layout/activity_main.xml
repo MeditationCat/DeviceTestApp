@@ -76,7 +76,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center|fill"
-            android:layout_below="@+id/main_grid">
+            android:layout_below="@+id/main_grid"
+            android:id="@+id/linearLayout4">
 
             <Button
                 android:layout_width="match_parent"
@@ -111,6 +112,15 @@
                 android:gravity="center_vertical|center|center_horizontal" />
 
         </LinearLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/setting"
+            android:id="@+id/main_bt_setting"
+            android:textSize="30sp"
+            android:gravity="center_vertical|center|center_horizontal"
+            android:layout_alignBottom="@+id/linearLayout4" />
 
     </RelativeLayout>
 

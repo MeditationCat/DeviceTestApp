@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -52,6 +53,7 @@ public class MSensor extends Activity{
     private float[] mI = new float[16];
     private float[] mOrientation = new float[3];
     private int[] values = new int[3];
+    boolean mCheckDataSuccess = false;
 
     private DeviceTestAppService dtaService = null;
     private ServiceConnection conn = new ServiceConnection() {
@@ -107,6 +109,26 @@ public class MSensor extends Activity{
 
                     if (Math.abs(values[0] - mDegressQuondam) < 360 / 72) {
                         return;
+                    }
+
+                    if (Math.abs(values[0] - Math.abs(mDegressQuondam)) > 90 && !mCheckDataSuccess && mDegressQuondam != 0) {
+                        mCheckDataSuccess = true;
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mOrientText.setTextColor(Color.GREEN);
+                                mBtFailed.setBackgroundColor(Color.GRAY);
+                                mBtFailed.setClickable(false);
+                                mBtOk.setBackgroundColor(Color.GREEN);
+
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        SaveToReport();
+                                    }
+                                }, 2 * 1000);
+                            }
+                        });
                     }
 
                     switch ((int) values[0]) {
@@ -188,6 +210,26 @@ public class MSensor extends Activity{
                     return;
                 }
 
+                if (Math.abs(values[0] - Math.abs(mDegressQuondam)) > 90 && !mCheckDataSuccess && mDegressQuondam != 0) {
+                    mCheckDataSuccess = true;
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mOrientText.setTextColor(Color.GREEN);
+                            mBtFailed.setBackgroundColor(Color.GRAY);
+                            mBtFailed.setClickable(false);
+                            mBtOk.setBackgroundColor(Color.GREEN);
+
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    SaveToReport();
+                                }
+                            }, 2 * 1000);
+                        }
+                    });
+                }
+
                 switch ((int) values[0]) {
                     case 0: // North
                         mOrientText.setText(R.string.MSensor_North);
@@ -247,6 +289,9 @@ public class MSensor extends Activity{
         mBtOk.setOnClickListener(cl);
         mBtFailed = (Button) findViewById(R.id.msensor_bt_failed);
         mBtFailed.setOnClickListener(cl);
+        mBtOk.setClickable(false);
+        mBtFailed.setClickable(false);
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
@@ -291,11 +336,16 @@ public class MSensor extends Activity{
 
     private View.OnClickListener cl = new View.OnClickListener() {
         @Override
-        public void onClick(View v) {/*
+        public void onClick(View v) {
             Utils.SetPreferences(getApplicationContext(), mSp, R.string.msensor_name,
                     (v.getId() == mBtOk.getId()) ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
             finish();
-        */}
+        }
     };
 
+    public void SaveToReport() {
+        Utils.SetPreferences(this, mSp, R.string.msensor_name,
+                mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
+        finish();
+    }
 }

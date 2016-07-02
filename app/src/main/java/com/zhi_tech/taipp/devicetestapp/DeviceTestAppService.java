@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -21,21 +20,13 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -324,7 +315,7 @@ public class DeviceTestAppService extends Service {
             if (checkDevicePermission(usbDevice)) {
                 if (openTargetDevice(usbInterface)) {
                     startCommandDaemonThread();
-                    StartToCheckVersion();
+                    //StartToCheckVersion();
                 }
             }
         } catch (Exception e) {
@@ -564,21 +555,20 @@ public class DeviceTestAppService extends Service {
                 synchronized (this) {
                     try {
                         retVal = usbDeviceConnection.bulkTransfer(EPIN[1], dataBuffer, dataBuffer.length, DATA_RECV_TIMEOUT);
-                        if (retVal > 0) {
-                            ProcessingCommandFeedback(dataBuffer, retVal);
-                        }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        Log.d(TAG, Thread.currentThread().getName() + String.format("->Stop Receiving Command!"));
+                        Log.d(TAG, Thread.currentThread().getName() + String.format("->usbDeviceConnection.bulkTransfer(EPIN[1]) failed!"));
                         break;
                     }
-
-                    try {
-                        Thread.sleep(THREAD_SLEEP_TIME);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        Log.d(TAG, Thread.currentThread().getName() + String.format("->InterruptedException!"));
-                        break;
+                    if (retVal > 0) {
+                        ProcessingCommandFeedback(dataBuffer, retVal);
+                        try {
+                            Thread.sleep(THREAD_SLEEP_TIME);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            Log.d(TAG, Thread.currentThread().getName() + String.format("->InterruptedException!"));
+                            break;
+                        }
                     }
                 }
             }
@@ -709,7 +699,6 @@ public class DeviceTestAppService extends Service {
         if (!deviceIsOpened()) {
             connectToDevice();
             Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("deviceIsOpened == false!"));
-            return;
         }
         if (receiveDataThread == null) {
             startToReceiveData();
@@ -717,7 +706,7 @@ public class DeviceTestAppService extends Service {
             receiveDataThread = new Thread(new ReceiveDataRunnable(), "ReceiveDataThread");
             receiveDataThread.start();
         } else {
-            stopToReceiveData();
+            //stopToReceiveData();
         }
     }
 
@@ -788,12 +777,14 @@ public class DeviceTestAppService extends Service {
                             try {
                                 if (!deviceIsOpened()) {
                                     openTargetDevice(usbInterface);
-                                    Log.d(TAG, "startToReceiveData()!");
-                                    startToReceiveData();
+                                    //Log.d(TAG, "startToReceiveData()!");
+                                    //startToReceiveData();
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+                            //startCommandDaemonThread();
+                            //StartToCheckVersion();
                         }
                     }
                     else {
@@ -803,6 +794,7 @@ public class DeviceTestAppService extends Service {
             }
 
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+                /*
                 if (checkDeviceStatusThread == null) {
                     checkingDeviceStatus = true;
                     checkDeviceStatusThread = new Thread(new Runnable() {
@@ -829,7 +821,7 @@ public class DeviceTestAppService extends Service {
                             checkingDeviceStatus = false;
                         }
                     }, 3 * 1000);
-                }
+                }*/
             }
 
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
