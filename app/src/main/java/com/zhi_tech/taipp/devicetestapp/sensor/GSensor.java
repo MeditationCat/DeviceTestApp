@@ -22,12 +22,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.zhi_tech.taipp.devicetestapp.AppDefine;
+import com.zhi_tech.taipp.devicetestapp.DeviceTestApp;
 import com.zhi_tech.taipp.devicetestapp.DeviceTestAppService;
 import com.zhi_tech.taipp.devicetestapp.OnDataChangedListener;
 import com.zhi_tech.taipp.devicetestapp.R;
 import com.zhi_tech.taipp.devicetestapp.SensorPackageObject;
 import com.zhi_tech.taipp.devicetestapp.Utils;
 
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -52,7 +54,7 @@ public class GSensor extends Activity implements View.OnClickListener {
     private final static int OFFSET = 2;
     private final static int Accl_Sensitivity = 16384; // LSB/g
     private final static float Gravity = (float) 9.8; // m/s²
-    private final static int FullScale_Range = 3; // g
+    private static int FullScale_Range = 3; // g
     private byte okFlag = 0x00;
     private Timer mTimer;
     private TimerTask mTimerTask;
@@ -97,7 +99,7 @@ public class GSensor extends Activity implements View.OnClickListener {
                 mX = x;
                 mY = y;
                 mZ = z;
-                tvdata.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n",getString(R.string.GSensor), mX, mY, mZ));
+                tvdata.setText(String.format(Locale.US,"%s:%nX: %+f%nY: %+f%nZ: %+f%n",getString(R.string.GSensor), mX, mY, mZ));
 
                 if (Math.abs(mX) < FullScale_Range && Math.abs(mY) < FullScale_Range
                         && Math.abs(Math.abs(mZ) - Gravity) < FullScale_Range) {
@@ -125,7 +127,7 @@ public class GSensor extends Activity implements View.OnClickListener {
                         || (okFlag & 0x80) != 0) {
                     if (mTimer == null) {
                         mTimer = new Timer();
-                        mTimer.schedule(mTimerTask, 1 * 1000);
+                        mTimer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
                     }
                 }
 
@@ -154,7 +156,7 @@ public class GSensor extends Activity implements View.OnClickListener {
         mBtCalibrate.setOnClickListener(this);
         mBtCalibrate.setVisibility(View.GONE);
         tvdata = (TextView) findViewById(R.id.gsensor_tv_data);
-        tvdata.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n",getString(R.string.GSensor), 0.0f, 0.0f, 0.0f));
+        tvdata.setText(String.format(Locale.US,"%s:%nX: %+f%nY: %+f%nZ: %+f%n",getString(R.string.GSensor), 0.0f, 0.0f, 0.0f));
         ivimg = (ImageView) findViewById(R.id.gsensor_iv_img);
         mBtOk = (Button) findViewById(R.id.gsensor_bt_ok);
         mBtOk.setOnClickListener(this);
@@ -162,7 +164,7 @@ public class GSensor extends Activity implements View.OnClickListener {
         mBtFailed.setOnClickListener(this);
         mBtOk.setClickable(false);
         mBtFailed.setClickable(false);
-
+        FullScale_Range = DeviceTestApp.Accel_FullScale_Range;
         mTimer = null;
         mTimerTask = new TimerTask() {
             @Override
@@ -170,6 +172,12 @@ public class GSensor extends Activity implements View.OnClickListener {
                 SaveToReport();
             }
         };
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        }, DeviceTestApp.ItemTestTimeout * 1000);
     }
 
     @Override
@@ -189,7 +197,6 @@ public class GSensor extends Activity implements View.OnClickListener {
                 intent.putExtra("fromWhere", "DeviceTestApp");
                 startActivity(intent);
             }catch(ActivityNotFoundException e){
-            }catch(SecurityException e){
             }
             return;
         }

@@ -3,11 +3,17 @@
     <string name="app_name">DeviceTestApp</string>
     <string name="AutoTest">Auto test</string>
     <string name="CheckVersion">Check Version</string>
+    <string name="CheckSN">Check Serial Number</string>
     <string name="Upgrade">Upgrade</string>
     <string name="upgrade_complete">System upgrade is complete!</string>
     <string name="upgrade_failed">System upgrade failed!</string>
     <string name="calibration_complete">Calibration is complete!</string>
     <string name="calibration_failed">Calibration failed!</string>
+    <string name="ble_write_mac_complete">BLE Mac Address has been written successfully!</string>
+    <string name="ble_write_mac_failed">BLE Mac Address failed to write!</string>
+    <string name="device_write_sn_complete">Serial number has been written successfully!</string>
+    <string name="device_write_sn_failed">Serial number failed to write!</string>
+    <string name="device_serial_number">Serial Number</string>
     <string name="Packageerror">Error! Application package not found!</string>
     <string name="PackageIerror">Inner error</string>
     <!-- GSensor -->
@@ -25,7 +31,7 @@
     <string name="GSensor">G-sensor</string>
     <string name="GSensor_info">Put the device vertically, horizontally  on its side and then observe the changing of gravity</string>
     <string name="GSensor_calibrate">G-sensor calibration</string>
-    <string name="PSensor_calibrate" translatable="false">PSensor_calibrate</string>
+    <string name="PSensor_calibrate">PSensor_calibrate</string>
     <!--MSensor part -->
     <string name="MSensor">M-sensor</string>
     <string name="MSensor_default_text">Unknown data</string>
@@ -65,7 +71,7 @@
     <string name="version">Version</string>
     <string name="version_info">Version Information:</string>
     <string name="device_info_default">Unknown</string>
-    <string name="complate_fmtest" translatable="false">Please complete device test!</string>
+    <string name="complate_fmtest">Please complete device test!</string>
     <string name="str_smt_test">SMT test</string>
     <string name="gyroscopesensor_name">Gyroscopesensor</string>
     <string name="gyroscopesensor_value">Gyroscopesensor Data</string>
@@ -76,8 +82,8 @@
     <string name="keycode_back">Back</string>
     <string name="keycode_vol_up">VolumeUp</string>
     <string name="keycode_vol_down">VolumeDown</string>
-    <string name="keycode_button_a">ButtonA(Ok)</string>
-    <string name="keycode_button_b">ButtonB(Back)</string>
+    <string name="keycode_button_l2">ButtonL2(Ok)</string>
+    <string name="keycode_button_l1">ButtonL1(Back)</string>
     <string name="keycode_button_y">ButtonY(Menu/Power)</string>
     <string name="keycode_tp_singleclick">(TP)SingleClick</string>
     <string name="keycode_tp_doubleclick">(TP)DoubleClick</string>
@@ -86,13 +92,52 @@
     <string name="keycode_tp_left">(TP)←</string>
     <string name="keycode_tp_right">(TP)→</string>
     <string name="keycode_joystick_info">Joystick Key Test</string>
+    <string name="keycode_touchpad_info">Touchpad Test</string>
     <string name="device_manufacturer">Manufacturer</string>
     <string name="device_productname">ProductName</string>
-    <string name="device_version">Version</string>
+    <string name="device_version_stm32">STM32 Version</string>
+    <string name="device_version_ble">BLE Version</string>
+    <string name="device_version_63813">CY7C63813 Version</string>
+    <string name="device_ble_state">Bluetooth JoyStick State</string>
+    <string name="device_ble_mac_addr">Bluetooth MAC Address</string>
     <string name="packetdata_header">PacketHeader</string>
     <string name="packetdata_timestamp">Timestamp</string>
     <string name="device_unknown">Unknown</string>
     <string name="ble_test">BLE CY7C63813 Test</string>
     <string name="ble_test_tip">BLE CY7C63813 Test OK!</string>
     <string name="setting">Setting</string>
+    <string name="about_us">About</string>
+    <string name="about_us_info">Version</string>
+    <string name="title_activity_settings">Settings</string>
+    <!-- Strings related to Settings -->
+    <!-- General settings -->
+    <string name="pref_header_general_setting">General Setting</string>
+    <string name="pref_title_mode">Enable factory mode</string>
+    <string name="pref_description_mode">Factory mode could be used for test pcb in factory</string>
+    <string name="pref_title_set_test_timeout">Set item test timeout</string>
+    <string-array name="pref_timeout_list_titles">
+        <item>5s</item>
+        <item>10s</item>
+        <item>15s</item>
+        <item>20s</item>
+        <item>30s</item>
+        <item>60s</item>
+    </string-array>
+    <string-array name="pref_timeout_list_values">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>30</item>
+        <item>60</item>
+    </string-array>
+    <!-- Sensor settings -->
+    <string name="pref_header_sensor_setting">Sensor Setting</string>
+    <string name="pref_title_accel_full_scale_select">Accel Full Scale Select Range[2,16]g</string>
+    <string name="pref_title_gyro_full_scale_select">Gyro Full Scale Select Range[250,2000]dps</string>
+    <string name="pref_title_proximity_threshold_approach">Proximity Threshold Approach Range[200, 4000]</string>
+    <string name="pref_title_light_threshold_approach">Light Threshold Approach Range[10, 2000]</string>
+    <string name="pref_title_temp_range_min">Temperature Range Min[-40, 85]℃</string>
+    <string name="pref_title_temp_range_max">Temperature Range Max[-40, 85]℃</string>
+    <string name="pref_title_magnetic_yaw_offset">Magnetic Yaw Offset[0, 360]d</string>
 </resources>

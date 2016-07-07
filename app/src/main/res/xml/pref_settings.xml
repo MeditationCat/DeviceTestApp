@@ -1,0 +1,93 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/pref_header_general_setting">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="factory_mode_switch"
+            android:summary="@string/pref_description_mode"
+            android:title="@string/pref_title_mode" />
+
+        <ListPreference
+            android:defaultValue="10"
+            android:entries="@array/pref_timeout_list_titles"
+            android:entryValues="@array/pref_timeout_list_values"
+            android:key="item_test_timeout_list"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/pref_title_set_test_timeout" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_header_sensor_setting">
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="3"
+            android:inputType="number"
+            android:key="accel_full_scale_select"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_accel_full_scale_select" />
+
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="300"
+            android:inputType="number"
+            android:key="gyro_full_scale_select"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_gyro_full_scale_select" />
+
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="820"
+            android:inputType="number"
+            android:key="proximity_threshold_approach"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_proximity_threshold_approach" />
+
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="100"
+            android:inputType="number"
+            android:key="light_threshold_approach"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_light_threshold_approach" />
+
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="-40"
+            android:inputType="numberSigned"
+            android:key="temp_range_min"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_temp_range_min" />
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="85"
+            android:inputType="numberSigned"
+            android:key="temp_range_max"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_temp_range_max" />
+
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="90"
+            android:inputType="number"
+            android:key="magnetic_yaw_offset"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_magnetic_yaw_offset" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

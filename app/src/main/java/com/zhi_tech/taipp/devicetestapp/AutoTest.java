@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -29,7 +30,7 @@ public class AutoTest extends Activity {
         setContentView(R.layout.autotest);
 
         Intent intent = new Intent();
-        if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.FACTORY_MODE) {
+        if (DeviceTestApp.IsFactoryMode) {
             intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.GSensor");
             this.startActivityForResult(intent, AppDefine.DT_GSENSORID);
         } else {
@@ -43,7 +44,7 @@ public class AutoTest extends Activity {
         Intent intent = new Intent();
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         int requestid = -1;
-        if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.FACTORY_MODE) {
+        if (DeviceTestApp.IsFactoryMode) {
             if (requestCode == AppDefine.DT_GSENSORID) {
                 if (resultCode == RESULT_FIRST_USER) {
                     finish();
@@ -67,7 +68,7 @@ public class AutoTest extends Activity {
             }
         }
         if (requestCode == AppDefine.DT_MSENSORID) {
-            if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.FACTORY_MODE) {
+            if (DeviceTestApp.IsFactoryMode) {
                 requestid = AppDefine.DT_GYROSCOPESENSORID;
                 intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.sensor.GyRoscopeSensor");
             } else {
@@ -91,14 +92,14 @@ public class AutoTest extends Activity {
             finish();
             return;
         }
-        if (requestCode == AppDefine.DT_TSENSORID) {
+        /*if (requestCode == AppDefine.DT_TSENSORID) {
             intent.setClassName(this, "com.zhi_tech.taipp.devicetestapp.bluetooth.Bluetooth");
             requestid = AppDefine.DT_BLUETOOTHID;
         }
         if (requestCode == AppDefine.DT_BLUETOOTHID) {
             finish();
             return;
-        }
+        }*/
 
         this.startActivityForResult(intent, requestid);
     }

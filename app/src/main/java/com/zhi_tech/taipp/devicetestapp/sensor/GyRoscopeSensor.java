@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +24,7 @@ import com.zhi_tech.taipp.devicetestapp.R;
 import com.zhi_tech.taipp.devicetestapp.SensorPackageObject;
 import com.zhi_tech.taipp.devicetestapp.Utils;
 
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -47,7 +49,7 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
     private static final float MS2S = 1.0f / 1000.0f;
     private float timestamp;
     private static final float Gyro_Sensitivity = 131.0f; // LSB/(º/s)
-    private final static float FullScale_Range = 300.0f; // º/s
+    private static float FullScale_Range = 300.0f; // º/s
 
     private float[] angle= new float[3];
     private final String TAG = "GyRoscopeSensor";
@@ -121,9 +123,9 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                     mBtOk.setBackgroundColor(Color.GRAY);
                 }
 
-                tvdata.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.gyroscopesensor_value), angle[0], angle[1], angle[2]));
+                tvdata.setText(String.format(Locale.US, "%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.gyroscopesensor_value), angle[0], angle[1], angle[2]));
 
-                if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.FACTORY_MODE) {
+                if (DeviceTestApp.IsFactoryMode) {
                     if (Math.abs(angle[0]) < 1.0f && Math.abs(angle[1]) < 1.0f && Math.abs(angle[2]) < 1.0f) {
                         okFlag |= 0x08;
                     } else {
@@ -159,10 +161,10 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                             });
 
                             Timer timer = new Timer();
-                            timer.schedule(mTimerTask, 2 * 1000);
+                            timer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
                         }
                     };
-                    mTimer.schedule(timerTask, 8 * 1000);
+                    mTimer.schedule(timerTask, 5 * 1000);
                 }//*/
             }
         });
@@ -179,13 +181,15 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
 
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         tvdata = (TextView) findViewById(R.id.gyroscopesensor);
-        tvdata.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.gyroscopesensor_value), angle[0], angle[1], angle[2]));
+        tvdata.setText(String.format(Locale.US,"%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.gyroscopesensor_value), angle[0], angle[1], angle[2]));
         mBtOk = (Button) findViewById(R.id.gyroscopesensor_bt_ok);
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.gyroscopesensor_bt_failed);
         mBtFailed.setOnClickListener(this);
         mBtOk.setClickable(false);
         mBtFailed.setClickable(false);
+
+        FullScale_Range = DeviceTestApp.Gyro_FullScale_Range;
 
         mCheckDataSuccess = false;
         mTimer = null;
@@ -195,6 +199,13 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                 SaveToReport();
             }
         };
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        }, DeviceTestApp.ItemTestTimeout * 1000);
     }
 
     @Override

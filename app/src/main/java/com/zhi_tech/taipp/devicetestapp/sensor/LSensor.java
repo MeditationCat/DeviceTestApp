@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.zhi_tech.taipp.devicetestapp.AppDefine;
+import com.zhi_tech.taipp.devicetestapp.DeviceTestApp;
 import com.zhi_tech.taipp.devicetestapp.DeviceTestAppService;
 import com.zhi_tech.taipp.devicetestapp.OnDataChangedListener;
 import com.zhi_tech.taipp.devicetestapp.R;
@@ -45,6 +46,8 @@ public class LSensor extends Activity {
     private Timer mTimer;
     private TimerTask mTimerTask;
     boolean mCheckDataSuccess;
+    public static int Light_Threshold_Approach = 100; //
+    public static int Light_Threshold_Leave = 1800; //
 
     private DeviceTestAppService dtaService = null;
     private ServiceConnection conn = new ServiceConnection() {
@@ -73,21 +76,18 @@ public class LSensor extends Activity {
             @Override
             public void run() {
                 mAccuracyView.setText(getString(R.string.LSensor_accuracy));
-                mValueX.setText(getString(R.string.LSensor_value) + object.lightSensor.getLightSensorValue());
-                if (object.lightSensor.getLightSensorValue() < 10) {
+                mValueX.setText(String.format(Locale.US, "%s%d", getString(R.string.LSensor_value) ,object.lightSensor.getLightSensorValue()));
+                if (object.lightSensor.getLightSensorValue() < Light_Threshold_Approach) {
                     okFlag |= 0x01;
-                } else if (object.lightSensor.getLightSensorValue() < 100) {
-                    okFlag |= 0x02;
-                } else if (object.lightSensor.getLightSensorValue() < 1000) {
-                    okFlag |= 0x04;
-                } else if (object.lightSensor.getLightSensorValue() < 2000) {
-                    okFlag |= 0x08;
                 }
-                if ((okFlag & 0xFF) == 0x0F) {
+                if (object.lightSensor.getLightSensorValue() > Light_Threshold_Leave) {
+                    okFlag |= 0x02;
+                }
+                if ((okFlag & 0xFF) == 0x03) {
                     mCheckDataSuccess = true;
                     if (mTimer == null) {
                         mTimer = new Timer();
-                        mTimer.schedule(mTimerTask, 3 * 1000);
+                        mTimer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
 
                         mValueX.setTextColor(Color.GREEN);
                         mBtFailed.setBackgroundColor(Color.GRAY);
@@ -116,6 +116,8 @@ public class LSensor extends Activity {
         mBtOk.setClickable(false);
         mBtFailed.setClickable(false);
 
+        Light_Threshold_Approach = DeviceTestApp.Light_Threshold_Approach;
+
         mTimer = null;
         mCheckDataSuccess = false;
         mTimerTask = new TimerTask() {
@@ -124,6 +126,14 @@ public class LSensor extends Activity {
                 SaveToReport();
             }
         };
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        }, DeviceTestApp.ItemTestTimeout * 1000);
+
     }
 
     @Override

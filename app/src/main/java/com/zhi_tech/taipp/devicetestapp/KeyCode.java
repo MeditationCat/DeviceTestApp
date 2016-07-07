@@ -9,14 +9,12 @@ import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.nfc.Tag;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.InputDevice;
-import android.view.InputEvent;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -26,18 +24,15 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -46,32 +41,17 @@ import java.util.TimerTask;
  */
 public class KeyCode extends Activity implements OnClickListener {
     SharedPreferences mSp;
-    TextView mInfo;
+    TextView mInfo, mJoyStickInfo;
     Button mBtOk;
     Button mBtFailed;
-    String mKeycode = "";
     private GridView mGrid;
     private MySurfaceView joyStickView;
+    private TouchPadView touchPadView;
+    private boolean enableJoyStickItem = false;
+    private boolean enableTouchPadItem = true;
     private LinearLayout root;
     boolean isMeasured = false;
     public static ArrayList<Integer> itemIds = new ArrayList<Integer>();
-    final static int itemString[] = {
-            //normal key
-            R.string.keycode_back,
-            R.string.keycode_vol_up,
-            R.string.keycode_vol_down,
-            //touch pad
-            R.string.keycode_tp_singleclick,
-            R.string.keycode_tp_doubleclick,
-            R.string.keycode_tp_up,
-            R.string.keycode_tp_down,
-            R.string.keycode_tp_left,
-            R.string.keycode_tp_right,
-            //joystick
-            R.string.keycode_button_l2,
-            R.string.keycode_button_l1,
-            R.string.keycode_button_y,
-    };
 
     private Handler handler = new Handler();
     private boolean mCheckDataSuccess;
@@ -81,14 +61,46 @@ public class KeyCode extends Activity implements OnClickListener {
 
     private final String TAG = "KeyCode";
 
+    private DeviceTestAppService dtaService = null;
+    private ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.setOnDataChangedListener(new OnDataChangedListener() {
+                @Override
+                public void sensorDataChanged(final SensorPackageObject object) {
+                    //to get the data from the object.
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            touchPadView.onTouchEventHandler(object.getTouchPadXY()[0], object.getTouchPadXY()[1]);
+                            if (touchPadView.checkResultOk()) {
+                                okFlag |= 0x0F;
+                                checkDataSuccess();
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            dtaService = null;
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         setContentView(R.layout.keycode);
 
+        Intent intent = new Intent(KeyCode.this,DeviceTestAppService.class);
+        bindService(intent, conn, Context.BIND_AUTO_CREATE);
+
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mInfo = (TextView) findViewById(R.id.keycode_info);
+        mJoyStickInfo = (TextView) findViewById(R.id.keycode_joystick);
         mBtOk = (Button) findViewById(R.id.keycode_bt_ok);
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.keycode_bt_failed);
@@ -104,21 +116,30 @@ public class KeyCode extends Activity implements OnClickListener {
 
         mGrid = (GridView) findViewById(R.id.keycode_grid);
         mGrid.setAdapter(new MyAdapter(this, mListData, keyMap));
-        //
-        //获取布局文件中LinearLayout容器
-        root = (LinearLayout)findViewById(R.id.paint_root);
-        joyStickView = new MySurfaceView(this, 0, 0, 0 * 5/ 14);
-        root.addView(joyStickView);
 
+        //获取布局文件中LinearLayout容器
+        root = (LinearLayout) findViewById(R.id.paint_root);
+        if (enableJoyStickItem) {
+            joyStickView = new MySurfaceView(this, 0, 0, 0 * 5 / 14);
+            root.addView(joyStickView);
+        } else if (enableTouchPadItem) {
+            touchPadView = new TouchPadView(this);
+            root.addView(touchPadView);
+            mJoyStickInfo.setText(getString(R.string.keycode_touchpad_info));
+        }
         ViewTreeObserver vto = root.getViewTreeObserver();
         vto.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
                 if (!isMeasured) {
-                    float circleX = root.getMeasuredWidth() / 2;
-                    float circleY = root.getMeasuredHeight() / 2;
-                    float circleR = (circleX > circleY ? circleY : circleX) * 5 / 7;
-                    joyStickView.setMySurfaceView(circleX, circleY, circleR);
+                    if (enableJoyStickItem) {
+                        float circleX = root.getMeasuredWidth() / 2;
+                        float circleY = root.getMeasuredHeight() / 2;
+                        float circleR = (circleX > circleY ? circleY : circleX) * 5 / 7;
+                        joyStickView.setMySurfaceView(circleX, circleY, circleR);
+                    } else if (enableTouchPadItem) {
+                        touchPadView.setTouchPadView(root.getMeasuredWidth(), root.getMeasuredHeight());
+                    }
                     isMeasured = true;
                 }
                 return true;
@@ -130,14 +151,33 @@ public class KeyCode extends Activity implements OnClickListener {
         mTimerTask = new TimerTask() {
             @Override
             public void run() {
+                if (dtaService != null) {
+                    dtaService.StopToReceiveTouchPadXY();
+                    dtaService.startToReceiveData();
+                }
                 SaveToReport();
             }
         };
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (dtaService != null) {
+                    dtaService.StartToReceiveTouchPadXY();
+                }
+            }
+        }, 1000);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        }, DeviceTestApp.ItemTestTimeout * 1000 * 5);
     }
 
     private void initTestItems() {
         itemIds.clear();
-        if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.AUTO_TEST_MODE) {
+        if (!DeviceTestApp.IsFactoryMode) {
             //normal key
             itemIds.add(R.string.keycode_back);
             itemIds.add(R.string.keycode_vol_up);
@@ -151,13 +191,16 @@ public class KeyCode extends Activity implements OnClickListener {
             itemIds.add(R.string.keycode_tp_right);
         }
         //joystick
-        itemIds.add(R.string.keycode_button_l2);
-        itemIds.add(R.string.keycode_button_l1);
-        itemIds.add(R.string.keycode_button_y);
+        if (enableJoyStickItem) {
+            itemIds.add(R.string.keycode_button_l2);
+            itemIds.add(R.string.keycode_button_l1);
+            itemIds.add(R.string.keycode_button_y);
+        }
     }
 
     @Override
     protected void onResume() {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName());
         super.onResume();
     }
 
@@ -196,12 +239,14 @@ public class KeyCode extends Activity implements OnClickListener {
                     myAdapter.setKeyMap(getString(R.string.keycode_vol_down), 1);
                     break;
                 //touch pad
-                case KeyEvent.KEYCODE_ENTER: //single click
+                //case KeyEvent.KEYCODE_ENTER: //single click
+                case KeyEvent.KEYCODE_BUTTON_L2:
                     myAdapter.setKeyMap(getString(R.string.keycode_tp_singleclick), 1);
                     break;
                 //case KeyEvent.KEYCODE_MENU: //double click menu
-                //    myAdapter.setKeyMap(getString(R.string.keycode_tp_doubleclick), 1);
-                //    break;
+                case KeyEvent.KEYCODE_BUTTON_Y:
+                    myAdapter.setKeyMap(getString(R.string.keycode_tp_doubleclick), 1);
+                    break;
                 case KeyEvent.KEYCODE_DPAD_UP: //up -> down
                     myAdapter.setKeyMap(getString(R.string.keycode_tp_up), 1);
                     break;
@@ -214,7 +259,7 @@ public class KeyCode extends Activity implements OnClickListener {
                 case KeyEvent.KEYCODE_DPAD_RIGHT: // left -> right
                     myAdapter.setKeyMap(getString(R.string.keycode_tp_right), 1);
                     break;
-                //joystick
+                /*//joystick
                 case KeyEvent.KEYCODE_BUTTON_L2:
                     myAdapter.setKeyMap(getString(R.string.keycode_button_l2), 1);
                     break;
@@ -222,12 +267,9 @@ public class KeyCode extends Activity implements OnClickListener {
                     myAdapter.setKeyMap(getString(R.string.keycode_button_l1), 1);
                     break;
                 case KeyEvent.KEYCODE_BUTTON_Y:
-                    if (!myAdapter.keyMapContainsKey(getString(R.string.keycode_tp_doubleclick))) {
-                        myAdapter.setKeyMap(getString(R.string.keycode_tp_doubleclick), 1);
-                    } else {
-                        myAdapter.setKeyMap(getString(R.string.keycode_button_y), 1);
-                    }
+                    myAdapter.setKeyMap(getString(R.string.keycode_button_y), 1);
                     break;
+                */
                 default:
                     break;
             }
@@ -242,7 +284,7 @@ public class KeyCode extends Activity implements OnClickListener {
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent ev) {
-        if ((ev.getDevice().getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
+        if ((ev.getDevice().getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && enableJoyStickItem) {
             Log.d(TAG, String.format("dispatchGenericMotionEvent ev->(%f, %f)", ev.getX(), ev.getY()));
 
             if (ev.getX() > 0.5) {
@@ -329,9 +371,9 @@ public class KeyCode extends Activity implements OnClickListener {
 
     @Override
     protected void onDestroy() {
-        // TODO Auto-generated method stub
-        super.onDestroy();
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        super.onDestroy();
+        unbindService(conn);
     }
 
     @Override
@@ -350,39 +392,34 @@ public class KeyCode extends Activity implements OnClickListener {
     public void checkDataSuccess() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("->okFlag = %#x", okFlag));
 
-        if (DeviceTestApp.TEST_MODE == DeviceTestApp.State.FACTORY_MODE) {
-            if (okFlag != 0) {
-                if (mTimer == null) {
+        if ((okFlag & 0x80) == 0x80) {
+            if (enableJoyStickItem) {
+                if ((okFlag & 0x0F) == 0x0F) {
                     mCheckDataSuccess = true;
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mBtFailed.setBackgroundColor(Color.GRAY);
-                            mBtFailed.setClickable(false);
-                            mBtOk.setBackgroundColor(Color.GREEN);
-                        }
-                    });
-
-                    mTimer = new Timer();
-                    mTimer.schedule(mTimerTask, 3 * 1000);
                 }
+            } else if (enableTouchPadItem) {
+                if ((okFlag & 0x0F) == 0x0F) {
+                    mCheckDataSuccess = true;
+                }
+            } else{
+                mCheckDataSuccess = true;
             }
-        } else {
-            if ((okFlag & 0x80) == 0x80 && (okFlag & 0x0F) == 0x0F) {
-                if (mTimer == null) {
-                    mCheckDataSuccess = true;
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mBtFailed.setBackgroundColor(Color.GRAY);
-                            mBtFailed.setClickable(false);
-                            mBtOk.setBackgroundColor(Color.GREEN);
-                        }
-                    });
+        }
 
-                    mTimer = new Timer();
-                    mTimer.schedule(mTimerTask, 3 * 1000);
-                }
+        if (mCheckDataSuccess) {
+            if (mTimer == null) {
+                mCheckDataSuccess = true;
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mBtFailed.setBackgroundColor(Color.GRAY);
+                        mBtFailed.setClickable(false);
+                        mBtOk.setBackgroundColor(Color.GREEN);
+                    }
+                });
+
+                mTimer = new Timer();
+                mTimer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
             }
         }
     }
@@ -578,6 +615,113 @@ public class KeyCode extends Activity implements OnClickListener {
         public void surfaceDestroyed(SurfaceHolder holder) {
             flag = false;
             Log.v("Himi", "surfaceDestroyed");
+        }
+    }
+
+    // touch pad view
+    public class TouchPadView extends View {
+        //
+        private final int mOffsetRangeX = 50;
+        private final int mOffsetRangeY = 50;
+        //
+        private final int mRowCount = 5;
+        private final int mColCount = 5;
+        //
+        private int mPaintX;
+        private int mPaintY;
+        private int mPaintWidth;
+        private int mPaintHeight;
+        //
+        private int mGridWidth;
+        private int mGridHeight;
+        //
+        private int mRowIndex;
+        private int mColIndex;
+        //
+        private int[][] mTouchFlag;
+        private Rect mRect;
+        private Paint paint;
+
+
+        public TouchPadView(Context context) {
+            super(context);
+            paint = new Paint();
+            mRect = new Rect();
+        }
+
+        public void setTouchPadView(int width, int height) {
+            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format(Locale.US, "->width=%d, height=%d", width, height));
+            mPaintWidth = height * 4 / 5;
+            mPaintHeight = height * 4 / 5;
+            mPaintX = (width - mPaintWidth) / 2;
+            mPaintY = (height - mPaintHeight) / 2;
+            //
+            mGridWidth = mPaintWidth / mColCount;
+            mGridHeight = mPaintHeight / mRowCount;
+            mRowIndex = 0;
+            mColIndex = 0;
+            //
+            mTouchFlag = new int[mRowCount][mColCount];
+
+            for (int row = 0; row < mRowCount; row++) {
+                for (int col = 0; col < mColCount; col++) {
+                    mTouchFlag[row][col] = 0;
+                }
+            }
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName());
+            super.onDraw(canvas);
+            canvas.drawColor(Color.WHITE);
+            //draw grid line
+            paint.setColor(Color.BLUE);
+            paint.setStyle(Paint.Style.STROKE);
+            for (int row = 0; row < mRowCount; row++) {
+                for (int col = 0; col < mColCount; col++) {
+                    mRect.set(mPaintX + col * mGridWidth,
+                            mPaintY + row * mGridHeight,
+                            mPaintX + (col + 1) * mGridWidth,
+                            mPaintY + (row + 1) * mGridHeight);
+                    canvas.drawRect(mRect, paint);
+                }
+            }
+            // draw rect
+            paint.setColor(Color.BLUE);
+            paint.setStyle(Paint.Style.FILL);
+            for (int row = 0; row < mRowCount; row++) {
+                for (int col = 0; col < mColCount; col++) {
+                    if (mTouchFlag[row][col] == 1) {
+                        mRect.set(mPaintX + col * mGridWidth,
+                                mPaintY + row * mGridHeight,
+                                mPaintX + (col + 1) * mGridWidth,
+                                mPaintY + (row + 1) * mGridHeight);
+                        canvas.drawRect(mRect, paint);
+                    }
+                }
+            }
+        }
+
+        public void onTouchEventHandler(int pointX, int pointY) {
+            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format(Locale.US, "->%d, %d", pointX, pointY));
+            mRowIndex = pointY / (mOffsetRangeY / mRowCount + 1);
+            mColIndex = pointX / (mOffsetRangeX / mColCount + 1);
+
+            mTouchFlag[mRowIndex][mColIndex] = 1;
+
+            this.invalidate();
+        }
+
+        public boolean checkResultOk() {
+            for (int row = 0; row < mRowCount; row++) {
+                for (int col = 0; col < mColCount; col++) {
+                    if (mTouchFlag[row][col] == 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     }
 }

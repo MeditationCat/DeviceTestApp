@@ -26,11 +26,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.zhi_tech.taipp.devicetestapp.AppDefine;
+import com.zhi_tech.taipp.devicetestapp.DeviceTestApp;
 import com.zhi_tech.taipp.devicetestapp.DeviceTestAppService;
 import com.zhi_tech.taipp.devicetestapp.OnDataChangedListener;
 import com.zhi_tech.taipp.devicetestapp.R;
 import com.zhi_tech.taipp.devicetestapp.SensorPackageObject;
 import com.zhi_tech.taipp.devicetestapp.Utils;
+
+import java.util.Locale;
 
 /**
  * Created by taipp on 5/20/2016.
@@ -42,7 +45,8 @@ public class MSensor extends Activity{
     private TextView mOrientText = null;
     private TextView mOrientValue = null;
     private RotateAnimation mMyAni = null;
-    private float mDegressQuondam = 0.0f;
+    private float mDegressQuondam = -1.0f;
+    private int Magnetic_Yaw_Offset = 90; // º
     private SharedPreferences mSp;
     private Button mBtOk;
     private Button mBtFailed;
@@ -88,8 +92,8 @@ public class MSensor extends Activity{
                     float Mx = object.magneticSensor.getX();
                     float My = object.magneticSensor.getY();
                     float Mz = object.magneticSensor.getZ();
-                    mOrientValue.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.MSensor), Mx, My, Mz));
-                    //Log.d(TAG,String.format(" %s%n:X: %+f Y: %+f Z: %+f ", getString(R.string.MSensor), Mx, My, Mz));
+                    mOrientValue.setText(String.format(Locale.US, "%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.MSensor), Mx, My, Mz));
+                    Log.d(TAG,String.format(" %s%n:X: %+d Y: %+d Z: %+d ", getString(R.string.MSensor), (int) Mx, (int) My, (int) Mz));
                     float azimuth = (float) (Math.atan2(Mx, My) * (180 / Math.PI));
                     if (azimuth < 0) {
                         azimuth = 360 - Math.abs(azimuth);
@@ -111,7 +115,7 @@ public class MSensor extends Activity{
                         return;
                     }
 
-                    if (Math.abs(values[0] - Math.abs(mDegressQuondam)) > 90 && !mCheckDataSuccess && mDegressQuondam != 0) {
+                    if (Math.abs(values[0] - Math.abs(mDegressQuondam)) > Magnetic_Yaw_Offset && !mCheckDataSuccess && mDegressQuondam != -1.0f) {
                         mCheckDataSuccess = true;
                         handler.post(new Runnable() {
                             @Override
@@ -192,7 +196,7 @@ public class MSensor extends Activity{
                 SensorManager.getOrientation(mR, mOrientation);
                 float incl = SensorManager.getInclination(mI);
 
-                mOrientValue.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.MSensor), mMData[0], mMData[1], mMData[2]));
+                mOrientValue.setText(String.format(Locale.US, "%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.MSensor), mMData[0], mMData[1], mMData[2]));
 
                 final float rad2deg = (float)(180.0f/Math.PI);
 
@@ -210,7 +214,7 @@ public class MSensor extends Activity{
                     return;
                 }
 
-                if (Math.abs(values[0] - Math.abs(mDegressQuondam)) > 90 && !mCheckDataSuccess && mDegressQuondam != 0) {
+                if (Math.abs(values[0] - Math.abs(mDegressQuondam)) > Magnetic_Yaw_Offset && !mCheckDataSuccess && mDegressQuondam != -1.0f) {
                     mCheckDataSuccess = true;
                     handler.post(new Runnable() {
                         @Override
@@ -225,7 +229,7 @@ public class MSensor extends Activity{
                                 public void run() {
                                     SaveToReport();
                                 }
-                            }, 2 * 1000);
+                            }, DeviceTestApp.ShowItemTestResultTimeout * 1000);
                         }
                     });
                 }
@@ -284,7 +288,7 @@ public class MSensor extends Activity{
         mOrientText = (TextView) findViewById(R.id.OrientText);
         mImgCompass = (ImageView) findViewById(R.id.ivCompass);
         mOrientValue = (TextView) findViewById(R.id.OrientValue);
-        mOrientValue.setText(String.format("%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.MSensor), 0.0f, 0.0f, 0.0f));
+        mOrientValue.setText(String.format(Locale.US, "%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.MSensor), 0.0f, 0.0f, 0.0f));
         mBtOk = (Button) findViewById(R.id.msensor_bt_ok);
         mBtOk.setOnClickListener(cl);
         mBtFailed = (Button) findViewById(R.id.msensor_bt_failed);
@@ -292,8 +296,17 @@ public class MSensor extends Activity{
         mBtOk.setClickable(false);
         mBtFailed.setClickable(false);
 
+        Magnetic_Yaw_Offset = DeviceTestApp.Magnetic_Yaw_Offset;
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        }, DeviceTestApp.ItemTestTimeout * 1000);
     }
 
     @Override

@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.zhi_tech.taipp.devicetestapp.AppDefine;
+import com.zhi_tech.taipp.devicetestapp.DeviceTestApp;
 import com.zhi_tech.taipp.devicetestapp.DeviceTestAppService;
 import com.zhi_tech.taipp.devicetestapp.OnDataChangedListener;
 import com.zhi_tech.taipp.devicetestapp.R;
@@ -32,6 +33,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -45,6 +47,8 @@ public class PSensor extends Activity implements View.OnClickListener {
     private TextView mPsensor;
     public final String TAG = "PSensor";
     private byte okFlag = 0x00;
+    private static int Proximity_Threshold_Leave = 200;
+    private static int Proximity_Threshold_Approach = 820;
     private Timer mTimer;
     private TimerTask mTimerTask;
     boolean mCheckDataSuccess;
@@ -78,22 +82,22 @@ public class PSensor extends Activity implements View.OnClickListener {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                mPsensor.setText(String.format("%s:%n%s %d", getString(R.string.psensor_hello), getString(R.string.proximity),
+                mPsensor.setText(String.format(Locale.US, "%s:%n%s %d", getString(R.string.psensor_hello), getString(R.string.proximity),
                         object.proximitySensor.getProximitySensorValue()));
-                if (object.proximitySensor.getProximitySensorValue() < 20) {
+                if (object.proximitySensor.getProximitySensorValue() < Proximity_Threshold_Leave) {
+                    //leave away
                     okFlag |= 0x01;
-                } else if (object.proximitySensor.getProximitySensorValue() < 100) {
-                    okFlag |= 0x02;
-                } else if (object.proximitySensor.getProximitySensorValue() < 1000) {
-                    okFlag |= 0x04;
-                } else if (object.proximitySensor.getProximitySensorValue() < 2000) {
-                    okFlag |= 0x08;
                 }
-                if ((okFlag & 0xFF) == 0x0F) {
+                if (object.proximitySensor.getProximitySensorValue() > Proximity_Threshold_Approach) {
+                    //approach
+                    okFlag |= 0x02;
+                }
+
+                if ((okFlag & 0xFF) == 0x03) {
                     mCheckDataSuccess = true;
                     if (mTimer == null) {
                         mTimer = new Timer();
-                        mTimer.schedule(mTimerTask, 3 * 1000);
+                        mTimer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
 
                         mPsensor.setTextColor(Color.GREEN);
                         mBtFailed.setBackgroundColor(Color.GRAY);
@@ -123,7 +127,10 @@ public class PSensor extends Activity implements View.OnClickListener {
         mBtFailed.setClickable(false);
 
         mPsensor = (TextView) findViewById(R.id.proximity);
-        mPsensor.setText(String.format("%s:%n%s %d", getString(R.string.psensor_hello), getString(R.string.proximity), 0));
+        mPsensor.setText(String.format(Locale.US, "%s:%n%s %d", getString(R.string.psensor_hello), getString(R.string.proximity), 0));
+
+        Proximity_Threshold_Approach = DeviceTestApp.Proximity_Threshold_Approach;
+
         mTimer = null;
         mCheckDataSuccess = false;
         mTimerTask = new TimerTask() {
@@ -132,9 +139,13 @@ public class PSensor extends Activity implements View.OnClickListener {
                 SaveToReport();
             }
         };
-        if(mSp.getString(getString(R.string.psensor_name), null) == null){
-            finish();
-        }
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        }, DeviceTestApp.ItemTestTimeout * 1000);
     }
     @Override
     protected void onDestroy() {

@@ -3,11 +3,17 @@
     <string name="app_name">DeviceTestApp</string>
     <string name="AutoTest">自动测试</string>
     <string name="CheckVersion">检测版本号</string>
+    <string name="CheckSN">检测序列号</string>
     <string name="Upgrade">升级</string>
     <string name="upgrade_complete">系统升级完成!</string>
     <string name="upgrade_failed">系统升级失败!</string>
     <string name="calibration_complete">校准完成!</string>
     <string name="calibration_failed">校准失败!</string>
+    <string name="ble_write_mac_complete">蓝牙MAC地址写入成功!</string>
+    <string name="ble_write_mac_failed">蓝牙MAC地址写入失败!</string>
+    <string name="device_write_sn_complete">序列号写入成功!</string>
+    <string name="device_write_sn_failed">序列号写入失败!</string>
+    <string name="device_serial_number">序列号</string>
     <string name="Packageerror">出错了,无法找到应用包！</string>
     <string name="PackageIerror">内部错误</string>
     <!-- GSensor -->
@@ -65,7 +71,7 @@
     <string name="version">版本号</string>
     <string name="version_info">版本信息:</string>
     <string name="device_info_default">未知</string>
-    <string name="complate_fmtest" translatable="false">请完成工厂测试！</string>
+    <string name="complate_fmtest" translatable="false">请完成工厂测试!</string>
     <string name="str_smt_test">SMT测试</string>
     <string name="gyroscopesensor_name">陀螺仪传感</string>
     <string name="gyroscopesensor_value">陀螺仪传感数据</string>
@@ -86,12 +92,34 @@
     <string name="keycode_tp_left">(TP)←</string>
     <string name="keycode_tp_right">(TP)→</string>
     <string name="keycode_joystick_info">操纵杆测试</string>
+    <string name="keycode_touchpad_info">触摸板测试</string>
     <string name="device_manufacturer">制造商</string>
     <string name="device_productname">产品名称</string>
-    <string name="device_version">版本号</string>
+    <string name="device_version_stm32">STM32版本</string>
+    <string name="device_version_ble">BLE版本</string>
+    <string name="device_version_63813">CY7C63813版本</string>
+    <string name="device_ble_state">蓝牙手柄连接状态</string>
+    <string name="device_ble_mac_addr">蓝牙MAC地址</string>
     <string name="packetdata_header">包头</string>
     <string name="packetdata_timestamp">时间戳</string>
     <string name="device_unknown">未知</string>
+    <string name="ble_test">BLE CY7C63813测试</string>
     <string name="ble_test_tip">BLE CY7C63813测试成功！</string>
     <string name="setting">设置</string>
+    <string name="about_us">关于</string>
+    <string name="about_us_info">版本</string>
+    <string name="title_activity_settings">设置</string>
+    <string name="pref_header_general_setting">普通设置</string>
+    <string name="pref_title_mode">开启工厂测试模式</string>
+    <string name="pref_description_mode">工厂模式仅用于工厂测试</string>
+    <string name="pref_title_set_test_timeout">单项测试超时时间</string>
+    <!-- Sensor settings -->
+    <string name="pref_header_sensor_setting">传感测试量程设置</string>
+    <string name="pref_title_accel_full_scale_select">重力加速传感量程范围[2,16]g</string>
+    <string name="pref_title_gyro_full_scale_select">陀螺仪传感量程范围[250,2000]dps</string>
+    <string name="pref_title_proximity_threshold_approach">距离传感测试阀值范围[200, 4000]</string>
+    <string name="pref_title_light_threshold_approach">光感测试阀值范围[10, 2000]</string>
+    <string name="pref_title_temp_range_min">温度传感下限值[-40, 85]℃</string>
+    <string name="pref_title_temp_range_max">温度传感上限值[-40, 85]℃</string>
+    <string name="pref_title_magnetic_yaw_offset">地磁传感Y轴偏角测试范围[0, 360]d</string>
 </resources>

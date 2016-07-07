@@ -16,12 +16,14 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.zhi_tech.taipp.devicetestapp.AppDefine;
+import com.zhi_tech.taipp.devicetestapp.DeviceTestApp;
 import com.zhi_tech.taipp.devicetestapp.DeviceTestAppService;
 import com.zhi_tech.taipp.devicetestapp.OnDataChangedListener;
 import com.zhi_tech.taipp.devicetestapp.R;
 import com.zhi_tech.taipp.devicetestapp.SensorPackageObject;
 import com.zhi_tech.taipp.devicetestapp.Utils;
 
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -41,6 +43,8 @@ public class TSensor extends Activity implements View.OnClickListener {
     private final String TAG = "TSensor";
     public static final float Temp_Sensitivity = (float) 326.8; //LSB/ºC
     public static final int RoomTemp_Offset = 25; //ºC
+    public static int Temperature_Range_Min = -40; //ºC
+    public static int Temperature_Range_Max = 85; //ºC
     /*
     TEMP_degC = (TEMP_OUT[15:0]/Temp_Sensitivity)
             + RoomTemp_Offset
@@ -74,9 +78,9 @@ public class TSensor extends Activity implements View.OnClickListener {
             @Override
             public void run() {
                 float TEMP_degC = (object.temperatureSensor.getTemperature() / Temp_Sensitivity) + RoomTemp_Offset;
-                tvdata.setText(String.format("%.02f",TEMP_degC));
+                tvdata.setText(String.format(Locale.US, "%.02f",TEMP_degC));
                 //Log.d(TAG, String.format("TEMP_degC = %.02f",TEMP_degC));
-                if (TEMP_degC < -40 || TEMP_degC > 85) {
+                if (TEMP_degC < Temperature_Range_Min || TEMP_degC > Temperature_Range_Max) {
                     tvdata.setTextColor(Color.RED);
                     mBtFailed.setBackgroundColor(Color.RED);
                     mBtOk.setClickable(false);
@@ -114,10 +118,10 @@ public class TSensor extends Activity implements View.OnClickListener {
                             });
 
                             Timer timer = new Timer();
-                            timer.schedule(mTimerTask, 1 * 1000);
+                            timer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
                         }
                     };
-                    mTimer.schedule(timerTask, 6 * 1000);
+                    mTimer.schedule(timerTask, 5 * 1000);
                 }
             }
         });
@@ -141,6 +145,9 @@ public class TSensor extends Activity implements View.OnClickListener {
         mBtOk.setClickable(false);
         mBtFailed.setClickable(false);
 
+        Temperature_Range_Min = DeviceTestApp.Temperature_Range_Min;
+        Temperature_Range_Max = DeviceTestApp.Temperature_Range_Max;
+
         mCheckDataSuccess = false;
         mTimer = null;
         mTimerTask = new TimerTask() {
@@ -149,6 +156,14 @@ public class TSensor extends Activity implements View.OnClickListener {
                 SaveToReport();
             }
         };
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                SaveToReport();
+            }
+        }, DeviceTestApp.ItemTestTimeout * 1000);
+
     }
 
     @Override
