@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.zhi_tech.taipp.devicetestapp">
+    package="com.zhi_tech.devicetestapp">
 
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.READ_SETTINGS" />
@@ -12,9 +12,7 @@
     <uses-permission android:name="android.permission.ACCESS_BLUETOOTH_SHARE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <uses-feature
-        android:name="android.hardware.usb.host"
-        android:required="true" />
+    <uses-feature android:required="true" android:name="android.hardware.usb.host" />
 
     <application
         android:allowBackup="true"
@@ -27,16 +25,15 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
-
-            <meta-data
-                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
+
         </activity>
 
         <!-- 应用程序服务 -->
@@ -45,9 +42,7 @@
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.zhi_tech.taipp.devicetestapp.SERVICE" />
-
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="com.zhi_tech.devicetestapp.SERVICE" />
             </intent-filter>
         </service>
 
@@ -69,11 +64,12 @@
             android:label="@string/GSensor"
             android:screenOrientation="portrait" />
 
-        <!-- Msensor -->
+        <!-- GyRoscopeSensor -->
         <activity
             android:name=".sensor.GyRoscopeSensor"
             android:label="@string/gyroscopesensor_name"
             android:screenOrientation="portrait" />
+        <!-- Msensor -->
         <activity
             android:name=".sensor.MSensor"
             android:label="@string/MSensor"
@@ -124,7 +120,7 @@
             android:parentActivityName=".DeviceTestApp">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.zhi_tech.taipp.devicetestapp.DeviceTestApp" />
+                android:value="com.zhi_tech.devicetestapp.DeviceTestApp" />
         </activity>
     </application>
 

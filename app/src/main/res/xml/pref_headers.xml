@@ -3,7 +3,7 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="com.zhi_tech.taipp.devicetestapp.SettingsActivity$SettingPreferenceFragment"
+        android:fragment="com.zhi_tech.devicetestapp.SettingsActivity$SettingPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/pref_header_general_setting" />
 
