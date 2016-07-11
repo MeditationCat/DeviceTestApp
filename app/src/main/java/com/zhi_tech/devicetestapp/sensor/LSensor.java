@@ -47,7 +47,7 @@ public class LSensor extends Activity {
     private TimerTask mTimerTask;
     boolean mCheckDataSuccess;
     public static int Light_Threshold_Approach = 100; //
-    public static int Light_Threshold_Leave = 1800; //
+    public static int Light_Threshold_Leave = 1200; //
 
     private DeviceTestAppService dtaService = null;
     private ServiceConnection conn = new ServiceConnection() {
@@ -75,7 +75,6 @@ public class LSensor extends Activity {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                mAccuracyView.setText(getString(R.string.LSensor_accuracy));
                 mValueX.setText(String.format(Locale.US, "%s%d", getString(R.string.LSensor_value) ,object.lightSensor.getLightSensorValue()));
                 if (object.lightSensor.getLightSensorValue() < Light_Threshold_Approach) {
                     okFlag |= 0x01;
@@ -108,6 +107,7 @@ public class LSensor extends Activity {
 
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mAccuracyView = (TextView) findViewById(R.id.lsensor_accuracy);
+        mAccuracyView.setText(getString(R.string.LSensor) + getString(R.string.LSensor_accuracy));
         mValueX = (TextView) findViewById(R.id.lsensor_value);
         mBtOk = (Button) findViewById(R.id.lsensor_bt_ok);
         mBtOk.setOnClickListener(cl);

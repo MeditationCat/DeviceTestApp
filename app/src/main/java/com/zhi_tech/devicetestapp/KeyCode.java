@@ -66,6 +66,7 @@ public class KeyCode extends Activity implements OnClickListener {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.StartToReceiveTouchPadXY();
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
                 @Override
                 public void sensorDataChanged(final SensorPackageObject object) {
@@ -151,22 +152,10 @@ public class KeyCode extends Activity implements OnClickListener {
         mTimerTask = new TimerTask() {
             @Override
             public void run() {
-                if (dtaService != null) {
-                    dtaService.StopToReceiveTouchPadXY();
-                    dtaService.startToReceiveData();
-                }
                 SaveToReport();
             }
         };
 
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (dtaService != null) {
-                    dtaService.StartToReceiveTouchPadXY();
-                }
-            }
-        }, 1000);
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -229,7 +218,7 @@ public class KeyCode extends Activity implements OnClickListener {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (event.getKeyCode()) {
                 //normal key
-                case KeyEvent.KEYCODE_BACK:
+                case KeyEvent.KEYCODE_BUTTON_L1:
                     myAdapter.setKeyMap(getString(R.string.keycode_back), 1);
                     break;
                 case KeyEvent.KEYCODE_VOLUME_UP:
@@ -374,6 +363,11 @@ public class KeyCode extends Activity implements OnClickListener {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         super.onDestroy();
         unbindService(conn);
+        if (dtaService != null) {
+            //dtaService.StopToReceiveTouchPadXY();
+            dtaService.StartSensorSwitch();
+        }
+
     }
 
     @Override
@@ -705,10 +699,10 @@ public class KeyCode extends Activity implements OnClickListener {
 
         public void onTouchEventHandler(int pointX, int pointY) {
             Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format(Locale.US, "->%d, %d", pointX, pointY));
-            mRowIndex = pointY / (mOffsetRangeY / mRowCount + 1);
+            mRowIndex = (mOffsetRangeY - pointY) / (mOffsetRangeY / mRowCount + 1);
             mColIndex = pointX / (mOffsetRangeX / mColCount + 1);
 
-            mTouchFlag[mRowIndex][mColIndex] = 1;
+            mTouchFlag[mColIndex][mRowIndex] = 1;
 
             this.invalidate();
         }

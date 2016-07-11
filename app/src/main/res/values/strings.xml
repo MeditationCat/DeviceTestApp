@@ -114,8 +114,10 @@
     <string name="pref_header_general_setting">General Setting</string>
     <string name="pref_title_mode">Enable factory mode</string>
     <string name="pref_description_mode">Factory mode could be used for test pcb in factory</string>
+    <string name="pref_title_auto_test">Enable Auto Test mode</string>
+    <string name="pref_description_auto_test">Auto test mode could be used for test whole product</string>
     <string name="pref_title_set_test_timeout">Set item test timeout</string>
-    <string-array name="pref_timeout_list_titles">
+    <string-array name="pref_timeout_list_titles" translatable="false">
         <item>5s</item>
         <item>10s</item>
         <item>15s</item>
@@ -123,7 +125,7 @@
         <item>30s</item>
         <item>60s</item>
     </string-array>
-    <string-array name="pref_timeout_list_values">
+    <string-array name="pref_timeout_list_values" translatable="false">
         <item>5</item>
         <item>10</item>
         <item>15</item>

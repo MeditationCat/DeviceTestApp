@@ -35,6 +35,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
     public static int ShowItemTestResultTimeout = 1; // s
 
     public static boolean IsFactoryMode = false;
+    public static boolean AutoTestMode = true;
     public static int ItemTestTimeout = 10;
     public static int Accel_FullScale_Range = 3; // g
     public static float Gyro_FullScale_Range = 300.0f; // º/s
@@ -164,10 +166,8 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
 
                                     //CheckVersionSaveToReport();
                                     //mGrid.setAdapter(mAdapter);
-                                    if (IsFactoryMode) {
-                                        if (dtaService != null) {
-                                            dtaService.StartToCalibration();
-                                        }
+                                    if (dtaService != null) {
+                                        dtaService.StartToReadSerialNumber();
                                     }
                                     break;
 
@@ -202,9 +202,35 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
                                     break;
 
                                 case 0xBD: //read serial number return value
-                                    ByteBuffer sn = ByteBuffer.wrap(buffer, 2, buffer[1]);
-                                    textViewSN.setText(String.format(Locale.US, "%s: %s",
-                                            getString(R.string.device_serial_number), String.valueOf(sn.asCharBuffer())));
+                                    String stringSn = null;
+                                    try {
+                                        stringSn = new String(buffer, 2, buffer[1], "US-ASCII");
+                                    } catch (UnsupportedEncodingException e) {
+                                        e.printStackTrace();
+                                    }
+                                    textViewSN.setText(String.format(Locale.US, "%s:%s",
+                                            getString(R.string.device_serial_number), stringSn));
+
+                                    if ((buffer[1] & 0x0F) == 0x0F) {
+                                        textViewSN.setTextColor(Color.GREEN);
+                                        mBtCheckSN.setTextColor(Color.GREEN);
+                                    } else {
+                                        textViewSN.setTextColor(Color.RED);
+                                        mBtCheckSN.setTextColor(Color.RED);
+                                    }
+
+                                    handler.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (AutoTestMode && !IsFactoryMode) {
+                                                Intent intent = new Intent();
+                                                int reqId = -1;
+                                                intent.setClassName("com.zhi_tech.devicetestapp", "com.zhi_tech.devicetestapp.AutoTest");
+                                                reqId = AppDefine.DT_AUTOTESTID;
+                                                startActivityForResult(intent, reqId);
+                                            }
+                                        }
+                                    }, 2 *1000);
                                     break;
                                 default:
                                     break;
@@ -213,6 +239,9 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
                     });
                 }
             });
+
+            dtaService.connectToDevice();
+            dtaService.StartToCheckVersion();
         }
         @Override
         public void onServiceDisconnected(ComponentName name) {
@@ -286,16 +315,6 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
 
         Intent intent = new Intent(DeviceTestApp.this,DeviceTestAppService.class);
         bindService(intent, conn, Context.BIND_AUTO_CREATE);
-        /*//post a runnable to handler
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (dtaService != null) {
-                    Log.d(TAG,"onCreate handler.postDelayed->dtaService.connectToDevice()");
-                    dtaService.connectToDevice();
-                }
-            }
-        }, 2 * 1000);*/
     }
 
     @Override
@@ -326,6 +345,8 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         //factory mode
         IsFactoryMode = sharedPreferences.getBoolean("factory_mode_switch", false);
+        //auto test mode
+        AutoTestMode = sharedPreferences.getBoolean("auto_test_mode_switch", true);
         //item test timeout
         String string = sharedPreferences.getString("item_test_timeout_list", "10");
         ItemTestTimeout = Integer.valueOf(string);
@@ -353,6 +374,7 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() +
                 String.format(Locale.US,"->%n" +
                         "IsFactoryMode=%b%n" +
+                        "AutoTestMode=%b%n" +
                         "ItemTestTimeout=%ds%n" +
                         "Accel_FullScale_Range=%dg%n" +
                         "Gyro_FullScale_Range=%fdps%n" +
@@ -362,6 +384,7 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
                         "Temperature_Range_Max=%d℃%n" +
                         "Magnetic_Yaw_Offset=%dº%n",
                         IsFactoryMode,
+                        AutoTestMode,
                         ItemTestTimeout,
                         Accel_FullScale_Range,
                         Gyro_FullScale_Range,
@@ -664,9 +687,11 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
                 Toast toast=Toast.makeText(getApplicationContext(), getString(R.string.ble_test_tip), Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
-                if (dtaService != null) {
-                    dtaService.connectToDevice();
-                    dtaService.StartToCheckVersion();
+                if (IsFactoryMode) {
+                    if (dtaService != null) {
+                        dtaService.connectToDevice();
+                        dtaService.StartToCalibration();
+                    }
                 }
             }
         }

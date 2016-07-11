@@ -2,10 +2,16 @@
 
     <PreferenceCategory android:title="@string/pref_header_general_setting">
         <SwitchPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="factory_mode_switch"
             android:summary="@string/pref_description_mode"
             android:title="@string/pref_title_mode" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="auto_test_mode_switch"
+            android:summary="@string/pref_description_auto_test"
+            android:title="@string/pref_title_auto_test" />
 
         <ListPreference
             android:defaultValue="10"
