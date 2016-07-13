@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -35,9 +36,8 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -54,9 +54,8 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
     private Button mBtCheckVersion;
     private Button mBtCheckSN;
     private Button mBleCy7c63813;
-    private Button mBtSetting;
 
-    private TextView textViewDeviceInfo, textViewPacket, textViewVersion, textViewSN;
+    private TextView textViewDeviceInfo, textViewPacket, textViewVersion, textViewSN, textViewUsbStorageInfo;
 
     public static byte result[] = new byte[AppDefine.DVT_NV_ARRAR_LEN]; //0 default; 1,success; 2,fail; 3,notest
     private boolean mCheckDataSuccess;
@@ -285,22 +284,22 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
         mBtCheckSN = (Button) findViewById(R.id.main_bt_checksn);
         mBtCheckSN.setOnClickListener(cl);
         mBleCy7c63813 = (Button) findViewById(R.id.main_bt_ble_cy7c63813);
-        mBtSetting = (Button) findViewById(R.id.main_bt_setting);
-        mBtSetting.setOnClickListener(cl);
-        mBtSetting.setVisibility(View.GONE);
+        mBleCy7c63813.setOnClickListener(cl);
 
         textViewDeviceInfo = (TextView) findViewById(R.id.textViewDeviceInfo);
         textViewPacket = (TextView) findViewById(R.id.textViewPacket);
         textViewVersion = (TextView) findViewById(R.id.textViewVersion);
         textViewSN = (TextView) findViewById(R.id.textViewSN);
+        textViewUsbStorageInfo = (TextView) findViewById(R.id.textViewUsbStorageInfo);
 
         if (IsFactoryMode) {
             mBtAuto.setVisibility(View.GONE);
             mBtUpgrade.setVisibility(View.GONE);
+            textViewUsbStorageInfo.setVisibility(View.GONE);
         } else {
             mBtCalibration.setVisibility(View.GONE);
             mBtUpgrade.setVisibility(View.GONE);
-            mBleCy7c63813.setVisibility(View.GONE);
+            //mBleCy7c63813.setVisibility(View.GONE);
         }
         // init grid view data
         initTestItems();
@@ -315,6 +314,16 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
 
         Intent intent = new Intent(DeviceTestApp.this,DeviceTestAppService.class);
         bindService(intent, conn, Context.BIND_AUTO_CREATE);
+
+        IntentFilter filter = new IntentFilter();
+        //filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        //filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        filter.addAction(Intent.ACTION_MEDIA_EJECT);
+        filter.addAction(Intent.ACTION_MEDIA_MOUNTED);
+        filter.addAction(Intent.ACTION_MEDIA_REMOVED);
+        filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+        filter.addDataScheme("file");
+        registerReceiver(mUsbReceiver, filter);
     }
 
     @Override
@@ -437,6 +446,8 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
                 getString(R.string.device_ble_state), getString(R.string.device_unknown)));
         textViewSN.setText(String.format(Locale.US, "%s: %s",
                 getString(R.string.device_serial_number), getString(R.string.device_unknown)));
+        textViewUsbStorageInfo.setText(String.format(Locale.US, "%s:%s",
+                getString(R.string.usb_storage_info), getString(R.string.device_unknown)));
     }
 
     public View.OnClickListener cl = new View.OnClickListener() {
@@ -472,9 +483,11 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
                 if (dtaService != null) {
                     dtaService.StartToReadSerialNumber();
                 }
-            } else if (v.getId() == mBtSetting.getId()) {
-                intent.setClassName(DeviceTestApp.this, "com.zhi_tech.devicetestapp.SettingsActivity");
-                startActivity(intent);
+            } else if (v.getId() == mBleCy7c63813.getId()) {
+                //check version request
+                if (dtaService != null) {
+                    dtaService.StartToReadMacAddress();
+                }
             }
         }
     };
@@ -591,7 +604,7 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
     protected void onDestroy() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         unbindService(conn);
-        //unregisterReceiver(mUsbReceiver);
+        unregisterReceiver(mUsbReceiver);
         //close app when usb detached
         android.os. Process.killProcess(android.os.Process.myPid());
         super.onDestroy();
@@ -608,9 +621,8 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
             String action = intent.getAction();
             Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + TAG + "->" + action);
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-            }
-
-            if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+                //
+            } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                 SharedPreferences.Editor editor = mSp.edit();
                 for (int item:itemIds) {
                     editor.putString(getString(item), AppDefine.DT_DEFAULT);
@@ -631,6 +643,50 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
 
                     }
                 });
+            } else if (Intent.ACTION_MEDIA_EJECT.equals(action)) {
+                //USB device ejected
+                Log.d(TAG, "--> USB device eject!");
+                textViewUsbStorageInfo.setText(String.format(Locale.US, "%s:%s",
+                        getString(R.string.usb_storage_info), getString(R.string.device_unknown)));
+                //textViewUsbStorageInfo.setTextColor(Color.DKGRAY);
+                textViewUsbStorageInfo.invalidate();
+            } else if (Intent.ACTION_MEDIA_MOUNTED.equals(action)) {
+                //USB device mounted
+                Log.d(TAG, "--> USB device mounted!");
+                String path = intent.getData().getPath() + File.separator;
+                File rootDir = new File(path);
+                Log.d(TAG, String.format(Locale.US, "->path:%s", path));
+                Log.d(TAG, String.format(Locale.US, "->USB Info:%n" +
+                        "Name:%s%n" +
+                        "TotalSpace:%dMB%n" +
+                        "FreeSpace:%dMB%n" +
+                        "%b",
+                        rootDir.getName(),
+                        rootDir.getTotalSpace()/1024/1024,
+                        rootDir.getFreeSpace()/1024/1024,
+                        rootDir.canRead()));
+
+                textViewUsbStorageInfo.setText(String.format(Locale.US, "%s:Name:%s TotalSpace:%dMB",
+                        getString(R.string.usb_storage_info),
+                        rootDir.getName(),
+                        rootDir.getTotalSpace()/1024/1024));
+                //textViewUsbStorageInfo.setTextColor(Color.GREEN);
+                textViewUsbStorageInfo.invalidate();
+
+                File[] subFiles = rootDir.listFiles();
+                if (subFiles == null) {
+                    Log.d(TAG, String.format(Locale.US, "->subFiles = null!"));
+                    return;
+                }
+                for (int i = 0; i < subFiles.length; i++) {
+                    Log.d(TAG, String.format(Locale.US, "->subFiles[%d]:%s", i, subFiles[i].getName()));
+                    if (subFiles[i].isDirectory()) {
+                        File[] subFiles1 = subFiles[i].listFiles();
+                        for (int j = 0; j < subFiles.length; j++) {
+                            Log.d(TAG, String.format(Locale.US, "->subFiles1[%d]:%s", j, subFiles1[i].getName()));
+                        }
+                    }
+                }
             }
         }
     };

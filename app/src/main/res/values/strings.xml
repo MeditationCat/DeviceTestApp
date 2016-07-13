@@ -105,6 +105,7 @@
     <string name="device_unknown">Unknown</string>
     <string name="ble_test">BLE CY7C63813 Test</string>
     <string name="ble_test_tip">BLE CY7C63813 Test OK!</string>
+    <string name="usb_storage_info">USB Storage Info</string>
     <string name="setting">Setting</string>
     <string name="about_us">About</string>
     <string name="about_us_info">Version</string>

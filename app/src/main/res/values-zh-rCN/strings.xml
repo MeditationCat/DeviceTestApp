@@ -105,6 +105,7 @@
     <string name="device_unknown">未知</string>
     <string name="ble_test">BLE CY7C63813测试</string>
     <string name="ble_test_tip">BLE CY7C63813测试成功！</string>
+    <string name="usb_storage_info">USB存储设备信息</string>
     <string name="setting">设置</string>
     <string name="about_us">关于</string>
     <string name="about_us_info">版本</string>
