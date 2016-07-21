@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -39,7 +40,7 @@ import java.util.TimerTask;
 /**
  * Created by taipp on 5/20/2016.
  */
-public class KeyCode extends Activity implements OnClickListener {
+public class KeyCode extends AppCompatActivity implements OnClickListener {
     SharedPreferences mSp;
     TextView mInfo, mJoyStickInfo;
     Button mBtOk;
@@ -56,8 +57,6 @@ public class KeyCode extends Activity implements OnClickListener {
     private Handler handler = new Handler();
     private boolean mCheckDataSuccess;
     private byte okFlag = 0x00;
-    private Timer mTimer;
-    private TimerTask mTimerTask;
 
     private final String TAG = "KeyCode";
 
@@ -66,6 +65,7 @@ public class KeyCode extends Activity implements OnClickListener {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.StartToReceiveTouchPadXY();
             dtaService.StartToReceiveTouchPadXY();
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
                 @Override
@@ -92,19 +92,18 @@ public class KeyCode extends Activity implements OnClickListener {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.keycode);
-
-        Intent intent = new Intent(KeyCode.this,DeviceTestAppService.class);
-        bindService(intent, conn, Context.BIND_AUTO_CREATE);
 
         mSp = getSharedPreferences("DeviceTestApp", Context.MODE_PRIVATE);
         mInfo = (TextView) findViewById(R.id.keycode_info);
         mJoyStickInfo = (TextView) findViewById(R.id.keycode_joystick);
         mBtOk = (Button) findViewById(R.id.keycode_bt_ok);
+        assert mBtOk != null;
         mBtOk.setOnClickListener(this);
         mBtFailed = (Button) findViewById(R.id.keycode_bt_failed);
+        assert mBtFailed != null;
         mBtFailed.setOnClickListener(this);
         mBtOk.setClickable(false);
         mBtFailed.setClickable(false);
@@ -128,6 +127,7 @@ public class KeyCode extends Activity implements OnClickListener {
             root.addView(touchPadView);
             mJoyStickInfo.setText(getString(R.string.keycode_touchpad_info));
         }
+        assert root != null;
         ViewTreeObserver vto = root.getViewTreeObserver();
         vto.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
@@ -147,21 +147,20 @@ public class KeyCode extends Activity implements OnClickListener {
             }
         });
 
-        mCheckDataSuccess = false;
-        mTimer = null;
-        mTimerTask = new TimerTask() {
-            @Override
-            public void run() {
-                SaveToReport();
-            }
-        };
+        Intent intent = new Intent(KeyCode.this,DeviceTestAppService.class);
+        bindService(intent, conn, Context.BIND_AUTO_CREATE);
 
+        mCheckDataSuccess = false;
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                if (!mCheckDataSuccess) {
+                    mBtFailed.setBackgroundColor(Color.RED);
+                    mBtOk.setBackgroundColor(Color.GRAY);
+                }
                 SaveToReport();
             }
-        }, DeviceTestApp.ItemTestTimeout * 1000 * 5);
+        }, DeviceTestApp.ItemTestTimeout * 5 * 1000);
     }
 
     private void initTestItems() {
@@ -196,18 +195,27 @@ public class KeyCode extends Activity implements OnClickListener {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyDown keyCode->" + String.valueOf(keyCode));
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            return super.onKeyDown(keyCode, event);
+        }
         return true;
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyUp keyCode->" + String.valueOf(keyCode));
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            return super.onKeyUp(keyCode, event);
+        }
         return true; //super.onKeyUp(keyCode, event);
     }
 
     @Override
     public boolean onKeyLongPress(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyLongPress keyCode->" + String.valueOf(keyCode));
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            return super.onKeyLongPress(keyCode, event);
+        }
         return true;
     }
 
@@ -267,6 +275,9 @@ public class KeyCode extends Activity implements OnClickListener {
                 okFlag |= 0x80;
             }
             checkDataSuccess();
+        }
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+            return super.dispatchKeyEvent(event);
         }
         return true; //super.dispatchKeyEvent(event);
     }
@@ -362,12 +373,12 @@ public class KeyCode extends Activity implements OnClickListener {
     protected void onDestroy() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
         super.onDestroy();
-        unbindService(conn);
         if (dtaService != null) {
-            //dtaService.StopToReceiveTouchPadXY();
-            dtaService.StartSensorSwitch();
+            dtaService.StopToReceiveTouchPadXY();
+            //dtaService.StartSensorSwitch();
+            //dtaService.StartSensorSwitch();
         }
-
+        unbindService(conn);
     }
 
     @Override
@@ -380,41 +391,21 @@ public class KeyCode extends Activity implements OnClickListener {
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.KeyCode_name,
                 mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
-        finish();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        }, DeviceTestApp.ShowItemTestResultTimeout * 1000);
     }
 
     public void checkDataSuccess() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format("->okFlag = %#x", okFlag));
-
-        if ((okFlag & 0x80) == 0x80) {
-            if (enableJoyStickItem) {
-                if ((okFlag & 0x0F) == 0x0F) {
-                    mCheckDataSuccess = true;
-                }
-            } else if (enableTouchPadItem) {
-                if ((okFlag & 0x0F) == 0x0F) {
-                    mCheckDataSuccess = true;
-                }
-            } else{
-                mCheckDataSuccess = true;
-            }
-        }
-
-        if (mCheckDataSuccess) {
-            if (mTimer == null) {
-                mCheckDataSuccess = true;
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mBtFailed.setBackgroundColor(Color.GRAY);
-                        mBtFailed.setClickable(false);
-                        mBtOk.setBackgroundColor(Color.GREEN);
-                    }
-                });
-
-                mTimer = new Timer();
-                mTimer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
-            }
+        if ((okFlag & 0x80) == 0x80 && (okFlag & 0x0F) == 0x0F && !mCheckDataSuccess) {
+            mBtFailed.setBackgroundColor(Color.GRAY);
+            mBtOk.setBackgroundColor(Color.GREEN);
+            mCheckDataSuccess = true;
+            SaveToReport();
         }
     }
 
@@ -618,8 +609,8 @@ public class KeyCode extends Activity implements OnClickListener {
         private final int mOffsetRangeX = 50;
         private final int mOffsetRangeY = 50;
         //
-        private final int mRowCount = 5;
-        private final int mColCount = 5;
+        private final int mRowCount = 3;
+        private final int mColCount = 3;
         //
         private int mPaintX;
         private int mPaintY;
@@ -698,7 +689,10 @@ public class KeyCode extends Activity implements OnClickListener {
         }
 
         public void onTouchEventHandler(int pointX, int pointY) {
-            Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format(Locale.US, "->%d, %d", pointX, pointY));
+            //Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + String.format(Locale.US, "->%d, %d", pointX, pointY));
+            if (pointX == 0 && pointY == 0) {
+                return;
+            }
             mRowIndex = (mOffsetRangeY - pointY) / (mOffsetRangeY / mRowCount + 1);
             mColIndex = pointX / (mOffsetRangeX / mColCount + 1);
 

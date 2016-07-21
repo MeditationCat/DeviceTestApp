@@ -43,7 +43,6 @@ public class GSensor extends Activity implements View.OnClickListener {
     private ImageView ivimg;
     private Button mBtOk;
     private Button mBtFailed;
-    //private Button mSmtTest;
 
     private float mX;
     private float mY;
@@ -56,8 +55,6 @@ public class GSensor extends Activity implements View.OnClickListener {
     private final static float Gravity = (float) 9.8; // m/s²
     private static int FullScale_Range = 3; // g
     private byte okFlag = 0x00;
-    private Timer mTimer;
-    private TimerTask mTimerTask;
 
     private final String TAG = "GSensor";
 
@@ -66,6 +63,7 @@ public class GSensor extends Activity implements View.OnClickListener {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.StartSensorSwitch();
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
                 @Override
                 public void sensorDataChanged(SensorPackageObject object) {
@@ -88,9 +86,9 @@ public class GSensor extends Activity implements View.OnClickListener {
             @Override
             public void run() {
                 float[] values = new float[3];
-                values[0] = object.accelerometerSensor.getX() / 1.0f;
-                values[1] = object.accelerometerSensor.getY() / 1.0f;
-                values[2] = object.accelerometerSensor.getZ() / 1.0f;
+                values[0] = object.accelerometerSensor.getX();
+                values[1] = object.accelerometerSensor.getY();
+                values[2] = object.accelerometerSensor.getZ();
 
                 float x = values[0] * Gravity / Accl_Sensitivity;
                 float y = values[1] * Gravity / Accl_Sensitivity;
@@ -114,21 +112,12 @@ public class GSensor extends Activity implements View.OnClickListener {
                     okFlag |= 0x04;
                 }
 
-                if (okFlag == 0x07) {
+                if (okFlag == 0x07 && !mCheckDataSuccess) {
                     tvdata.setTextColor(Color.GREEN);
                     mBtFailed.setBackgroundColor(Color.GRAY);
-                    mBtFailed.setClickable(false);
                     mBtOk.setBackgroundColor(Color.GREEN);
                     mCheckDataSuccess = true;
-                    //
-                }
-
-                if (((okFlag & 0x01) != 0 && (okFlag & 0x02) != 0 && (okFlag & 0x04) != 0)
-                        || (okFlag & 0x80) != 0) {
-                    if (mTimer == null) {
-                        mTimer = new Timer();
-                        mTimer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
-                    }
+                    SaveToReport();
                 }
 
                 if (Math.abs(x) > Math.abs(y) && Math.abs(x) - OFFSET > Math.abs(z)) {
@@ -165,16 +154,15 @@ public class GSensor extends Activity implements View.OnClickListener {
         mBtOk.setClickable(false);
         mBtFailed.setClickable(false);
         FullScale_Range = DeviceTestApp.Accel_FullScale_Range;
-        mTimer = null;
-        mTimerTask = new TimerTask() {
-            @Override
-            public void run() {
-                SaveToReport();
-            }
-        };
+
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                if (!mCheckDataSuccess) {
+                    tvdata.setTextColor(Color.RED);
+                    mBtFailed.setBackgroundColor(Color.RED);
+                    mBtOk.setBackgroundColor(Color.GRAY);
+                }
                 SaveToReport();
             }
         }, DeviceTestApp.ItemTestTimeout * 1000);
@@ -209,6 +197,11 @@ public class GSensor extends Activity implements View.OnClickListener {
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.gsensor_name,
                 mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
-        finish();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        }, DeviceTestApp.ShowItemTestResultTimeout * 1000);
     }
 }

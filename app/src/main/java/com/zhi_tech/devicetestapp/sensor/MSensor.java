@@ -64,6 +64,7 @@ public class MSensor extends Activity{
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.StartSensorSwitch();
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
                 @Override
                 public void sensorDataChanged(final SensorPackageObject object) {
@@ -215,23 +216,11 @@ public class MSensor extends Activity{
                 }
 
                 if (Math.abs(values[0] - Math.abs(mDegressQuondam)) > Magnetic_Yaw_Offset && !mCheckDataSuccess && mDegressQuondam != -1.0f) {
+                    mOrientText.setTextColor(Color.GREEN);
+                    mBtFailed.setBackgroundColor(Color.GRAY);
+                    mBtOk.setBackgroundColor(Color.GREEN);
                     mCheckDataSuccess = true;
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mOrientText.setTextColor(Color.GREEN);
-                            mBtFailed.setBackgroundColor(Color.GRAY);
-                            mBtFailed.setClickable(false);
-                            mBtOk.setBackgroundColor(Color.GREEN);
-
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    SaveToReport();
-                                }
-                            }, DeviceTestApp.ShowItemTestResultTimeout * 1000);
-                        }
-                    });
+                    SaveToReport();
                 }
 
                 switch ((int) values[0]) {
@@ -298,12 +287,14 @@ public class MSensor extends Activity{
 
         Magnetic_Yaw_Offset = DeviceTestApp.Magnetic_Yaw_Offset;
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                if (!mCheckDataSuccess) {
+                    mOrientText.setTextColor(Color.RED);
+                    mBtFailed.setBackgroundColor(Color.RED);
+                    mBtOk.setBackgroundColor(Color.GRAY);
+                }
                 SaveToReport();
             }
         }, DeviceTestApp.ItemTestTimeout * 1000);
@@ -359,6 +350,11 @@ public class MSensor extends Activity{
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.msensor_name,
                 mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
-        finish();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        }, DeviceTestApp.ShowItemTestResultTimeout * 1000);
     }
 }

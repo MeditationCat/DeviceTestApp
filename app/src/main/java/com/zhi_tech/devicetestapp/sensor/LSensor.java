@@ -43,8 +43,6 @@ public class LSensor extends Activity {
     SharedPreferences mSp;
     private final String TAG = "LSensor";
     private byte okFlag = 0x00;
-    private Timer mTimer;
-    private TimerTask mTimerTask;
     boolean mCheckDataSuccess;
     public static int Light_Threshold_Approach = 100; //
     public static int Light_Threshold_Leave = 1200; //
@@ -54,6 +52,7 @@ public class LSensor extends Activity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.StartSensorSwitch();
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
                 @Override
                 public void sensorDataChanged(SensorPackageObject object) {
@@ -82,17 +81,12 @@ public class LSensor extends Activity {
                 if (object.lightSensor.getLightSensorValue() > Light_Threshold_Leave) {
                     okFlag |= 0x02;
                 }
-                if ((okFlag & 0xFF) == 0x03) {
+                if (okFlag == 0x03 && !mCheckDataSuccess) {
+                    mValueX.setTextColor(Color.GREEN);
+                    mBtFailed.setBackgroundColor(Color.GRAY);
+                    mBtOk.setBackgroundColor(Color.GREEN);
                     mCheckDataSuccess = true;
-                    if (mTimer == null) {
-                        mTimer = new Timer();
-                        mTimer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
-
-                        mValueX.setTextColor(Color.GREEN);
-                        mBtFailed.setBackgroundColor(Color.GRAY);
-                        mBtFailed.setClickable(false);
-                        mBtOk.setBackgroundColor(Color.GREEN);
-                    }
+                    SaveToReport();
                 }
             }
         });
@@ -118,22 +112,19 @@ public class LSensor extends Activity {
 
         Light_Threshold_Approach = DeviceTestApp.Light_Threshold_Approach;
 
-        mTimer = null;
         mCheckDataSuccess = false;
-        mTimerTask = new TimerTask() {
-            @Override
-            public void run() {
-                SaveToReport();
-            }
-        };
 
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                if (!mCheckDataSuccess) {
+                    mValueX.setTextColor(Color.RED);
+                    mBtFailed.setBackgroundColor(Color.RED);
+                    mBtOk.setBackgroundColor(Color.GRAY);
+                }
                 SaveToReport();
             }
         }, DeviceTestApp.ItemTestTimeout * 1000);
-
     }
 
     @Override
@@ -166,7 +157,12 @@ public class LSensor extends Activity {
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.lsensor_name,
                 mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
-        finish();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        }, DeviceTestApp.ShowItemTestResultTimeout * 1000);
     }
 
 }

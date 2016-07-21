@@ -97,14 +97,14 @@
     <string name="device_productname">产品名称</string>
     <string name="device_version_stm32">STM32版本</string>
     <string name="device_version_ble">BLE版本</string>
-    <string name="device_version_63813">CY7C63813版本</string>
+    <string name="device_version_63813">63813版本</string>
     <string name="device_ble_state">蓝牙手柄连接状态</string>
     <string name="device_ble_mac_addr">蓝牙MAC地址</string>
     <string name="packetdata_header">包头</string>
     <string name="packetdata_timestamp">时间戳</string>
     <string name="device_unknown">未知</string>
-    <string name="ble_test">BLE CY7C63813测试</string>
-    <string name="ble_test_tip">BLE CY7C63813测试成功！</string>
+    <string name="ble_test">BLE 63813测试</string>
+    <string name="ble_test_tip">BLE 63813测试成功！</string>
     <string name="usb_storage_info">USB存储设备信息</string>
     <string name="setting">设置</string>
     <string name="about_us">关于</string>

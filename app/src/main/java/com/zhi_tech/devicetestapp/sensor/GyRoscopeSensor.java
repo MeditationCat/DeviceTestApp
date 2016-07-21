@@ -54,8 +54,6 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
     private float[] angle= new float[3];
     private final String TAG = "GyRoscopeSensor";
     boolean mCheckDataSuccess;
-    private Timer mTimer;
-    private TimerTask mTimerTask;
     private byte okFlag = 0x00;
 
     private DeviceTestAppService dtaService = null;
@@ -63,6 +61,7 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.StartSensorSwitch();
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
                 @Override
                 public void sensorDataChanged(SensorPackageObject object) {
@@ -113,59 +112,17 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
                 angle[0] = (float) object.gyroscopeSensor.getX() / Gyro_Sensitivity;
                 angle[1] = (float) object.gyroscopeSensor.getY() / Gyro_Sensitivity;
                 angle[2] = (float) object.gyroscopeSensor.getZ() / Gyro_Sensitivity;
+                tvdata.setText(String.format(Locale.US, "%s:%nX: %+f%nY: %+f%nZ: %+f%n",
+                        getString(R.string.gyroscopesensor_value), angle[0], angle[1], angle[2]));
 
                 if (Math.abs(angle[0]) > FullScale_Range
                         || Math.abs(angle[1]) > FullScale_Range || Math.abs(angle[2]) > FullScale_Range) {
                     //Log.d(TAG,String.format("X: %+f Y: %+f Z: %+f ",angle[0],angle[1],angle[2]));
-                    tvdata.setTextColor(Color.RED);
-                    mBtFailed.setBackgroundColor(Color.RED);
-                    mBtOk.setClickable(false);
-                    mBtOk.setBackgroundColor(Color.GRAY);
+                    okFlag |= 0x80;
+                } else {
+                    okFlag |= 0x08;
                 }
 
-                tvdata.setText(String.format(Locale.US, "%s:%nX: %+f%nY: %+f%nZ: %+f%n", getString(R.string.gyroscopesensor_value), angle[0], angle[1], angle[2]));
-
-                if (DeviceTestApp.IsFactoryMode) {
-                    if (Math.abs(angle[0]) < 1.0f && Math.abs(angle[1]) < 1.0f && Math.abs(angle[2]) < 1.0f) {
-                        okFlag |= 0x08;
-                    } else {
-                        okFlag |= 0x80;
-                    }
-                }
-
-                if (mTimer == null) {
-                    mTimer = new Timer();
-                    TimerTask timerTask = new TimerTask() {
-                        @Override
-                        public void run() {
-                            if ((okFlag & 0x80) != 0) {
-                                mCheckDataSuccess = false;
-                            } else {
-                                mCheckDataSuccess = true;
-                            }
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (mCheckDataSuccess) {
-                                        tvdata.setTextColor(Color.GREEN);
-                                        mBtFailed.setBackgroundColor(Color.GRAY);
-                                        mBtFailed.setClickable(false);
-                                        mBtOk.setBackgroundColor(Color.GREEN);
-                                    } else {
-                                        tvdata.setTextColor(Color.RED);
-                                        mBtFailed.setBackgroundColor(Color.RED);
-                                        mBtOk.setClickable(false);
-                                        mBtOk.setBackgroundColor(Color.GRAY);
-                                    }
-                                }
-                            });
-
-                            Timer timer = new Timer();
-                            timer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
-                        }
-                    };
-                    mTimer.schedule(timerTask, 5 * 1000);
-                }//*/
             }
         });
     }
@@ -190,19 +147,36 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
         mBtFailed.setClickable(false);
 
         FullScale_Range = DeviceTestApp.Gyro_FullScale_Range;
+        if (DeviceTestApp.IsFactoryMode) {
+            FullScale_Range = FullScale_Range / 300.0f;
+        }
 
         mCheckDataSuccess = false;
-        mTimer = null;
-        mTimerTask = new TimerTask() {
-            @Override
-            public void run() {
-                SaveToReport();
-            }
-        };
-
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                if ((okFlag & 0x80) == 0x80) {
+                    tvdata.setTextColor(Color.RED);
+                    mBtFailed.setBackgroundColor(Color.RED);
+                    mBtOk.setBackgroundColor(Color.GRAY);
+                    mCheckDataSuccess = false;
+                } else {
+                    tvdata.setTextColor(Color.GREEN);
+                    mBtFailed.setBackgroundColor(Color.GRAY);
+                    mBtOk.setBackgroundColor(Color.GREEN);
+                    mCheckDataSuccess = true;
+                }
+                SaveToReport();
+            }
+        }, 5 * 1000);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!mCheckDataSuccess) {
+                    tvdata.setTextColor(Color.RED);
+                    mBtFailed.setBackgroundColor(Color.RED);
+                    mBtOk.setBackgroundColor(Color.GRAY);
+                }
                 SaveToReport();
             }
         }, DeviceTestApp.ItemTestTimeout * 1000);
@@ -227,7 +201,12 @@ public class GyRoscopeSensor extends Activity implements View.OnClickListener {
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.gyroscopesensor_name,
                 mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
-        finish();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        }, DeviceTestApp.ShowItemTestResultTimeout * 1000);
     }
 
 }

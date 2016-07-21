@@ -36,8 +36,6 @@ public class TSensor extends Activity implements View.OnClickListener {
     private Button mBtFailed;
     SharedPreferences mSp;
     boolean mCheckDataSuccess;
-    private Timer mTimer;
-    private TimerTask mTimerTask;
     private byte okFlag = 0x00;
 
     private final String TAG = "TSensor";
@@ -56,6 +54,7 @@ public class TSensor extends Activity implements View.OnClickListener {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.StartSensorSwitch();
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
                 @Override
                 public void sensorDataChanged(SensorPackageObject object) {
@@ -81,47 +80,9 @@ public class TSensor extends Activity implements View.OnClickListener {
                 tvdata.setText(String.format(Locale.US, "%.02f",TEMP_degC));
                 //Log.d(TAG, String.format("TEMP_degC = %.02f",TEMP_degC));
                 if (TEMP_degC < Temperature_Range_Min || TEMP_degC > Temperature_Range_Max) {
-                    tvdata.setTextColor(Color.RED);
-                    mBtFailed.setBackgroundColor(Color.RED);
-                    mBtOk.setClickable(false);
-                    mBtOk.setBackgroundColor(Color.GRAY);
                     okFlag |= 0x80;
                 } else {
                     okFlag |= 0x01;
-                }
-
-                if (mTimer == null) {
-                    mTimer = new Timer();
-                    TimerTask timerTask = new TimerTask() {
-                        @Override
-                        public void run() {
-                            if ((okFlag & 0x80) != 0) {
-                                mCheckDataSuccess = false;
-                            } else {
-                                mCheckDataSuccess = true;
-                            }
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (mCheckDataSuccess) {
-                                        tvdata.setTextColor(Color.GREEN);
-                                        mBtFailed.setBackgroundColor(Color.GRAY);
-                                        mBtFailed.setClickable(false);
-                                        mBtOk.setBackgroundColor(Color.GREEN);
-                                    } else {
-                                        tvdata.setTextColor(Color.RED);
-                                        mBtFailed.setBackgroundColor(Color.RED);
-                                        mBtOk.setClickable(false);
-                                        mBtOk.setBackgroundColor(Color.GRAY);
-                                    }
-                                }
-                            });
-
-                            Timer timer = new Timer();
-                            timer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
-                        }
-                    };
-                    mTimer.schedule(timerTask, 5 * 1000);
                 }
             }
         });
@@ -149,17 +110,33 @@ public class TSensor extends Activity implements View.OnClickListener {
         Temperature_Range_Max = DeviceTestApp.Temperature_Range_Max;
 
         mCheckDataSuccess = false;
-        mTimer = null;
-        mTimerTask = new TimerTask() {
-            @Override
-            public void run() {
-                SaveToReport();
-            }
-        };
 
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                if ((okFlag & 0x80) == 0x80) {
+                    tvdata.setTextColor(Color.RED);
+                    mBtFailed.setBackgroundColor(Color.RED);
+                    mBtOk.setBackgroundColor(Color.GRAY);
+                    mCheckDataSuccess = false;
+                } else {
+                    tvdata.setTextColor(Color.GREEN);
+                    mBtFailed.setBackgroundColor(Color.GRAY);
+                    mBtOk.setBackgroundColor(Color.GREEN);
+                    mCheckDataSuccess = true;
+                }
+                SaveToReport();
+            }
+        }, 5 * 1000);
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!mCheckDataSuccess) {
+                    tvdata.setTextColor(Color.RED);
+                    mBtFailed.setBackgroundColor(Color.RED);
+                    mBtOk.setBackgroundColor(Color.GRAY);
+                }
                 SaveToReport();
             }
         }, DeviceTestApp.ItemTestTimeout * 1000);
@@ -184,6 +161,11 @@ public class TSensor extends Activity implements View.OnClickListener {
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.tsensor_name,
                 mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
-        finish();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        }, DeviceTestApp.ShowItemTestResultTimeout * 1000);
     }
 }

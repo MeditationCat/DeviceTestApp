@@ -97,14 +97,14 @@
     <string name="device_productname">ProductName</string>
     <string name="device_version_stm32">STM32 Version</string>
     <string name="device_version_ble">BLE Version</string>
-    <string name="device_version_63813">CY7C63813 Version</string>
+    <string name="device_version_63813">63813 Version</string>
     <string name="device_ble_state">Bluetooth JoyStick State</string>
     <string name="device_ble_mac_addr">Bluetooth MAC Address</string>
     <string name="packetdata_header">PacketHeader</string>
     <string name="packetdata_timestamp">Timestamp</string>
     <string name="device_unknown">Unknown</string>
-    <string name="ble_test">BLE CY7C63813 Test</string>
-    <string name="ble_test_tip">BLE CY7C63813 Test OK!</string>
+    <string name="ble_test">BLE 63813 Test</string>
+    <string name="ble_test_tip">BLE 63813 Test OK!</string>
     <string name="usb_storage_info">USB Storage Info</string>
     <string name="setting">Setting</string>
     <string name="about_us">About</string>
@@ -122,17 +122,17 @@
         <item>5s</item>
         <item>10s</item>
         <item>15s</item>
-        <item>20s</item>
         <item>30s</item>
         <item>60s</item>
+        <item>120s</item>
     </string-array>
     <string-array name="pref_timeout_list_values" translatable="false">
         <item>5</item>
         <item>10</item>
         <item>15</item>
-        <item>20</item>
         <item>30</item>
         <item>60</item>
+        <item>120</item>
     </string-array>
     <!-- Sensor settings -->
     <string name="pref_header_sensor_setting">Sensor Setting</string>

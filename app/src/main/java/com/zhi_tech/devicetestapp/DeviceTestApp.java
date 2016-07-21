@@ -26,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -41,7 +42,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class DeviceTestApp extends AppCompatActivity implements OnItemClickListener {
+public class DeviceTestApp extends AppCompatActivity implements OnItemClickListener, OnClickListener {
     private SharedPreferences mSp = null;
     private GridView mGrid;
     private MyAdapter mAdapter;
@@ -55,7 +56,7 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
     private Button mBtCheckSN;
     private Button mBleCy7c63813;
 
-    private TextView textViewDeviceInfo, textViewPacket, textViewVersion, textViewSN, textViewUsbStorageInfo;
+    private TextView textViewDeviceInfo, textViewPacket, textViewVersion, textViewBleAddr, textViewSN, textViewUsbStorageInfo;
 
     public static byte result[] = new byte[AppDefine.DVT_NV_ARRAR_LEN]; //0 default; 1,success; 2,fail; 3,notest
     private boolean mCheckDataSuccess;
@@ -65,8 +66,8 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
     public static int ShowItemTestResultTimeout = 1; // s
 
     public static boolean IsFactoryMode = false;
-    public static boolean AutoTestMode = true;
-    public static int ItemTestTimeout = 10;
+    public static boolean AutoTestMode = false;
+    public static int ItemTestTimeout = 120;
     public static int Accel_FullScale_Range = 3; // g
     public static float Gyro_FullScale_Range = 300.0f; // º/s
     public static int Proximity_Threshold_Approach = 820; //
@@ -76,6 +77,7 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
     public static int Magnetic_Yaw_Offset = 90; // º
 
     private final String TAG = "DeviceTestApp";
+    public static final String ACTION_KILL_SELF = "com.android.example.KILL_SELF";
 
     //service connection
     private DeviceTestAppService dtaService = null;
@@ -166,7 +168,7 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
                                     //CheckVersionSaveToReport();
                                     //mGrid.setAdapter(mAdapter);
                                     if (dtaService != null) {
-                                        dtaService.StartToReadSerialNumber();
+                                        dtaService.StartToReadMacAddress();
                                     }
                                     break;
 
@@ -183,9 +185,14 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
                                     break;
 
                                 case 0xB8: //read ble mac return value
-                                    textViewVersion.append(String.format(Locale.US, "%n%s: %02x:%02x:%02x:%02x:%02x:%02x",
+                                    textViewBleAddr.setText(String.format(Locale.US, "%s: %02x:%02x:%02x:%02x:%02x:%02x",
                                             getString(R.string.device_ble_mac_addr),
                                             buffer[2], buffer[3], buffer[4],buffer[5], buffer[6], buffer[7]));
+                                    textViewBleAddr.setTextColor(Color.GREEN);
+                                    mBleCy7c63813.setTextColor(Color.GREEN);
+                                    if (dtaService != null) {
+                                        dtaService.StartToReadSerialNumber();
+                                    }
                                     break;
 
                                 case 0xBB: //result for serial number writing
@@ -251,15 +258,16 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
     private Handler handler = new Handler();
 
     private void postUpdateHandlerMsg(final SensorPackageObject object) {
-
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                textViewPacket.setText(String.format("%s: %s%n%s: %s",
-                        getString(R.string.packetdata_header), String.valueOf(object.getHeader()),
-                        getString(R.string.packetdata_timestamp),String.valueOf(object.getTimestamp())));
+        if (object.getHeader()[0] == 'M' && object.getHeader()[1] == '5') {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    textViewPacket.setText(String.format("%s: %s  %s: %s",
+                            getString(R.string.packetdata_header), String.valueOf(object.getHeader()),
+                            getString(R.string.packetdata_timestamp),String.valueOf(object.getTimestamp())));
                 }
-        });
+            });
+        }
     }
 
     @Override
@@ -272,23 +280,31 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
         initDefaultSetting();
 
         mBtAuto = (Button) findViewById(R.id.main_bt_autotest);
-        mBtAuto.setOnClickListener(cl);
+        assert mBtAuto != null;
+        mBtAuto.setOnClickListener(this);
         mBtStart = (Button) findViewById(R.id.main_bt_start);
-        mBtStart.setOnClickListener(cl);
+        assert mBtStart != null;
+        mBtStart.setOnClickListener(this);
         mBtUpgrade = (Button) findViewById(R.id.main_bt_upgrade);
-        mBtUpgrade.setOnClickListener(cl);
+        assert mBtUpgrade != null;
+        mBtUpgrade.setOnClickListener(this);
         mBtCalibration = (Button) findViewById(R.id.main_bt_calibration);
-        mBtCalibration.setOnClickListener(cl);
+        assert mBtCalibration != null;
+        mBtCalibration.setOnClickListener(this);
         mBtCheckVersion = (Button) findViewById(R.id.main_bt_checkversion);
-        mBtCheckVersion.setOnClickListener(cl);
+        assert mBtCheckVersion != null;
+        mBtCheckVersion.setOnClickListener(this);
         mBtCheckSN = (Button) findViewById(R.id.main_bt_checksn);
-        mBtCheckSN.setOnClickListener(cl);
+        assert mBtCheckSN != null;
+        mBtCheckSN.setOnClickListener(this);
         mBleCy7c63813 = (Button) findViewById(R.id.main_bt_ble_cy7c63813);
-        mBleCy7c63813.setOnClickListener(cl);
+        assert mBleCy7c63813 != null;
+        mBleCy7c63813.setOnClickListener(this);
 
         textViewDeviceInfo = (TextView) findViewById(R.id.textViewDeviceInfo);
         textViewPacket = (TextView) findViewById(R.id.textViewPacket);
         textViewVersion = (TextView) findViewById(R.id.textViewVersion);
+        textViewBleAddr = (TextView) findViewById(R.id.textViewBleAddr);
         textViewSN = (TextView) findViewById(R.id.textViewSN);
         textViewUsbStorageInfo = (TextView) findViewById(R.id.textViewUsbStorageInfo);
 
@@ -322,6 +338,7 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
         filter.addAction(Intent.ACTION_MEDIA_MOUNTED);
         filter.addAction(Intent.ACTION_MEDIA_REMOVED);
         filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+        filter.addAction(ACTION_KILL_SELF);
         filter.addDataScheme("file");
         registerReceiver(mUsbReceiver, filter);
     }
@@ -355,9 +372,9 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
         //factory mode
         IsFactoryMode = sharedPreferences.getBoolean("factory_mode_switch", false);
         //auto test mode
-        AutoTestMode = sharedPreferences.getBoolean("auto_test_mode_switch", true);
+        AutoTestMode = sharedPreferences.getBoolean("auto_test_mode_switch", false);
         //item test timeout
-        String string = sharedPreferences.getString("item_test_timeout_list", "10");
+        String string = sharedPreferences.getString("item_test_timeout_list", "120");
         ItemTestTimeout = Integer.valueOf(string);
         // accel full scale range
         string = sharedPreferences.getString("accel_full_scale_select", "3");
@@ -436,7 +453,7 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
     private void setDefaultValues() {
         textViewDeviceInfo.setText(String.format("%s: %s%n%s: %s", getString(R.string.device_manufacturer), getString(R.string.device_unknown),
                 getString(R.string.device_productname), getString(R.string.device_unknown)));
-        textViewPacket.setText(String.format("%s: %s%n%s: %s",
+        textViewPacket.setText(String.format("%s: %s  %s: %s",
                 getString(R.string.packetdata_header), getString(R.string.device_unknown),
                 getString(R.string.packetdata_timestamp),getString(R.string.device_unknown)));
         textViewVersion.setText(String.format("%s: %s%n%s: %s%n%s: %s%n%s: %s",
@@ -444,53 +461,54 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
                 getString(R.string.device_version_63813), getString(R.string.device_unknown),
                 getString(R.string.device_version_stm32), getString(R.string.device_unknown),
                 getString(R.string.device_ble_state), getString(R.string.device_unknown)));
+        textViewBleAddr.setText(String.format(Locale.US, "%s: %s",
+                getString(R.string.device_ble_mac_addr), getString(R.string.device_unknown)));
         textViewSN.setText(String.format(Locale.US, "%s: %s",
                 getString(R.string.device_serial_number), getString(R.string.device_unknown)));
         textViewUsbStorageInfo.setText(String.format(Locale.US, "%s:%s",
                 getString(R.string.usb_storage_info), getString(R.string.device_unknown)));
     }
 
-    public View.OnClickListener cl = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Intent intent = new Intent();
-            int reqId = -1;
-            if (v.getId() == mBtAuto.getId()) {
-                intent.setClassName("com.zhi_tech.devicetestapp", "com.zhi_tech.devicetestapp.AutoTest");
-                reqId = AppDefine.DT_AUTOTESTID;
-                startActivityForResult(intent, reqId);
-            } else if (v.getId() == mBtStart.getId()) {
-                if (dtaService != null) {
-                    dtaService.StartSensorSwitch();
-                }
-            } else if (v.getId() == mBtUpgrade.getId()) {
-                //start upgrade request
-                if (dtaService != null) {
-                    dtaService.StartToUpgrade();
-                }
-            } else if (v.getId() == mBtCalibration.getId()) {
-                //start calibration request
-                if (dtaService != null) {
-                    dtaService.StartToCalibration();
-                }
-            } else if (v.getId() == mBtCheckVersion.getId()) {
-                //check version request
-                if (dtaService != null) {
-                    dtaService.StartToCheckVersion();
-                }
-            }else if (v.getId() == mBtCheckSN.getId()) {
-                //check version request
-                if (dtaService != null) {
-                    dtaService.StartToReadSerialNumber();
-                }
-            } else if (v.getId() == mBleCy7c63813.getId()) {
-                //check version request
-                if (dtaService != null) {
-                    dtaService.StartToReadMacAddress();
-                }
+    @Override
+    public void onClick(View v) {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName());
+        Intent intent = new Intent();
+        int reqId = -1;
+        if (v.getId() == mBtAuto.getId()) {
+            intent.setClassName("com.zhi_tech.devicetestapp", "com.zhi_tech.devicetestapp.AutoTest");
+            reqId = AppDefine.DT_AUTOTESTID;
+            startActivityForResult(intent, reqId);
+        } else if (v.getId() == mBtStart.getId()) {
+            if (dtaService != null) {
+                dtaService.StartSensorSwitch();
+            }
+        } else if (v.getId() == mBtUpgrade.getId()) {
+            //start upgrade request
+            if (dtaService != null) {
+                dtaService.StartToUpgrade();
+            }
+        } else if (v.getId() == mBtCalibration.getId()) {
+            //start calibration request
+            if (dtaService != null) {
+                dtaService.StartToCalibration();
+            }
+        } else if (v.getId() == mBtCheckVersion.getId()) {
+            //check version request
+            if (dtaService != null) {
+                dtaService.StartToCheckVersion();
+            }
+        }else if (v.getId() == mBtCheckSN.getId()) {
+            //check version request
+            if (dtaService != null) {
+                dtaService.StartToReadSerialNumber();
+            }
+        } else if (v.getId() == mBleCy7c63813.getId()) {
+            //check version request
+            if (dtaService != null) {
+                dtaService.StartToReadMacAddress();
             }
         }
-    };
+    }
 
     public class MyAdapter extends BaseAdapter {
         private Context context;
@@ -603,11 +621,11 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
     @Override
     protected void onDestroy() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[2].getMethodName() + "");
+        super.onDestroy();
         unbindService(conn);
         unregisterReceiver(mUsbReceiver);
         //close app when usb detached
-        android.os. Process.killProcess(android.os.Process.myPid());
-        super.onDestroy();
+        //android.os. Process.killProcess(android.os.Process.myPid());
     }
 
     public void CheckVersionSaveToReport() {
@@ -673,7 +691,7 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
                 //textViewUsbStorageInfo.setTextColor(Color.GREEN);
                 textViewUsbStorageInfo.invalidate();
 
-                File[] subFiles = rootDir.listFiles();
+                /*File[] subFiles = rootDir.listFiles();
                 if (subFiles == null) {
                     Log.d(TAG, String.format(Locale.US, "->subFiles = null!"));
                     return;
@@ -686,7 +704,10 @@ public class DeviceTestApp extends AppCompatActivity implements OnItemClickListe
                             Log.d(TAG, String.format(Locale.US, "->subFiles1[%d]:%s", j, subFiles1[i].getName()));
                         }
                     }
-                }
+                }*/
+            } else if (ACTION_KILL_SELF.equals(action)) {
+                //close app when usb detached
+                android.os. Process.killProcess(android.os.Process.myPid());
             }
         }
     };

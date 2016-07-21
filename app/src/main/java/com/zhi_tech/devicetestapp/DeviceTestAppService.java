@@ -1,5 +1,6 @@
 package com.zhi_tech.devicetestapp;
 
+import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -52,7 +53,7 @@ public class DeviceTestAppService extends Service {
     private final int MaxEpNumber = 0x0E;
     private UsbDeviceConnection usbDeviceConnection;
     private final int DATA_RECV_TIMEOUT = 4; // ms
-    private final int THREAD_SLEEP_TIME = 100; // ms
+    private final int THREAD_SLEEP_TIME = 50; // ms
     private Thread receiveDataThread;
     private Thread commandDaemonThread;
 
@@ -415,31 +416,31 @@ public class DeviceTestAppService extends Service {
                                 (long) ((dataBuffer[offset] & 0xFF) | (dataBuffer[offset + 1] & 0xFF) << 8
                                         | (dataBuffer[offset + 2] & 0xFF) << 16 | (dataBuffer[offset + 3] & 0xFF) << 24);
 
-                        sensorPackageObject.setHeader(packetHeader);
-                        sensorPackageObject.gyroscopeSensor.setValues(packetDataGyroscope[0], packetDataGyroscope[1], packetDataGyroscope[2]);
-                        sensorPackageObject.accelerometerSensor.setValues(packetDataAccelerometer[0], packetDataAccelerometer[1], packetDataAccelerometer[2]);
-                        sensorPackageObject.magneticSensor.setValues(packetDataMagnetic[0], packetDataMagnetic[1], packetDataMagnetic[2]);
-                        sensorPackageObject.temperatureSensor.setTemperature(packetDataTemperature[0]);
-                        sensorPackageObject.lightSensor.setLightSensorValue(packetDataLight[0]);
-                        sensorPackageObject.proximitySensor.setProximitySensorValue(packetDataProximity[0]);
-                        sensorPackageObject.setTimestampValue(packetDataTimestamp[0]);
 
-                        if ((dataBuffer[0] & 0xFF) == 0xB4) {
+                        if (dataBuffer[0] == 'M' && dataBuffer[1] == '5') {
+                            sensorPackageObject.setHeader(packetHeader);
+                            sensorPackageObject.gyroscopeSensor.setValues(packetDataGyroscope[0], packetDataGyroscope[1], packetDataGyroscope[2]);
+                            sensorPackageObject.accelerometerSensor.setValues(packetDataAccelerometer[0], packetDataAccelerometer[1], packetDataAccelerometer[2]);
+                            sensorPackageObject.magneticSensor.setValues(packetDataMagnetic[0], packetDataMagnetic[1], packetDataMagnetic[2]);
+                            sensorPackageObject.temperatureSensor.setTemperature(packetDataTemperature[0]);
+                            sensorPackageObject.lightSensor.setLightSensorValue(packetDataLight[0]);
+                            sensorPackageObject.proximitySensor.setProximitySensorValue(packetDataProximity[0]);
+                            sensorPackageObject.setTimestampValue(packetDataTimestamp[0]);
+                            touchPadXY[0] = 0x00;
+                            touchPadXY[1] = 0x00;
+                            sensorPackageObject.setTouchPadXY(touchPadXY);
+                        } else if ((dataBuffer[0] & 0xFF) == 0xB4) {
                             touchPadXY[0] = dataBuffer[1] & 0xFF;
                             touchPadXY[1] = dataBuffer[2] & 0xFF;
                             sensorPackageObject.setTouchPadXY(touchPadXY);
-                            //Log.d(TAG, String.format("xy:->%d, %d", touchPadXY[0], touchPadXY[1]));
-
-                        }
-                        if (dataBuffer[0] == 'M' && dataBuffer[1] == '5') {
-                        }
-                        onDataChangedListener.sensorDataChanged(sensorPackageObject);
-
-                        if ((dataBuffer[0]&0xFF) == 0x45) {
+                            Log.d(TAG, Thread.currentThread().getName() + String.format(Locale.US, "->tpXY[%d, %d]", touchPadXY[0], touchPadXY[1]));
+                        } else if ((dataBuffer[0]&0xFF) == 0x45) {
                             checkingSensorStatus = false;
                             receiveDataThread = null;
                             Log.d(TAG, Thread.currentThread().getName() + "->stop sensor command 0x07 effected!");
                         }
+                        onDataChangedListener.sensorDataChanged(sensorPackageObject);
+
                         try {
                             Thread.sleep(THREAD_SLEEP_TIME);
                         } catch (InterruptedException e) {
@@ -561,7 +562,7 @@ public class DeviceTestAppService extends Service {
 
     private void ProcessingCommandFeedback(byte[] buffer, int retVal) {
         int cmd = buffer[0] & 0xFF;
-        Log.d(TAG, Thread.currentThread().getName() + String.format(Locale.US, "->cmd:%#04x %nlength:%#x %ndata:%x,%x,%x,%x,%x,%x",
+        Log.d(TAG, Thread.currentThread().getName() + String.format(Locale.US, "->cmd:%#04x %nlength:%#x %ndata:%#04x,%#04x,%#04x,%#04x,%#04x,%#04x",
                 buffer[0], buffer[1], buffer[2], buffer[3], buffer[4],buffer[5], buffer[6], buffer[7]));
         switch (cmd) {
             case 0xA5: // result for iap upgrade
@@ -850,6 +851,12 @@ public class DeviceTestAppService extends Service {
 
                 stopCommandDaemonThread();
                 onDeviceStatusListener.deviceStatusChanged(getDeviceInformation());
+                //
+                Intent mainActivity = new Intent();
+                mainActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                mainActivity.setClass(context, DeviceTestApp.class);
+                startActivity(mainActivity);
+                sendBroadcast(new Intent(DeviceTestApp.ACTION_KILL_SELF));
             }
         }
     };

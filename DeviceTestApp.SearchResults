@@ -1,19 +1,16 @@
----- taipp Matches (14 in 14 files) ----
-AppDefine.java (app\src\main\java\com\zhi_tech\devicetestapp): * Created by taipp on 5/20/2016.
-AutoTest.java (app\src\main\java\com\zhi_tech\devicetestapp): * Created by taipp on 5/23/2016.
-Bluetooth.java (app\src\main\java\com\zhi_tech\devicetestapp\bluetooth): * Created by taipp on 5/23/2016.
-GSensor.java (app\src\main\java\com\zhi_tech\devicetestapp\sensor): * Created by taipp on 5/20/2016.
-GyRoscopeSensor.java (app\src\main\java\com\zhi_tech\devicetestapp\sensor): * Created by taipp on 5/20/2016.
-KeyCode.java (app\src\main\java\com\zhi_tech\devicetestapp): * Created by taipp on 5/20/2016.
-LSensor.java (app\src\main\java\com\zhi_tech\devicetestapp\sensor): * Created by taipp on 5/20/2016.
-MSensor.java (app\src\main\java\com\zhi_tech\devicetestapp\sensor): * Created by taipp on 5/20/2016.
-OnDataChangedListener.java (app\src\main\java\com\zhi_tech\devicetestapp): * Created by taipp on 5/26/2016.
-PSensor.java (app\src\main\java\com\zhi_tech\devicetestapp\sensor): * Created by taipp on 5/20/2016.
-Report.java (app\src\main\java\com\zhi_tech\devicetestapp): * Created by taipp on 5/20/2016.
-SensorPackageObject.java (app\src\main\java\com\zhi_tech\devicetestapp): * Created by taipp on 5/27/2016.
-UsbDeviceFilter.java (app\src\main\java\com\zhi_tech\devicetestapp): * Created by taipp on 5/30/2016.
-Utils.java (app\src\main\java\com\zhi_tech\devicetestapp): * Created by taipp on 5/20/2016.
----- taipp Search Errors Encountered (2) ----
+---- ItemTestTimeout Matches (11 in 8 files) ----
+DeviceTestApp.java (app\src\main\java\com\zhi_tech\devicetestapp):    public static int ItemTestTimeout = 120;
+DeviceTestApp.java (app\src\main\java\com\zhi_tech\devicetestapp):        ItemTestTimeout = Integer.valueOf(string);
+DeviceTestApp.java (app\src\main\java\com\zhi_tech\devicetestapp):                        "ItemTestTimeout=%ds%n" +
+DeviceTestApp.java (app\src\main\java\com\zhi_tech\devicetestapp):                        ItemTestTimeout,
+GSensor.java (app\src\main\java\com\zhi_tech\devicetestapp\sensor):        }, DeviceTestApp.ItemTestTimeout * 1000);
+GyRoscopeSensor.java (app\src\main\java\com\zhi_tech\devicetestapp\sensor):        }, DeviceTestApp.ItemTestTimeout * 1000);
+KeyCode.java (app\src\main\java\com\zhi_tech\devicetestapp):        }, DeviceTestApp.ItemTestTimeout * 1000 * 5);
+LSensor.java (app\src\main\java\com\zhi_tech\devicetestapp\sensor):        }, DeviceTestApp.ItemTestTimeout * 1000);
+MSensor.java (app\src\main\java\com\zhi_tech\devicetestapp\sensor):        }, DeviceTestApp.ItemTestTimeout * 1000);
+PSensor.java (app\src\main\java\com\zhi_tech\devicetestapp\sensor):        }, DeviceTestApp.ItemTestTimeout * 1000);
+TSensor.java (app\src\main\java\com\zhi_tech\devicetestapp\sensor):        }, DeviceTestApp.ItemTestTimeout * 1000);
+---- ItemTestTimeout Search Errors Encountered (2) ----
 The following 2 files could not be processed:
 H:\app_proj\DeviceTestApp\DeviceTestApp.IAB : File could not be opened.
 H:\app_proj\DeviceTestApp\DeviceTestApp.IMB : File could not be opened.

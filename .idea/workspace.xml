@@ -18,25 +18,45 @@
     </shared>
   </component>
   <component name="AndroidLogFilters">
+    <option name="TOOL_WINDOW_CUSTOM_FILTER" value="SendCommandToDevice" />
     <option name="TOOL_WINDOW_LOG_LEVEL" value="DEBUG" />
     <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="DeviceTestApp" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a59c6c97-4881-4aed-a6fc-5619e1485cf6" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/cache.properties.lock" afterPath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/cache.properties.lock" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DeviceTestApp.IAB" afterPath="$PROJECT_DIR$/DeviceTestApp.IAB" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DeviceTestApp.IAD" afterPath="$PROJECT_DIR$/DeviceTestApp.IAD" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DeviceTestApp.IMB" afterPath="$PROJECT_DIR$/DeviceTestApp.IMB" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DeviceTestApp.IMD" afterPath="$PROJECT_DIR$/DeviceTestApp.IMD" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DeviceTestApp.PFI" afterPath="$PROJECT_DIR$/DeviceTestApp.PFI" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DeviceTestApp.PO" afterPath="$PROJECT_DIR$/DeviceTestApp.PO" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DeviceTestApp.PS" afterPath="$PROJECT_DIR$/DeviceTestApp.PS" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DeviceTestApp.SearchResults" afterPath="$PROJECT_DIR$/DeviceTestApp.SearchResults" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DeviceTestApp.WK3" afterPath="$PROJECT_DIR$/DeviceTestApp.WK3" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/generated/mockable-android-23.jar" afterPath="$PROJECT_DIR$/build/generated/mockable-android-23.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/cache.properties" afterPath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/cache.properties" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/fileHashes.bin" afterPath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/fileHashes.bin" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/fileSnapshots.bin" afterPath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/fileSnapshots.bin" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/outputFileStates.bin" afterPath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/outputFileStates.bin" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/taskArtifacts.bin" afterPath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/taskArtifacts.bin" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/app.iml" afterPath="$PROJECT_DIR$/app/app.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build.gradle" afterPath="$PROJECT_DIR$/app/build.gradle" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestApp.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestApp.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestAppService.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestAppService.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/KeyCode.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/KeyCode.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/GSensor.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/GSensor.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/GyRoscopeSensor.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/GyRoscopeSensor.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/LSensor.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/LSensor.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/MSensor.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/MSensor.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/PSensor.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/PSensor.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/TSensor.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/TSensor.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values-zh-rCN/strings.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values-zh-rCN/strings.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/xml/pref_settings.xml" afterPath="$PROJECT_DIR$/app/src/main/res/xml/pref_settings.xml" />
     </list>
     <ignored path="DeviceTestApp.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -77,99 +97,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="DeviceTestApp.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="DeviceTestApp.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestApp.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-9.75862">
-              <caret line="655" column="36" selection-start-line="655" selection-start-column="30" selection-end-line="655" selection-end-column="36" />
-              <folding>
-                <element signature="e#4561#4584#0" expanded="true" />
-                <element signature="e#4684#4709#0" expanded="true" />
-                <element signature="e#5317#5346#0" expanded="true" />
-                <element signature="e#5532#5559#0" expanded="true" />
-                <element signature="e#7678#7716#0" expanded="true" />
-                <element signature="e#7773#7813#0" expanded="true" />
-                <element signature="e#7870#7910#0" expanded="true" />
-                <element signature="e#7967#8003#0" expanded="true" />
-                <element signature="e#8620#8649#0" expanded="true" />
-                <element signature="e#8753#8784#0" expanded="true" />
-                <element signature="e#9361#9400#0" expanded="true" />
-                <element signature="e#9802#9833#0" expanded="true" />
-                <element signature="e#9933#9966#0" expanded="true" />
-                <element signature="e#10888#10928#0" expanded="true" />
-                <element signature="e#13034#13071#0" expanded="true" />
-                <element signature="e#13133#13173#0" expanded="true" />
-                <element signature="e#19900#19921#0" expanded="true" />
-                <element signature="e#19948#19969#0" expanded="true" />
-                <element signature="e#19996#20017#0" expanded="true" />
-                <element signature="e#20051#20072#0" expanded="true" />
-                <element signature="e#20095#20116#0" expanded="true" />
-                <element signature="e#20139#20168#0" expanded="true" />
-                <element signature="e#20191#20212#0" expanded="true" />
-                <element signature="e#20797#20836#0" expanded="true" />
-                <element signature="e#20838#20872#0" expanded="true" />
-                <element signature="e#20890#20928#0" expanded="true" />
-                <element signature="e#20930#20964#0" expanded="true" />
-                <element signature="e#21047#21084#0" expanded="true" />
-                <element signature="e#21086#21120#0" expanded="true" />
-                <element signature="e#21138#21178#0" expanded="true" />
-                <element signature="e#21179#21213#0" expanded="true" />
-                <element signature="e#21313#21351#0" expanded="true" />
-                <element signature="e#21353#21387#0" expanded="true" />
-                <element signature="e#21405#21445#0" expanded="true" />
-                <element signature="e#21447#21481#0" expanded="true" />
-                <element signature="e#21499#21539#0" expanded="true" />
-                <element signature="e#21541#21575#0" expanded="true" />
-                <element signature="e#21593#21629#0" expanded="true" />
-                <element signature="e#21631#21665#0" expanded="true" />
-                <element signature="e#21747#21787#0" expanded="true" />
-                <element signature="e#21789#21823#0" expanded="true" />
-                <element signature="e#21916#21952#0" expanded="true" />
-                <element signature="e#21954#21988#0" expanded="true" />
-                <element signature="e#25887#25921#0" expanded="true" />
-                <element signature="e#26039#26071#0" expanded="true" />
-                <element signature="e#26184#26216#0" expanded="true" />
-                <element signature="e#26329#26361#0" expanded="true" />
-                <element signature="e#26474#26506#0" expanded="true" />
-                <element signature="e#26619#26651#0" expanded="true" />
-                <element signature="e#26755#26795#0" expanded="true" />
-                <element signature="e#26914#26946#0" expanded="true" />
-                <element signature="e#27262#27284#0" expanded="true" />
-                <element signature="e#27318#27339#0" expanded="true" />
-                <element signature="e#28567#28588#0" expanded="true" />
-                <element signature="e#28729#32326#0" expanded="true" />
-                <element signature="e#30162#30198#0" expanded="true" />
-                <element signature="e#30200#30234#0" expanded="true" />
-                <element signature="e#31277#31313#0" expanded="true" />
-                <element signature="e#32325#32326#0" expanded="true" />
-                <element signature="e#34197#34229#0" expanded="true" />
-                <element signature="e#35283#35311#0" expanded="true" />
-                <element signature="e#35313#35346#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DeviceTestAppService.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestAppService.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-3.4482758">
-              <caret line="834" column="44" selection-start-line="834" selection-start-column="44" selection-end-line="834" selection-end-column="44" />
-              <folding>
-                <element signature="method#setDeviceInterface#0;class#DeviceTestAppService#0" expanded="false" />
-                <element signature="method#assignEndpoint#0;class#DeviceTestAppService#0" expanded="false" />
-                <element signature="method#ProcessingCommandFeedback#0;class#DeviceTestAppService#0" expanded="false" />
-                <element signature="method#DfuUpgradeCase#0;class#DeviceTestAppService#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="build.gradle" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/app/build.gradle">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.37388194">
-              <caret line="11" column="25" selection-start-line="11" selection-start-column="25" selection-end-line="11" selection-end-column="25" />
+            <state vertical-scroll-proportion="0.57781756">
+              <caret line="57" column="0" selection-start-line="57" selection-start-column="0" selection-end-line="57" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -1501,7 +1433,7 @@
     </option>
     <option name="modificationStamps">
       <map>
-        <entry key="$PROJECT_DIR$" value="4397233955533" />
+        <entry key="$PROJECT_DIR$" value="4397406437112" />
       </map>
     </option>
     <option name="projectBuildClasspath">
@@ -1774,18 +1706,24 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/AutoTest.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/LSensor.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/SettingsActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/xml/pref_settings.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/KeyCode.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/SensorPackageObject.java" />
-        <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/main_grid.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestApp.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestAppService.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/res/xml/pref_settings.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/GSensor.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/GyRoscopeSensor.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/LSensor.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/MSensor.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/TSensor.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/OnDataChangedListener.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/PSensor.java" />
         <option value="$PROJECT_DIR$/app/build.gradle" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestAppService.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestApp.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/KeyCode.java" />
       </list>
     </option>
   </component>
@@ -1820,6 +1758,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="PackagesPane">
         <subPane>
           <PATH>
@@ -1834,7 +1774,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
       <pane id="AndroidView">
         <subPane>
           <PATH>
@@ -1857,9 +1796,40 @@
               <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DeviceTestApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DeviceTestApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="devicetestapp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -2382,27 +2352,35 @@
     </task>
     <servers />
   </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32879046" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32879046" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24962178" sideWeight="0.50596255" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32749563" sideWeight="0.50612557" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.48722318" sideWeight="0.49394855" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4855196" sideWeight="0.49394855" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32879046" sideWeight="0.49394855" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32749563" sideWeight="0.49387443" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3270869" sideWeight="0.49387443" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32879046" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2246596" sideWeight="0.49403748" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32879046" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22919819" sideWeight="0.49403748" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980332" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Android Model" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
@@ -2414,6 +2392,7 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.49574107" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -2434,355 +2413,11 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="10" />
+      <option name="time" value="17" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestAppService.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="841" column="25" selection-start-line="841" selection-start-column="25" selection-end-line="841" selection-end-column="25" />
-          <folding>
-            <element signature="method#setDeviceInterface#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#assignEndpoint#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#ProcessingCommandFeedback#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#DfuUpgradeCase#0;class#DeviceTestAppService#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestApp.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="213" column="38" selection-start-line="213" selection-start-column="38" selection-end-line="213" selection-end-column="38" />
-          <folding>
-            <element signature="e#4561#4584#0" expanded="true" />
-            <element signature="e#4684#4709#0" expanded="true" />
-            <element signature="e#5317#5346#0" expanded="true" />
-            <element signature="e#5532#5559#0" expanded="true" />
-            <element signature="e#7678#7716#0" expanded="true" />
-            <element signature="e#7773#7813#0" expanded="true" />
-            <element signature="e#7870#7910#0" expanded="true" />
-            <element signature="e#7967#8003#0" expanded="true" />
-            <element signature="e#8620#8649#0" expanded="true" />
-            <element signature="e#8753#8784#0" expanded="true" />
-            <element signature="e#9361#9400#0" expanded="true" />
-            <element signature="e#9802#9833#0" expanded="true" />
-            <element signature="e#9933#9966#0" expanded="true" />
-            <element signature="e#10888#10928#0" expanded="true" />
-            <element signature="e#13034#13071#0" expanded="true" />
-            <element signature="e#13133#13173#0" expanded="true" />
-            <element signature="e#19900#19921#0" expanded="true" />
-            <element signature="e#19948#19969#0" expanded="true" />
-            <element signature="e#19996#20017#0" expanded="true" />
-            <element signature="e#20051#20072#0" expanded="true" />
-            <element signature="e#20095#20116#0" expanded="true" />
-            <element signature="e#20139#20168#0" expanded="true" />
-            <element signature="e#20191#20212#0" expanded="true" />
-            <element signature="e#20797#20836#0" expanded="true" />
-            <element signature="e#20838#20872#0" expanded="true" />
-            <element signature="e#20890#20928#0" expanded="true" />
-            <element signature="e#20930#20964#0" expanded="true" />
-            <element signature="e#21047#21084#0" expanded="true" />
-            <element signature="e#21086#21120#0" expanded="true" />
-            <element signature="e#21138#21178#0" expanded="true" />
-            <element signature="e#21179#21213#0" expanded="true" />
-            <element signature="e#21313#21351#0" expanded="true" />
-            <element signature="e#21353#21387#0" expanded="true" />
-            <element signature="e#21405#21445#0" expanded="true" />
-            <element signature="e#21447#21481#0" expanded="true" />
-            <element signature="e#21499#21539#0" expanded="true" />
-            <element signature="e#21541#21575#0" expanded="true" />
-            <element signature="e#21593#21629#0" expanded="true" />
-            <element signature="e#21631#21665#0" expanded="true" />
-            <element signature="e#21747#21787#0" expanded="true" />
-            <element signature="e#21789#21823#0" expanded="true" />
-            <element signature="e#21916#21952#0" expanded="true" />
-            <element signature="e#21954#21988#0" expanded="true" />
-            <element signature="e#25887#25921#0" expanded="true" />
-            <element signature="e#26039#26071#0" expanded="true" />
-            <element signature="e#26184#26216#0" expanded="true" />
-            <element signature="e#26329#26361#0" expanded="true" />
-            <element signature="e#26474#26506#0" expanded="true" />
-            <element signature="e#26619#26651#0" expanded="true" />
-            <element signature="e#26755#26795#0" expanded="true" />
-            <element signature="e#26914#26946#0" expanded="true" />
-            <element signature="e#27262#27284#0" expanded="true" />
-            <element signature="e#27318#27339#0" expanded="true" />
-            <element signature="e#28567#28588#0" expanded="true" />
-            <element signature="e#28729#32326#0" expanded="true" />
-            <element signature="e#30162#30198#0" expanded="true" />
-            <element signature="e#30200#30234#0" expanded="true" />
-            <element signature="e#31277#31313#0" expanded="true" />
-            <element signature="e#32325#32326#0" expanded="true" />
-            <element signature="e#34197#34229#0" expanded="true" />
-            <element signature="e#35283#35311#0" expanded="true" />
-            <element signature="e#35313#35346#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestAppService.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="method#setDeviceInterface#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#assignEndpoint#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#ProcessingCommandFeedback#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#DfuUpgradeCase#0;class#DeviceTestAppService#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestApp.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="213" column="38" selection-start-line="213" selection-start-column="38" selection-end-line="213" selection-end-column="38" />
-          <folding>
-            <element signature="e#4561#4584#0" expanded="true" />
-            <element signature="e#4684#4709#0" expanded="true" />
-            <element signature="e#5317#5346#0" expanded="true" />
-            <element signature="e#5532#5559#0" expanded="true" />
-            <element signature="e#7678#7716#0" expanded="true" />
-            <element signature="e#7773#7813#0" expanded="true" />
-            <element signature="e#7870#7910#0" expanded="true" />
-            <element signature="e#7967#8003#0" expanded="true" />
-            <element signature="e#8620#8649#0" expanded="true" />
-            <element signature="e#8753#8784#0" expanded="true" />
-            <element signature="e#9361#9400#0" expanded="true" />
-            <element signature="e#9802#9833#0" expanded="true" />
-            <element signature="e#9933#9966#0" expanded="true" />
-            <element signature="e#10888#10928#0" expanded="true" />
-            <element signature="e#13034#13071#0" expanded="true" />
-            <element signature="e#13133#13173#0" expanded="true" />
-            <element signature="e#19900#19921#0" expanded="true" />
-            <element signature="e#19948#19969#0" expanded="true" />
-            <element signature="e#19996#20017#0" expanded="true" />
-            <element signature="e#20051#20072#0" expanded="true" />
-            <element signature="e#20095#20116#0" expanded="true" />
-            <element signature="e#20139#20168#0" expanded="true" />
-            <element signature="e#20191#20212#0" expanded="true" />
-            <element signature="e#20797#20836#0" expanded="true" />
-            <element signature="e#20838#20872#0" expanded="true" />
-            <element signature="e#20890#20928#0" expanded="true" />
-            <element signature="e#20930#20964#0" expanded="true" />
-            <element signature="e#21047#21084#0" expanded="true" />
-            <element signature="e#21086#21120#0" expanded="true" />
-            <element signature="e#21138#21178#0" expanded="true" />
-            <element signature="e#21179#21213#0" expanded="true" />
-            <element signature="e#21313#21351#0" expanded="true" />
-            <element signature="e#21353#21387#0" expanded="true" />
-            <element signature="e#21405#21445#0" expanded="true" />
-            <element signature="e#21447#21481#0" expanded="true" />
-            <element signature="e#21499#21539#0" expanded="true" />
-            <element signature="e#21541#21575#0" expanded="true" />
-            <element signature="e#21593#21629#0" expanded="true" />
-            <element signature="e#21631#21665#0" expanded="true" />
-            <element signature="e#21747#21787#0" expanded="true" />
-            <element signature="e#21789#21823#0" expanded="true" />
-            <element signature="e#21916#21952#0" expanded="true" />
-            <element signature="e#21954#21988#0" expanded="true" />
-            <element signature="e#25887#25921#0" expanded="true" />
-            <element signature="e#26039#26071#0" expanded="true" />
-            <element signature="e#26184#26216#0" expanded="true" />
-            <element signature="e#26329#26361#0" expanded="true" />
-            <element signature="e#26474#26506#0" expanded="true" />
-            <element signature="e#26619#26651#0" expanded="true" />
-            <element signature="e#26755#26795#0" expanded="true" />
-            <element signature="e#26914#26946#0" expanded="true" />
-            <element signature="e#27262#27284#0" expanded="true" />
-            <element signature="e#27318#27339#0" expanded="true" />
-            <element signature="e#28567#28588#0" expanded="true" />
-            <element signature="e#28729#32326#0" expanded="true" />
-            <element signature="e#30162#30198#0" expanded="true" />
-            <element signature="e#30200#30234#0" expanded="true" />
-            <element signature="e#31277#31313#0" expanded="true" />
-            <element signature="e#32325#32326#0" expanded="true" />
-            <element signature="e#34197#34229#0" expanded="true" />
-            <element signature="e#35283#35311#0" expanded="true" />
-            <element signature="e#35313#35346#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestAppService.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="method#setDeviceInterface#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#assignEndpoint#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#ProcessingCommandFeedback#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#DfuUpgradeCase#0;class#DeviceTestAppService#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestApp.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="213" column="38" selection-start-line="213" selection-start-column="38" selection-end-line="213" selection-end-column="38" />
-          <folding>
-            <element signature="e#4561#4584#0" expanded="true" />
-            <element signature="e#4684#4709#0" expanded="true" />
-            <element signature="e#5317#5346#0" expanded="true" />
-            <element signature="e#5532#5559#0" expanded="true" />
-            <element signature="e#7678#7716#0" expanded="true" />
-            <element signature="e#7773#7813#0" expanded="true" />
-            <element signature="e#7870#7910#0" expanded="true" />
-            <element signature="e#7967#8003#0" expanded="true" />
-            <element signature="e#8620#8649#0" expanded="true" />
-            <element signature="e#8753#8784#0" expanded="true" />
-            <element signature="e#9361#9400#0" expanded="true" />
-            <element signature="e#9802#9833#0" expanded="true" />
-            <element signature="e#9933#9966#0" expanded="true" />
-            <element signature="e#10888#10928#0" expanded="true" />
-            <element signature="e#13034#13071#0" expanded="true" />
-            <element signature="e#13133#13173#0" expanded="true" />
-            <element signature="e#19900#19921#0" expanded="true" />
-            <element signature="e#19948#19969#0" expanded="true" />
-            <element signature="e#19996#20017#0" expanded="true" />
-            <element signature="e#20051#20072#0" expanded="true" />
-            <element signature="e#20095#20116#0" expanded="true" />
-            <element signature="e#20139#20168#0" expanded="true" />
-            <element signature="e#20191#20212#0" expanded="true" />
-            <element signature="e#20797#20836#0" expanded="true" />
-            <element signature="e#20838#20872#0" expanded="true" />
-            <element signature="e#20890#20928#0" expanded="true" />
-            <element signature="e#20930#20964#0" expanded="true" />
-            <element signature="e#21047#21084#0" expanded="true" />
-            <element signature="e#21086#21120#0" expanded="true" />
-            <element signature="e#21138#21178#0" expanded="true" />
-            <element signature="e#21179#21213#0" expanded="true" />
-            <element signature="e#21313#21351#0" expanded="true" />
-            <element signature="e#21353#21387#0" expanded="true" />
-            <element signature="e#21405#21445#0" expanded="true" />
-            <element signature="e#21447#21481#0" expanded="true" />
-            <element signature="e#21499#21539#0" expanded="true" />
-            <element signature="e#21541#21575#0" expanded="true" />
-            <element signature="e#21593#21629#0" expanded="true" />
-            <element signature="e#21631#21665#0" expanded="true" />
-            <element signature="e#21747#21787#0" expanded="true" />
-            <element signature="e#21789#21823#0" expanded="true" />
-            <element signature="e#21916#21952#0" expanded="true" />
-            <element signature="e#21954#21988#0" expanded="true" />
-            <element signature="e#25887#25921#0" expanded="true" />
-            <element signature="e#26039#26071#0" expanded="true" />
-            <element signature="e#26184#26216#0" expanded="true" />
-            <element signature="e#26329#26361#0" expanded="true" />
-            <element signature="e#26474#26506#0" expanded="true" />
-            <element signature="e#26619#26651#0" expanded="true" />
-            <element signature="e#26755#26795#0" expanded="true" />
-            <element signature="e#26914#26946#0" expanded="true" />
-            <element signature="e#27262#27284#0" expanded="true" />
-            <element signature="e#27318#27339#0" expanded="true" />
-            <element signature="e#28567#28588#0" expanded="true" />
-            <element signature="e#28729#32326#0" expanded="true" />
-            <element signature="e#30162#30198#0" expanded="true" />
-            <element signature="e#30200#30234#0" expanded="true" />
-            <element signature="e#31277#31313#0" expanded="true" />
-            <element signature="e#32325#32326#0" expanded="true" />
-            <element signature="e#34197#34229#0" expanded="true" />
-            <element signature="e#35283#35311#0" expanded="true" />
-            <element signature="e#35313#35346#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestAppService.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="151" column="58" selection-start-line="151" selection-start-column="39" selection-end-line="151" selection-end-column="58" />
-          <folding>
-            <element signature="method#setDeviceInterface#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#assignEndpoint#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#ProcessingCommandFeedback#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#DfuUpgradeCase#0;class#DeviceTestAppService#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/build.gradle">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestApp.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
-          <folding>
-            <element signature="e#4561#4584#0" expanded="true" />
-            <element signature="e#4684#4709#0" expanded="true" />
-            <element signature="e#5317#5346#0" expanded="true" />
-            <element signature="e#5532#5559#0" expanded="true" />
-            <element signature="e#7678#7716#0" expanded="true" />
-            <element signature="e#7773#7813#0" expanded="true" />
-            <element signature="e#7870#7910#0" expanded="true" />
-            <element signature="e#7967#8003#0" expanded="true" />
-            <element signature="e#8620#8649#0" expanded="true" />
-            <element signature="e#8753#8784#0" expanded="true" />
-            <element signature="e#9361#9400#0" expanded="true" />
-            <element signature="e#9802#9833#0" expanded="true" />
-            <element signature="e#9933#9966#0" expanded="true" />
-            <element signature="e#10888#10928#0" expanded="true" />
-            <element signature="e#13034#13071#0" expanded="true" />
-            <element signature="e#13133#13173#0" expanded="true" />
-            <element signature="e#19900#19921#0" expanded="true" />
-            <element signature="e#19948#19969#0" expanded="true" />
-            <element signature="e#19996#20017#0" expanded="true" />
-            <element signature="e#20051#20072#0" expanded="true" />
-            <element signature="e#20095#20116#0" expanded="true" />
-            <element signature="e#20139#20168#0" expanded="true" />
-            <element signature="e#20191#20212#0" expanded="true" />
-            <element signature="e#20797#20836#0" expanded="true" />
-            <element signature="e#20838#20872#0" expanded="true" />
-            <element signature="e#20890#20928#0" expanded="true" />
-            <element signature="e#20930#20964#0" expanded="true" />
-            <element signature="e#21047#21084#0" expanded="true" />
-            <element signature="e#21086#21120#0" expanded="true" />
-            <element signature="e#21138#21178#0" expanded="true" />
-            <element signature="e#21179#21213#0" expanded="true" />
-            <element signature="e#21313#21351#0" expanded="true" />
-            <element signature="e#21353#21387#0" expanded="true" />
-            <element signature="e#21405#21445#0" expanded="true" />
-            <element signature="e#21447#21481#0" expanded="true" />
-            <element signature="e#21499#21539#0" expanded="true" />
-            <element signature="e#21541#21575#0" expanded="true" />
-            <element signature="e#21593#21629#0" expanded="true" />
-            <element signature="e#21631#21665#0" expanded="true" />
-            <element signature="e#21747#21787#0" expanded="true" />
-            <element signature="e#21789#21823#0" expanded="true" />
-            <element signature="e#21916#21952#0" expanded="true" />
-            <element signature="e#21954#21988#0" expanded="true" />
-            <element signature="e#25887#25921#0" expanded="true" />
-            <element signature="e#26039#26071#0" expanded="true" />
-            <element signature="e#26184#26216#0" expanded="true" />
-            <element signature="e#26329#26361#0" expanded="true" />
-            <element signature="e#26474#26506#0" expanded="true" />
-            <element signature="e#26619#26651#0" expanded="true" />
-            <element signature="e#26755#26795#0" expanded="true" />
-            <element signature="e#26914#26946#0" expanded="true" />
-            <element signature="e#27262#27284#0" expanded="true" />
-            <element signature="e#27318#27339#0" expanded="true" />
-            <element signature="e#28567#28588#0" expanded="true" />
-            <element signature="e#28729#32326#0" expanded="true" />
-            <element signature="e#30162#30198#0" expanded="true" />
-            <element signature="e#30200#30234#0" expanded="true" />
-            <element signature="e#31277#31313#0" expanded="true" />
-            <element signature="e#32325#32326#0" expanded="true" />
-            <element signature="e#34197#34229#0" expanded="true" />
-            <element signature="e#35283#35311#0" expanded="true" />
-            <element signature="e#35313#35346#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/Utils.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -2797,7 +2432,6 @@
           <folding>
             <element signature="method#setDeviceInterface#0;class#DeviceTestAppService#0" expanded="false" />
             <element signature="method#assignEndpoint#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#ProcessingCommandFeedback#0;class#DeviceTestAppService#0" expanded="false" />
             <element signature="method#DfuUpgradeCase#0;class#DeviceTestAppService#0" expanded="false" />
           </folding>
         </state>
@@ -2807,70 +2441,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#4561#4584#0" expanded="true" />
-            <element signature="e#4684#4709#0" expanded="true" />
-            <element signature="e#5317#5346#0" expanded="true" />
-            <element signature="e#5532#5559#0" expanded="true" />
-            <element signature="e#7678#7716#0" expanded="true" />
-            <element signature="e#7773#7813#0" expanded="true" />
-            <element signature="e#7870#7910#0" expanded="true" />
-            <element signature="e#7967#8003#0" expanded="true" />
-            <element signature="e#8620#8649#0" expanded="true" />
-            <element signature="e#8753#8784#0" expanded="true" />
-            <element signature="e#9361#9400#0" expanded="true" />
-            <element signature="e#9802#9833#0" expanded="true" />
-            <element signature="e#9933#9966#0" expanded="true" />
-            <element signature="e#10888#10928#0" expanded="true" />
-            <element signature="e#13034#13071#0" expanded="true" />
-            <element signature="e#13133#13173#0" expanded="true" />
-            <element signature="e#19900#19921#0" expanded="true" />
-            <element signature="e#19948#19969#0" expanded="true" />
-            <element signature="e#19996#20017#0" expanded="true" />
-            <element signature="e#20051#20072#0" expanded="true" />
-            <element signature="e#20095#20116#0" expanded="true" />
-            <element signature="e#20139#20168#0" expanded="true" />
-            <element signature="e#20191#20212#0" expanded="true" />
-            <element signature="e#20797#20836#0" expanded="true" />
-            <element signature="e#20838#20872#0" expanded="true" />
-            <element signature="e#20890#20928#0" expanded="true" />
-            <element signature="e#20930#20964#0" expanded="true" />
-            <element signature="e#21047#21084#0" expanded="true" />
-            <element signature="e#21086#21120#0" expanded="true" />
-            <element signature="e#21138#21178#0" expanded="true" />
-            <element signature="e#21179#21213#0" expanded="true" />
-            <element signature="e#21313#21351#0" expanded="true" />
-            <element signature="e#21353#21387#0" expanded="true" />
-            <element signature="e#21405#21445#0" expanded="true" />
-            <element signature="e#21447#21481#0" expanded="true" />
-            <element signature="e#21499#21539#0" expanded="true" />
-            <element signature="e#21541#21575#0" expanded="true" />
-            <element signature="e#21593#21629#0" expanded="true" />
-            <element signature="e#21631#21665#0" expanded="true" />
-            <element signature="e#21747#21787#0" expanded="true" />
-            <element signature="e#21789#21823#0" expanded="true" />
-            <element signature="e#21916#21952#0" expanded="true" />
-            <element signature="e#21954#21988#0" expanded="true" />
-            <element signature="e#25887#25921#0" expanded="true" />
-            <element signature="e#26039#26071#0" expanded="true" />
-            <element signature="e#26184#26216#0" expanded="true" />
-            <element signature="e#26329#26361#0" expanded="true" />
-            <element signature="e#26474#26506#0" expanded="true" />
-            <element signature="e#26619#26651#0" expanded="true" />
-            <element signature="e#26755#26795#0" expanded="true" />
-            <element signature="e#26914#26946#0" expanded="true" />
-            <element signature="e#27262#27284#0" expanded="true" />
-            <element signature="e#27318#27339#0" expanded="true" />
-            <element signature="e#28567#28588#0" expanded="true" />
-            <element signature="e#28729#32326#0" expanded="true" />
-            <element signature="e#30162#30198#0" expanded="true" />
-            <element signature="e#30200#30234#0" expanded="true" />
-            <element signature="e#31277#31313#0" expanded="true" />
-            <element signature="e#32325#32326#0" expanded="true" />
-            <element signature="e#34197#34229#0" expanded="true" />
-            <element signature="e#35283#35311#0" expanded="true" />
-            <element signature="e#35313#35346#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2878,70 +2449,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="48" column="27" selection-start-line="48" selection-start-column="27" selection-end-line="48" selection-end-column="27" />
-          <folding>
-            <element signature="e#4561#4584#0" expanded="true" />
-            <element signature="e#4684#4709#0" expanded="true" />
-            <element signature="e#5317#5346#0" expanded="true" />
-            <element signature="e#5532#5559#0" expanded="true" />
-            <element signature="e#7678#7716#0" expanded="true" />
-            <element signature="e#7773#7813#0" expanded="true" />
-            <element signature="e#7870#7910#0" expanded="true" />
-            <element signature="e#7967#8003#0" expanded="true" />
-            <element signature="e#8620#8649#0" expanded="true" />
-            <element signature="e#8753#8784#0" expanded="true" />
-            <element signature="e#9361#9400#0" expanded="true" />
-            <element signature="e#9802#9833#0" expanded="true" />
-            <element signature="e#9933#9966#0" expanded="true" />
-            <element signature="e#10888#10928#0" expanded="true" />
-            <element signature="e#13034#13071#0" expanded="true" />
-            <element signature="e#13133#13173#0" expanded="true" />
-            <element signature="e#19900#19921#0" expanded="true" />
-            <element signature="e#19948#19969#0" expanded="true" />
-            <element signature="e#19996#20017#0" expanded="true" />
-            <element signature="e#20051#20072#0" expanded="true" />
-            <element signature="e#20095#20116#0" expanded="true" />
-            <element signature="e#20139#20168#0" expanded="true" />
-            <element signature="e#20191#20212#0" expanded="true" />
-            <element signature="e#20797#20836#0" expanded="true" />
-            <element signature="e#20838#20872#0" expanded="true" />
-            <element signature="e#20890#20928#0" expanded="true" />
-            <element signature="e#20930#20964#0" expanded="true" />
-            <element signature="e#21047#21084#0" expanded="true" />
-            <element signature="e#21086#21120#0" expanded="true" />
-            <element signature="e#21138#21178#0" expanded="true" />
-            <element signature="e#21179#21213#0" expanded="true" />
-            <element signature="e#21313#21351#0" expanded="true" />
-            <element signature="e#21353#21387#0" expanded="true" />
-            <element signature="e#21405#21445#0" expanded="true" />
-            <element signature="e#21447#21481#0" expanded="true" />
-            <element signature="e#21499#21539#0" expanded="true" />
-            <element signature="e#21541#21575#0" expanded="true" />
-            <element signature="e#21593#21629#0" expanded="true" />
-            <element signature="e#21631#21665#0" expanded="true" />
-            <element signature="e#21747#21787#0" expanded="true" />
-            <element signature="e#21789#21823#0" expanded="true" />
-            <element signature="e#21916#21952#0" expanded="true" />
-            <element signature="e#21954#21988#0" expanded="true" />
-            <element signature="e#25887#25921#0" expanded="true" />
-            <element signature="e#26039#26071#0" expanded="true" />
-            <element signature="e#26184#26216#0" expanded="true" />
-            <element signature="e#26329#26361#0" expanded="true" />
-            <element signature="e#26474#26506#0" expanded="true" />
-            <element signature="e#26619#26651#0" expanded="true" />
-            <element signature="e#26755#26795#0" expanded="true" />
-            <element signature="e#26914#26946#0" expanded="true" />
-            <element signature="e#27262#27284#0" expanded="true" />
-            <element signature="e#27318#27339#0" expanded="true" />
-            <element signature="e#28567#28588#0" expanded="true" />
-            <element signature="e#28729#32326#0" expanded="true" />
-            <element signature="e#30162#30198#0" expanded="true" />
-            <element signature="e#30200#30234#0" expanded="true" />
-            <element signature="e#31277#31313#0" expanded="true" />
-            <element signature="e#32325#32326#0" expanded="true" />
-            <element signature="e#34197#34229#0" expanded="true" />
-            <element signature="e#35283#35311#0" expanded="true" />
-            <element signature="e#35313#35346#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2956,70 +2464,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="48" column="27" selection-start-line="48" selection-start-column="27" selection-end-line="48" selection-end-column="27" />
-          <folding>
-            <element signature="e#4561#4584#0" expanded="true" />
-            <element signature="e#4684#4709#0" expanded="true" />
-            <element signature="e#5317#5346#0" expanded="true" />
-            <element signature="e#5532#5559#0" expanded="true" />
-            <element signature="e#7678#7716#0" expanded="true" />
-            <element signature="e#7773#7813#0" expanded="true" />
-            <element signature="e#7870#7910#0" expanded="true" />
-            <element signature="e#7967#8003#0" expanded="true" />
-            <element signature="e#8620#8649#0" expanded="true" />
-            <element signature="e#8753#8784#0" expanded="true" />
-            <element signature="e#9361#9400#0" expanded="true" />
-            <element signature="e#9802#9833#0" expanded="true" />
-            <element signature="e#9933#9966#0" expanded="true" />
-            <element signature="e#10888#10928#0" expanded="true" />
-            <element signature="e#13034#13071#0" expanded="true" />
-            <element signature="e#13133#13173#0" expanded="true" />
-            <element signature="e#19900#19921#0" expanded="true" />
-            <element signature="e#19948#19969#0" expanded="true" />
-            <element signature="e#19996#20017#0" expanded="true" />
-            <element signature="e#20051#20072#0" expanded="true" />
-            <element signature="e#20095#20116#0" expanded="true" />
-            <element signature="e#20139#20168#0" expanded="true" />
-            <element signature="e#20191#20212#0" expanded="true" />
-            <element signature="e#20797#20836#0" expanded="true" />
-            <element signature="e#20838#20872#0" expanded="true" />
-            <element signature="e#20890#20928#0" expanded="true" />
-            <element signature="e#20930#20964#0" expanded="true" />
-            <element signature="e#21047#21084#0" expanded="true" />
-            <element signature="e#21086#21120#0" expanded="true" />
-            <element signature="e#21138#21178#0" expanded="true" />
-            <element signature="e#21179#21213#0" expanded="true" />
-            <element signature="e#21313#21351#0" expanded="true" />
-            <element signature="e#21353#21387#0" expanded="true" />
-            <element signature="e#21405#21445#0" expanded="true" />
-            <element signature="e#21447#21481#0" expanded="true" />
-            <element signature="e#21499#21539#0" expanded="true" />
-            <element signature="e#21541#21575#0" expanded="true" />
-            <element signature="e#21593#21629#0" expanded="true" />
-            <element signature="e#21631#21665#0" expanded="true" />
-            <element signature="e#21747#21787#0" expanded="true" />
-            <element signature="e#21789#21823#0" expanded="true" />
-            <element signature="e#21916#21952#0" expanded="true" />
-            <element signature="e#21954#21988#0" expanded="true" />
-            <element signature="e#25887#25921#0" expanded="true" />
-            <element signature="e#26039#26071#0" expanded="true" />
-            <element signature="e#26184#26216#0" expanded="true" />
-            <element signature="e#26329#26361#0" expanded="true" />
-            <element signature="e#26474#26506#0" expanded="true" />
-            <element signature="e#26619#26651#0" expanded="true" />
-            <element signature="e#26755#26795#0" expanded="true" />
-            <element signature="e#26914#26946#0" expanded="true" />
-            <element signature="e#27262#27284#0" expanded="true" />
-            <element signature="e#27318#27339#0" expanded="true" />
-            <element signature="e#28567#28588#0" expanded="true" />
-            <element signature="e#28729#32326#0" expanded="true" />
-            <element signature="e#30162#30198#0" expanded="true" />
-            <element signature="e#30200#30234#0" expanded="true" />
-            <element signature="e#31277#31313#0" expanded="true" />
-            <element signature="e#32325#32326#0" expanded="true" />
-            <element signature="e#34197#34229#0" expanded="true" />
-            <element signature="e#35283#35311#0" expanded="true" />
-            <element signature="e#35313#35346#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -3034,13 +2479,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.13595706">
           <caret line="16" column="0" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
-          <folding />
         </state>
-      </provider>
-    </entry>
-    <entry file="android-dummy://H:/app_proj/DeviceTestApp/app/Translations Editor">
-      <provider selected="true" editor-type-id="string-resource-editor">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/Utils.java">
@@ -3061,98 +2500,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.43470484">
           <caret line="113" column="29" selection-start-line="113" selection-start-column="29" selection-end-line="113" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/AutoTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.44186047">
-          <caret line="33" column="81" selection-start-line="33" selection-start-column="81" selection-end-line="33" selection-end-column="81" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/KeyCode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.28113207">
-          <caret line="217" column="55" selection-start-line="217" selection-start-column="55" selection-end-line="217" selection-end-column="55" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#1651#1660#0" expanded="false" />
-            <element signature="e#2276#2988#0" expanded="false" />
-            <element signature="e#2502#2954#0" expanded="false" />
-            <element signature="e#2953#2954#0" expanded="false" />
-            <element signature="e#2987#2988#0" expanded="false" />
-            <element signature="e#3081#3082#0" expanded="false" />
-            <element signature="e#3122#3123#0" expanded="false" />
-            <element signature="e#4052#4060#0" expanded="false" />
-            <element signature="e#4117#4134#0" expanded="false" />
-            <element signature="e#4783#4824#0" expanded="false" />
-            <element signature="e#4929#5715#0" expanded="false" />
-            <element signature="e#5714#5715#0" expanded="false" />
-            <element signature="e#5798#5925#0" expanded="false" />
-            <element signature="e#5924#5925#0" expanded="false" />
-            <element signature="e#5956#6082#0" expanded="false" />
-            <element signature="e#6081#6082#0" expanded="false" />
-            <element signature="e#6287#6308#0" expanded="false" />
-            <element signature="e#6335#6358#0" expanded="false" />
-            <element signature="e#6385#6410#0" expanded="false" />
-            <element signature="e#6461#6492#0" expanded="false" />
-            <element signature="e#6519#6550#0" expanded="false" />
-            <element signature="e#6577#6599#0" expanded="false" />
-            <element signature="e#6626#6650#0" expanded="false" />
-            <element signature="e#6677#6701#0" expanded="false" />
-            <element signature="e#6728#6753#0" expanded="false" />
-            <element signature="e#6843#6869#0" expanded="false" />
-            <element signature="e#6896#6922#0" expanded="false" />
-            <element signature="e#6949#6974#0" expanded="false" />
-            <element signature="e#8149#8181#0" expanded="false" />
-            <element signature="e#8303#8337#0" expanded="false" />
-            <element signature="e#8461#8497#0" expanded="false" />
-            <element signature="e#8709#8751#0" expanded="false" />
-            <element signature="e#8938#8980#0" expanded="false" />
-            <element signature="e#9113#9146#0" expanded="false" />
-            <element signature="e#9281#9316#0" expanded="false" />
-            <element signature="e#9454#9489#0" expanded="false" />
-            <element signature="e#9629#9665#0" expanded="false" />
-            <element signature="e#11781#11782#0" expanded="false" />
-            <element signature="e#11854#11855#0" expanded="false" />
-            <element signature="e#12067#12068#0" expanded="false" />
-            <element signature="e#12106#12107#0" expanded="false" />
-            <element signature="e#13689#13710#0" expanded="false" />
-            <element signature="e#13902#13923#0" expanded="false" />
-            <element signature="e#14759#15069#0" expanded="false" />
-            <element signature="e#15068#15069#0" expanded="false" />
-            <element signature="class#MySurfaceView#0;class#KeyCode#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/LSensor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33207548">
-          <caret line="48" column="56" selection-start-line="48" selection-start-column="56" selection-end-line="48" selection-end-column="56" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/pref_settings.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.42937854">
-          <caret line="15" column="23" selection-start-line="15" selection-start-column="23" selection-end-line="15" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/SettingsActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5867621">
-          <caret line="52" column="68" selection-start-line="52" selection-start-column="68" selection-end-line="52" selection-end-column="68" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://D:/android/android-sdk-windows/sources/android-23/android/view/KeyEvent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2647585">
-          <caret line="327" column="45" selection-start-line="327" selection-start-column="28" selection-end-line="327" selection-end-column="45" />
         </state>
       </provider>
     </entry>
@@ -3181,7 +2528,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.11067961">
           <caret line="3" column="12" selection-start-line="3" selection-start-column="12" selection-end-line="3" selection-end-column="12" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -3189,34 +2535,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.06998158">
           <caret line="2" column="17" selection-start-line="2" selection-start-column="17" selection-end-line="2" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/OnDataChangedListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.20994475">
-          <caret line="6" column="55" selection-start-line="6" selection-start-column="55" selection-end-line="6" selection-end-column="55" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/SensorPackageObject.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.17495395">
-          <caret line="59" column="18" selection-start-line="59" selection-start-column="18" selection-end-line="59" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://D:/android/android-sdk-windows/sources/android-23/android/content/Intent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33333334">
-          <caret line="5002" column="18" selection-start-line="5002" selection-start-column="18" selection-end-line="5002" selection-end-column="18" />
-          <folding>
-            <element signature="e#232833#232834#0" expanded="false" />
-            <element signature="e#232895#232896#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -3224,7 +2542,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.26335174">
           <caret line="263" column="27" selection-start-line="263" selection-start-column="27" selection-end-line="263" selection-end-column="27" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -3232,7 +2549,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.28913444">
           <caret line="102" column="48" selection-start-line="102" selection-start-column="35" selection-end-line="102" selection-end-column="48" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -3240,7 +2556,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.18416207">
           <caret line="1059" column="40" selection-start-line="1059" selection-start-column="40" selection-end-line="1059" selection-end-column="40" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -3248,7 +2563,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33989266">
           <caret line="10" column="6" selection-start-line="10" selection-start-column="6" selection-end-line="10" selection-end-column="6" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -3256,7 +2570,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.6639344">
           <caret line="3812" column="70" selection-start-line="3812" selection-start-column="59" selection-end-line="3812" selection-end-column="70" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -3264,7 +2577,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="1.18306">
           <caret line="393" column="56" selection-start-line="393" selection-start-column="19" selection-end-line="393" selection-end-column="56" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -3272,97 +2584,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.6913947">
           <caret line="162" column="21" selection-start-line="162" selection-start-column="15" selection-end-line="162" selection-end-column="21" />
-          <folding>
-            <element signature="e#4839#4840#0" expanded="false" />
-            <element signature="e#4868#4869#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3372781">
-          <caret line="6" column="75" selection-start-line="6" selection-start-column="35" selection-end-line="6" selection-end-column="75" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.14285715">
-          <caret line="107" column="33" selection-start-line="107" selection-start-column="33" selection-end-line="107" selection-end-column="33" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestApp.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-9.75862">
-          <caret line="655" column="36" selection-start-line="655" selection-start-column="30" selection-end-line="655" selection-end-column="36" />
-          <folding>
-            <element signature="e#4561#4584#0" expanded="true" />
-            <element signature="e#4684#4709#0" expanded="true" />
-            <element signature="e#5317#5346#0" expanded="true" />
-            <element signature="e#5532#5559#0" expanded="true" />
-            <element signature="e#7678#7716#0" expanded="true" />
-            <element signature="e#7773#7813#0" expanded="true" />
-            <element signature="e#7870#7910#0" expanded="true" />
-            <element signature="e#7967#8003#0" expanded="true" />
-            <element signature="e#8620#8649#0" expanded="true" />
-            <element signature="e#8753#8784#0" expanded="true" />
-            <element signature="e#9361#9400#0" expanded="true" />
-            <element signature="e#9802#9833#0" expanded="true" />
-            <element signature="e#9933#9966#0" expanded="true" />
-            <element signature="e#10888#10928#0" expanded="true" />
-            <element signature="e#13034#13071#0" expanded="true" />
-            <element signature="e#13133#13173#0" expanded="true" />
-            <element signature="e#19900#19921#0" expanded="true" />
-            <element signature="e#19948#19969#0" expanded="true" />
-            <element signature="e#19996#20017#0" expanded="true" />
-            <element signature="e#20051#20072#0" expanded="true" />
-            <element signature="e#20095#20116#0" expanded="true" />
-            <element signature="e#20139#20168#0" expanded="true" />
-            <element signature="e#20191#20212#0" expanded="true" />
-            <element signature="e#20797#20836#0" expanded="true" />
-            <element signature="e#20838#20872#0" expanded="true" />
-            <element signature="e#20890#20928#0" expanded="true" />
-            <element signature="e#20930#20964#0" expanded="true" />
-            <element signature="e#21047#21084#0" expanded="true" />
-            <element signature="e#21086#21120#0" expanded="true" />
-            <element signature="e#21138#21178#0" expanded="true" />
-            <element signature="e#21179#21213#0" expanded="true" />
-            <element signature="e#21313#21351#0" expanded="true" />
-            <element signature="e#21353#21387#0" expanded="true" />
-            <element signature="e#21405#21445#0" expanded="true" />
-            <element signature="e#21447#21481#0" expanded="true" />
-            <element signature="e#21499#21539#0" expanded="true" />
-            <element signature="e#21541#21575#0" expanded="true" />
-            <element signature="e#21593#21629#0" expanded="true" />
-            <element signature="e#21631#21665#0" expanded="true" />
-            <element signature="e#21747#21787#0" expanded="true" />
-            <element signature="e#21789#21823#0" expanded="true" />
-            <element signature="e#21916#21952#0" expanded="true" />
-            <element signature="e#21954#21988#0" expanded="true" />
-            <element signature="e#25887#25921#0" expanded="true" />
-            <element signature="e#26039#26071#0" expanded="true" />
-            <element signature="e#26184#26216#0" expanded="true" />
-            <element signature="e#26329#26361#0" expanded="true" />
-            <element signature="e#26474#26506#0" expanded="true" />
-            <element signature="e#26619#26651#0" expanded="true" />
-            <element signature="e#26755#26795#0" expanded="true" />
-            <element signature="e#26914#26946#0" expanded="true" />
-            <element signature="e#27262#27284#0" expanded="true" />
-            <element signature="e#27318#27339#0" expanded="true" />
-            <element signature="e#28567#28588#0" expanded="true" />
-            <element signature="e#28729#32326#0" expanded="true" />
-            <element signature="e#30162#30198#0" expanded="true" />
-            <element signature="e#30200#30234#0" expanded="true" />
-            <element signature="e#31277#31313#0" expanded="true" />
-            <element signature="e#32325#32326#0" expanded="true" />
-            <element signature="e#34197#34229#0" expanded="true" />
-            <element signature="e#35283#35311#0" expanded="true" />
-            <element signature="e#35313#35346#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -3377,24 +2598,148 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
-      <provider editor-type-id="android-designer">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/OnDeviceStatusListener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.1019678">
+          <caret line="3" column="44" selection-start-line="3" selection-start-column="44" selection-end-line="3" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="android-dummy://H:/app_proj/DeviceTestApp/app/Translations Editor">
+      <provider selected="true" editor-type-id="string-resource-editor">
         <state />
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/SettingsActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.3564814">
-          <caret line="50" column="38" selection-start-line="50" selection-start-column="34" selection-end-line="50" selection-end-column="38" />
-          <folding>
-            <element signature="e#1235#1265#0" expanded="true" />
-            <element signature="e#1769#1795#0" expanded="true" />
-            <element signature="e#2102#2120#0" expanded="true" />
-            <element signature="e#2442#2461#0" expanded="true" />
-            <element signature="e#3622#3649#0" expanded="true" />
-            <element signature="e#3977#3999#0" expanded="true" />
-            <element signature="e#4328#4345#0" expanded="true" />
-            <element signature="e#4669#4686#0" expanded="true" />
-            <element signature="e#5010#5028#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="-4.234347">
+          <caret line="33" column="65" selection-start-line="33" selection-start-column="38" selection-end-line="33" selection-end-column="65" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/pref_settings.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33333334">
+          <caret line="16" column="37" selection-start-line="16" selection-start-column="34" selection-end-line="16" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.63293654">
+          <caret line="129" column="22" selection-start-line="129" selection-start-column="22" selection-end-line="129" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/AutoTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.3291592">
+          <caret line="31" column="37" selection-start-line="31" selection-start-column="37" selection-end-line="31" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/android/android-sdk-windows/sources/android-23/android/view/KeyEvent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.4686941">
+          <caret line="331" column="58" selection-start-line="331" selection-start-column="58" selection-end-line="331" selection-end-column="58" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/android/android-sdk-windows/sources/android-23/android/app/ActivityManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.43470484">
+          <caret line="2417" column="16" selection-start-line="2417" selection-start-column="16" selection-end-line="2417" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/captures/com.zhi_tech.devicetestapp_2016.07.14_16.08.alloc">
+      <provider selected="true" editor-type-id="capture-editor">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/OnDataChangedListener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.41758242">
+          <caret line="6" column="55" selection-start-line="6" selection-start-column="55" selection-end-line="6" selection-end-column="55" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/TSensor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7655678">
+          <caret line="57" column="0" selection-start-line="57" selection-start-column="0" selection-end-line="57" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/MSensor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.974359">
+          <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/LSensor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5567766">
+          <caret line="55" column="0" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/GyRoscopeSensor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7655678">
+          <caret line="64" column="0" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/android/android-sdk-windows/sources/android-23/android/content/Intent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.36792454">
+          <caret line="1747" column="0" selection-start-line="1746" selection-start-column="0" selection-end-line="1747" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/BootCompletedReceiver.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.54382825">
+          <caret line="23" column="43" selection-start-line="23" selection-start-column="37" selection-end-line="23" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/android/android-sdk-windows/sources/android-23/android/view/View.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33273703">
+          <caret line="5125" column="16" selection-start-line="5125" selection-start-column="16" selection-end-line="5125" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.03954802">
+          <caret line="24" column="43" selection-start-line="24" selection-start-column="43" selection-end-line="24" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/PSensor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.9283019">
+          <caret line="87" column="22" selection-start-line="87" selection-start-column="22" selection-end-line="87" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/sensor/GSensor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33989266">
+          <caret line="118" column="45" selection-start-line="118" selection-start-column="45" selection-end-line="118" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/SensorPackageObject.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.0339893">
+          <caret line="59" column="18" selection-start-line="59" selection-start-column="18" selection-end-line="59" selection-end-column="18" />
         </state>
       </provider>
     </entry>
@@ -3406,23 +2751,52 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/app/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.6797853">
+          <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.037848607">
+          <caret line="27" column="38" selection-start-line="27" selection-start-column="38" selection-end-line="27" selection-end-column="38" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/KeyCode.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33989266">
+          <caret line="45" column="17" selection-start-line="45" selection-start-column="17" selection-end-line="45" selection-end-column="17" />
+          <folding>
+            <element signature="e#8941#8977#0" expanded="true" />
+            <element signature="class#MySurfaceView#0;class#KeyCode#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestAppService.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.4482758">
-          <caret line="834" column="44" selection-start-line="834" selection-start-column="44" selection-end-line="834" selection-end-column="44" />
+        <state vertical-scroll-proportion="0.16994633">
+          <caret line="693" column="56" selection-start-line="693" selection-start-column="56" selection-end-line="693" selection-end-column="56" />
           <folding>
             <element signature="method#setDeviceInterface#0;class#DeviceTestAppService#0" expanded="false" />
             <element signature="method#assignEndpoint#0;class#DeviceTestAppService#0" expanded="false" />
-            <element signature="method#ProcessingCommandFeedback#0;class#DeviceTestAppService#0" expanded="false" />
             <element signature="method#DfuUpgradeCase#0;class#DeviceTestAppService#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/build.gradle">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/zhi_tech/devicetestapp/DeviceTestApp.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.37388194">
-          <caret line="11" column="25" selection-start-line="11" selection-start-column="25" selection-end-line="11" selection-end-column="25" />
+        <state vertical-scroll-proportion="0.57781756">
+          <caret line="57" column="0" selection-start-line="57" selection-start-column="0" selection-end-line="57" selection-end-column="0" />
           <folding />
         </state>
       </provider>

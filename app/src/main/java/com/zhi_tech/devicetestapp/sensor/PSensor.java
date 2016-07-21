@@ -49,8 +49,6 @@ public class PSensor extends Activity implements View.OnClickListener {
     private byte okFlag = 0x00;
     private static int Proximity_Threshold_Leave = 200;
     private static int Proximity_Threshold_Approach = 820;
-    private Timer mTimer;
-    private TimerTask mTimerTask;
     boolean mCheckDataSuccess;
 
     CountDownTimer mCountDownTimer;
@@ -61,6 +59,7 @@ public class PSensor extends Activity implements View.OnClickListener {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             dtaService = ((DeviceTestAppService.DtaBinder)service).getService();
+            dtaService.StartSensorSwitch();
             dtaService.setOnDataChangedListener(new OnDataChangedListener() {
                 @Override
                 public void sensorDataChanged(SensorPackageObject object) {
@@ -93,17 +92,12 @@ public class PSensor extends Activity implements View.OnClickListener {
                     okFlag |= 0x02;
                 }
 
-                if ((okFlag & 0xFF) == 0x03) {
+                if (okFlag == 0x03) {
+                    mPsensor.setTextColor(Color.GREEN);
+                    mBtFailed.setBackgroundColor(Color.GRAY);
+                    mBtOk.setBackgroundColor(Color.GREEN);
                     mCheckDataSuccess = true;
-                    if (mTimer == null) {
-                        mTimer = new Timer();
-                        mTimer.schedule(mTimerTask, DeviceTestApp.ShowItemTestResultTimeout * 1000);
-
-                        mPsensor.setTextColor(Color.GREEN);
-                        mBtFailed.setBackgroundColor(Color.GRAY);
-                        mBtFailed.setClickable(false);
-                        mBtOk.setBackgroundColor(Color.GREEN);
-                    }
+                    SaveToReport();
                 }
             }
         });
@@ -131,18 +125,16 @@ public class PSensor extends Activity implements View.OnClickListener {
 
         Proximity_Threshold_Approach = DeviceTestApp.Proximity_Threshold_Approach;
 
-        mTimer = null;
         mCheckDataSuccess = false;
-        mTimerTask = new TimerTask() {
-            @Override
-            public void run() {
-                SaveToReport();
-            }
-        };
 
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                if (!mCheckDataSuccess) {
+                    mPsensor.setTextColor(Color.RED);
+                    mBtFailed.setBackgroundColor(Color.RED);
+                    mBtOk.setBackgroundColor(Color.GRAY);
+                }
                 SaveToReport();
             }
         }, DeviceTestApp.ItemTestTimeout * 1000);
@@ -179,6 +171,11 @@ public class PSensor extends Activity implements View.OnClickListener {
     public void SaveToReport() {
         Utils.SetPreferences(this, mSp, R.string.psensor_name,
                 mCheckDataSuccess ? AppDefine.DT_SUCCESS : AppDefine.DT_FAILED);
-        finish();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        }, DeviceTestApp.ShowItemTestResultTimeout * 1000);
     }
 }
